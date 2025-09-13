@@ -1703,8 +1703,8 @@ def main():
                     # elenco dei campi disponibili in AXIS.INT
                     axis_int_fields = list(IDX_AXIS_INT.keys())
                     print("\nScegli FIELD di AXIS.INT (nome o indice):")
-                    for i, lab in enumerate(axis_int_fields):
-                        print(f"  [{i}] {lab}")
+                    entries = [f"[{i:02d}] {lab}" for i, lab in enumerate(axis_int_fields)]
+                    print_in_columns(entries, cols=3)
                     fsel2 = input("FIELD AXIS.INT: ").strip()
 
                     if fsel2.isdigit():
@@ -1731,9 +1731,11 @@ def main():
                     continue
             # --- Scelta FIELD (nome o indice) ---
             fields = AXIS_GROUPS_ORDER if sys_type == "AXIS" else ALARM_GROUPS_ORDER
-            print(f"Scegli FIELD per {sys_type} (nome o indice):")
-            for i, f in enumerate(fields):
-                print(f"  [{i}] {f}")
+
+            print(f"\nScegli FIELD per {sys_type} (nome o indice):")
+            entries = [f"[{i:02d}] {name}" for i, name in enumerate(fields)]
+            print_in_columns(entries, cols=3)
+
             fsel = input("FIELD: ").strip()
 
             if fsel.isdigit():

@@ -27,6 +27,10 @@ jobs:
           )
           pip install pyinstaller
 
+      - name: Generate version file
+        run: |
+          python make_version_file.py
+
       - name: Build with PyInstaller (.spec)
         run: |
           pyinstaller main.spec

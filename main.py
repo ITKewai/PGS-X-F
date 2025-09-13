@@ -857,6 +857,109 @@ def iter_expr_groups(di_fields: list) -> List[Tuple[int, int, int]]:
     return groups
 
 
+def run_di_search(data: Any, target_number: int) -> None:
+    """Esegue l'intera ricerca DI (stampa come nel ramo # ---- Ricerche su DI ----)."""
+    di_list = (data.get('io') or {}).get('di')  # lista indicizzata
+    if not di_list:
+        print("Sezione 'di' non trovata.")
+        return
+
+    # Campi EXPR nei -io.di
+    matches = search_di_matches(di_list, target_number)
+    if matches:
+        for di_idx, exprtype_str, group_idx in matches:
+            print(f"IO>DI>{di_idx} - {exprtype_str} - EXPRESSION N°{group_idx}")
+
+    # Campo TIMEOUT dei CALC nei -io.di (IN)
+    in_matches = search_di_in_matches(di_list, target_number)
+    for di_idx in in_matches:
+        print(f"IO>DI>{di_idx} - TIMEOUT match")
+
+    # Campo IN dei -io.do
+    do_list = (data.get('io') or {}).get('do')
+    if do_list:
+        do_matches = search_do_in_matches(do_list, target_number)
+        for do_idx, name in do_matches:
+            if name:
+                print(f"IO>DO>{do_idx} - IN match (-do) - DO name: {name}")
+            else:
+                print(f"IO>DO>{do_idx} - IN match (-do)")
+
+    # Campi FB_ERR_DEPRECATED/RESETIND nei -obj.fb
+    fb_list = (data.get('obj') or {}).get('fb')
+    if fb_list:
+        fb_matches = search_fb_err_deprecated_matches(fb_list, target_number)
+        for fb_idx, fb_type in fb_matches:
+            print(f"FEEDBACK>{fb_idx} - FB_ERR_DEPRECATED match (-fb)")
+
+        fb_reset_matches = search_fb_resetind_matches(fb_list, target_number)
+        for fb_idx, fb_type in fb_reset_matches:
+            print(f"FEEDBACK>{fb_idx} - RESETIND match (-fb)")
+
+    # Campi DIG*/ENAB*/ACT nei -obj.input
+    input_list = (data.get('obj') or {}).get('input')
+    if input_list:
+        in_input_matches = search_input_di_field_matches(input_list, target_number)
+        for inp_idx, fields in in_input_matches:
+            print(f"INPUT>{inp_idx} - match (-input) - fields: {', '.join(fields)}")
+
+    # Campi ACT/ENAB* nei -obj.output
+    output_list = (data.get('obj') or {}).get('output')
+    if output_list:
+        out_matches = search_output_di_field_matches(output_list, target_number)
+        for out_idx, fields in out_matches:
+            print(f"OUTPUT>{out_idx} - match (-output) - fields: {', '.join(fields)}")
+
+    # Campi LS*/TR*/STAT/STARTING nei -obj.mot
+    mot_list = (data.get('obj') or {}).get('mot')
+    if mot_list:
+        mot_matches = search_mot_di_field_matches(mot_list, target_number)
+        for mot_idx, fields in mot_matches:
+            print(f"MOT>{mot_idx} - match (-mot) - fields: {', '.join(fields)}")
+
+    # Campi -obj.axis.int
+    axis_int_lists = _find_axis_int_lists(data.get('obj'))
+    if axis_int_lists:
+        axis_matches = search_axis_int_di_field_matches(axis_int_lists, target_number)
+        for axis_idx, fields in axis_matches:
+            print(f"AXIS>{axis_idx} - match (-axis.int) - fields: {', '.join(fields)}")
+
+    # Campi generici configurazione nei -in
+    in_matches2 = search_in_field_matches(data, target_number)
+    for pid, idx, label, origin in in_matches2:
+        if label and origin:
+            print(f"*IN>{pid}[{idx}] - match (-in) - label: {label} ({origin})")
+        elif label:
+            print(f"*IN>{pid}[{idx}] - match (-in) - label: {label}")
+        else:
+            print(f"*IN>{pid}[{idx}] - match (-in)")
+
+    # Campi IN/ENAB/DISAB/REQACK/ACK nei -obj.alarm
+    alarm_list = (data.get('obj') or {}).get('alarm')
+    if alarm_list:
+        alarm_matches = search_alarm_di_field_matches(alarm_list, target_number)
+        for alarm_idx, fields, name in alarm_matches:
+            if name:
+                print(f"ALARMS/MAINT>ALARM>{alarm_idx} - match (-alarm) - fields: {', '.join(fields)} - name: {name}")
+            else:
+                print(f"ALARMS/MAINT>ALARM>{alarm_idx} - match (-alarm) - fields: {', '.join(fields)}")
+
+
+def get_axis_int_di(data: Any, axis_index: int, label: str) -> Optional[int]:
+    """Ritorna il DI configurato nell'array AXIS.INT per l'asse e la label dati."""
+    axis_nodes = ((data.get('obj') or {}).get('axis') or [])
+    try:
+        node = axis_nodes[axis_index]
+        arr = node.get('int')
+        if not isinstance(arr, list):
+            return None
+        pos = IDX_AXIS_INT[label.strip().upper()]
+        val = arr[pos]
+        return int(val) if val is not None and str(val).strip() != '' else None
+    except Exception:
+        return None
+
+
 def search_di_matches(di_list: List[list], target_number: int) -> List[Tuple[int, str, int]]:
     results: List[Tuple[int, str, int]] = []
     for di_index, di_fields in enumerate(di_list):
@@ -1517,8 +1620,8 @@ def main():
         if tipo == 5:
             # --- SYSTEM lookup: scegli TYPE -> INDEX -> FIELD, calcola numero e cerca nei DI ---
             print("Scegli il TYPE di sistema (nome o numero):")
-            for name, val in SYSTEM_TYPE.items():
-                print(f"  {val} = {name}")
+            entries = [f"{val} = {name}" for name, val in sorted(SYSTEM_TYPE.items(), key=lambda kv: kv[1])]
+            print_in_columns(entries, cols=4)
             sel = input("TYPE: ").strip()
 
             # Normalizzo la scelta (accetta sia numero sia nome)
@@ -1554,9 +1657,17 @@ def main():
                     return f"axis[{i}]"
 
                 n_to_show = min(len(axis_nodes), AXIS_MAX_INDEX + 1)
+
                 print("\nMappa AXIS (indice → nome):")
-                for i in range(n_to_show):
-                    print(f"  [{i:02d}] {axis_name(i)}")
+                # prepara le stringhe "[ii] nome"
+                entries = [f"[{i:02d}] {axis_name(i)}" for i in range(n_to_show)]
+                if entries:
+                    cols = 6 # raggruppa per 6
+                    colw = max(len(s) for s in entries) + 2  # padding
+                    for k in range(0, len(entries), cols):
+                        row = entries[k:k + cols]
+                        print("  " + "".join(s.ljust(colw) for s in row))
+
                 if n_to_show < AXIS_MAX_INDEX + 1:
                     print(f"... (definiti {n_to_show} assi su {AXIS_MAX_INDEX + 1})")
 
@@ -1584,7 +1695,40 @@ def main():
             except Exception as e:
                 print(f"INDEX non valido: {e}")
                 continue
+            # --- Scelta modalità: System Address o DI da AXIS.INT ---
+            if sys_type == "AXIS":
+                # mode = (input("Vuoi cercare (1) indirizzo SYSTEM AXIS.* oppure (2) DI da AXIS.INT? [1/2]: ").strip() or "1") # per ora non (2)
+                mode = 1
+                if mode == "2":
+                    # elenco dei campi disponibili in AXIS.INT
+                    axis_int_fields = list(IDX_AXIS_INT.keys())
+                    print("\nScegli FIELD di AXIS.INT (nome o indice):")
+                    for i, lab in enumerate(axis_int_fields):
+                        print(f"  [{i}] {lab}")
+                    fsel2 = input("FIELD AXIS.INT: ").strip()
 
+                    if fsel2.isdigit():
+                        fidx2 = int(fsel2)
+                        if not (0 <= fidx2 < len(axis_int_fields)):
+                            print("FIELD AXIS.INT index fuori range.")
+                            continue
+                        field_int = axis_int_fields[fidx2]
+                    else:
+                        field_int = fsel2.strip().upper()
+                        if field_int not in IDX_AXIS_INT:
+                            print("FIELD AXIS.INT sconosciuto.")
+                            continue
+
+                    di_id = get_axis_int_di(data, index, field_int)
+                    if di_id is None or di_id < 0:
+                        print(f"AXIS.INT → {field_int}[{index}] non configurato (o valore invalido).")
+                        continue
+
+                    print(f"\nAXIS.INT → {field_int}[{index}]  => DI: {di_id}\n")
+                    # usa la stessa identica ricerca DI
+                    run_di_search(data, di_id)
+                    # torna al menu principale
+                    continue
             # --- Scelta FIELD (nome o indice) ---
             fields = AXIS_GROUPS_ORDER if sys_type == "AXIS" else ALARM_GROUPS_ORDER
             print(f"Scegli FIELD per {sys_type} (nome o indice):")
@@ -1616,16 +1760,7 @@ def main():
 
             human = decode_system_addr(number) or f"{sys_type}.{field}[{index}]"
             print(f"\nSYSTEM → {human}  => numero: {number}")
-
-            # --- Ricerca tra TUTTI i DI che referenziano quel numero nelle espressioni ---
-            di_list = (data.get('io') or {}).get('di') or []
-            matches = search_di_matches(di_list, number)
-            if matches:
-                for di_idx, exprtype_str, group_idx in matches:
-                    print(f"IO>DI>{di_idx} - {exprtype_str} - EXPRESSION N°{group_idx}")
-            else:
-                print("Nessun DI che referenzia questo numero nelle espressioni.")
-            # torna al menu principale
+            run_di_search(data, number)
             continue
         # ==================== /SYSTEM ====================
 
@@ -1642,92 +1777,7 @@ def main():
         print("-" * 60)
 
         if tipo == 1:
-            # ---- Ricerche su DI ----
-            di_list = (data.get('io') or {}).get('di')  # lista indicizzata
-            if not di_list:
-                print("Sezione 'di' non trovata.")
-                continue
-
-            # Campi EXPR nei -io.di
-            matches = search_di_matches(di_list, target_number)
-            if matches:
-                for di_idx, exprtype_str, group_idx in matches:
-                    print(f"IO>DI>{di_idx} - {exprtype_str} - EXPRESSION N°{group_idx}")
-
-            # Campo TIMEOUT dei CALC nei -io.di #
-            in_matches = search_di_in_matches(di_list, target_number)
-            for di_idx in in_matches:
-                print(f"IO>DI>{di_idx} - TIMEOUT match")
-
-            # Campo IN dei -io.do
-            do_list = (data.get('io') or {}).get('do')
-            if do_list:
-                do_matches = search_do_in_matches(do_list, target_number)
-                for do_idx, name in do_matches:
-                    if name:
-                        print(f"IO>DO>{do_idx} - IN match (-do) - DO name: {name}")
-                    else:
-                        print(f"IO>DO>{do_idx} - IN match (-do)")
-
-            # Campi FB_ERR_DEPRECATED/RESETIND nei -obj.fb
-            fb_list = (data.get('obj') or {}).get('fb')
-            if fb_list:
-                fb_matches = search_fb_err_deprecated_matches(fb_list, target_number)
-                for fb_idx, fb_type in fb_matches:
-                    print(f"FEEDBACK>{fb_idx} - FB_ERR_DEPRECATED match (-fb)")
-
-                fb_reset_matches = search_fb_resetind_matches(fb_list, target_number)
-                for fb_idx, fb_type in fb_reset_matches:
-                    print(f"FEEDBACK>{fb_idx} - RESETIND match (-fb)")
-
-            # Campi DIG*/ENAB*/ACT nei -obj.input
-            input_list = (data.get('obj') or {}).get('input')
-            if input_list:
-                in_input_matches = search_input_di_field_matches(input_list, target_number)
-                for inp_idx, fields in in_input_matches:
-                    print(f"INPUT>{inp_idx} - match (-input) - fields: {', '.join(fields)}")
-
-            # Campi ACT/ENAB* nei -obj.output
-            output_list = (data.get('obj') or {}).get('output')
-            if output_list:
-                out_matches = search_output_di_field_matches(output_list, target_number)
-                for out_idx, fields in out_matches:
-                    print(f"OUTPUT>{out_idx} - match (-output) - fields: {', '.join(fields)}")
-
-            # Campi LS*/TR*/STAT/STARTING nei -obj.mot
-            mot_list = (data.get('obj') or {}).get('mot')
-            if mot_list:
-                mot_matches = search_mot_di_field_matches(mot_list, target_number)
-                for mot_idx, fields in mot_matches:
-                    print(f"MOT>{mot_idx} - match (-mot) - fields: {', '.join(fields)}")
-
-            # Campi -obj.axis.int
-            axis_int_lists = _find_axis_int_lists(data.get('obj'))
-            if axis_int_lists:
-                axis_matches = search_axis_int_di_field_matches(axis_int_lists, target_number)
-                for axis_idx, fields in axis_matches:
-                    print(f"AXIS>{axis_idx} - match (-axis.int) - fields: {', '.join(fields)}")
-
-            # Campi generici configurazione nei -in
-            in_matches2 = search_in_field_matches(data, target_number)
-            for pid, idx, label, origin in in_matches2:
-                if label and origin:
-                    print(f"*IN>{pid}[{idx}] - match (-in) - label: {label} ({origin})")
-                elif label:
-                    print(f"*IN>{pid}[{idx}] - match (-in) - label: {label}")
-                else:
-                    print(f"*IN>{pid}[{idx}] - match (-in)")
-
-            # Campi IN/ENAB/DISAB/REQACK/ACK nei -obj.alarm
-            alarm_list = (data.get('obj') or {}).get('alarm')
-            if alarm_list:
-                alarm_matches = search_alarm_di_field_matches(alarm_list, target_number)
-                for alarm_idx, fields, name in alarm_matches:
-                    if name:
-                        print(f"ALARMS/MAINT>ALARM>{alarm_idx} - match (-alarm) - fields: {', '.join(fields)} - name: {name}")
-                    else:
-                        print(f"ALARMS/MAINT>ALARM>{alarm_idx} - match (-alarm) - fields: {', '.join(fields)}")
-
+            run_di_search(data, target_number)
         elif tipo == 2:
             # ---- Ricerche su AI ----
             ao_list = (data.get('io') or {}).get('ao')
@@ -1748,31 +1798,14 @@ def main():
             print("Ricerca per DO/AO (DI target) non ancora implementata qui.")
 
 
-"""
-EMGCYPB = 5
-PRELOADUP = 114
-PRELOADPINCHDISAB = 115
-CONSOLE2SEL = 6
-CHROLLSEL = 7 O 8
-SEMIAUTOSEL = 24
-CONSOLE1MODE = 44
-REMOTEMODE = 46
-ROLLTILTBALANCED = 128
-STARTSENSORIN = 20
-STARTSENSOR2IN = 126
-AUTOSTARTING = 110
-INVERTERRESET = 108°
-INVERTERALARM = 109
-INVERTEROVERLOAD = 122
-MAINTRESET = 21
-TILTDISABLED = 77
-HOLDTORUN2 = 25*
-PRELOADUP = 114
-PRELOADPINCHDISAB = 115
-GREASEALARMCALC = 52
-PUMPALARMCALC = 53
+def print_in_columns(entries: List[str], cols: int = 3) -> None:
+    if not entries:
+        return
+    colw = max(len(s) for s in entries) + 2  # padding
+    for i in range(0, len(entries), cols):
+        row = entries[i:i+cols]
+        print("  " + "".join(s.ljust(colw) for s in row))
 
-"""
 if __name__ == "__main__":
     try:
         main()

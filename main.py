@@ -970,6 +970,14 @@ def choose_and_prepare_config() -> Path:
         sys.exit(1)
 
 
+def _pause_if_frozen():
+    if getattr(sys, "frozen", False):  # eseguibile PyInstaller
+        try:
+            input("\nPremi Invio per chiudere...")
+        except EOFError:
+            pass
+
+
 def main():
     cfg_path = choose_and_prepare_config()
 
@@ -1084,4 +1092,18 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except SystemExit as e:
+        code = e.code if isinstance(e.code, int) else 1
+        # Mostra il codice di uscita (se vuoi)
+        if code not in (0, None):
+            print(f"\n[EXIT] Codice: {code}")
+        _pause_if_frozen()
+        # esci col codice originale
+        sys.exit(code)
+    except Exception as e:
+        # Catch di sicurezza per eccezioni non gestite
+        print("\n[Errore inatteso]:", e)
+        _pause_if_frozen()
+        sys.exit(1)

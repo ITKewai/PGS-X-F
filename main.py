@@ -13,9 +13,21 @@ import warnings as _warnings
 
 """
 STRUTTURE:
+- in: [AUTOSEL, TEACHSEL, CYCLESEL, STARTRESET, REMOTESEL, PINCHPRESS, x, x, x, DEBALNOTPRESS, CONSOLE1SEL, SINGLEMOVSEL, STARTIN, STOPIN, MACSTARTEDIN, HOLDTORUN, RTCOUPLED, RCLEFTSEL, PINCHPRESS, RCRIGHTSEL, x, x, MANSEL, TESTSEL, x, AUTOSTARTING, BPDISABLE1, BPDISABLE2, BPDISABLE3, BPDISABLE4, BPDISABLE5, BPDISABLE6, BPDISABLE7, BPDISABLE8, BPDISABLE9, BPDISABLE10, BPDISABLE11, BPDISABLE12, AUTOMODE, AUTOCYCLEMODE, AUTOSTEPMODE, SEMIAUTOMODE, TEACHMODE, MANMODE, x, CONSOLE2MODE, x, CHROLLMODE, SINGLEMOVMODE, MACHINESTERTED, x, PUMPONCALC, x, x, x, x, ALARMON, x, ALARMSTOP, MAINTON, RTFWDISABLED, RCLEFTMEM, x, RCRIGHTMEM, HOLDTORUNERROR, x, x, x, MICROSEL, x, QUALITYEND, AUTOSTARTBLINK, QUALITYGOOD, PARTEND, x, PARTBEGIN, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, EMGCYRESETBTN, x, x, REMOTESEL, x, x, x, x, HOLDTORUNRC, x, x, x, x, x, x, UNBALLEFT, UNBALRIGHT, x, LEFTSUPPINTERL, GREASELEVEL, GREASETR, x, HOLDTORUNRC2, x, x, x, x, RIGHTSUPPINTERL, x, x, x]
+    per il print:
+    AUTOSEL, TEACHSEL, CYCLESEL, REMOTESEL, CONSOLE2SEL, CHROLLSEL, CONSOLE1SEL, SINGMOV, MANSEL, TESTSEL, SEMIAUTOSEL, MICROSEL si trovano in config>main>selio
+    AUTOMODE, AUTOCYCLEMODE, AUTOSTEPMODE, SEMIAUTOMODE, TEACHMODE, MANMODE, CONSOLE1MODE, CONSOLE2MODE, REMOTEMODE, CHROLLMODE, SINGMOBMODE si trovano in config>main>modeio
+    DEBELNOTPRESS, MACSTERTEDIN, ROLLTILTBALANCED, STARTSENSORIN, STARTSENSOR2IN, AUTOSTARTING, AUTOSTARTBLINK, RTFWDISABLED, INTERVERTRESET, INVERTERALARM, INTERTEROVERLOAD, LEFTSUPPINTERL, RIGHTSUPPINTERL si trovano in config>main>statusio
+    STARTRESET, STARTIN, STOPIN, MAINTRESET, UNBALLEFT, UNBALRIGHT, TILTDISABLED si trovano in config>main>cmdio
+    MACHINESTARTED, ALARMON, ALARMSTOP, MAINTON, QUALITYEND, QUALITYGOOD, PARTEND, PARTBEGIN si trovano in config>main>rsmio
+    EMGCYRESETBTN, EMGCYPB, HOLDTORUN, HOLDTORUN2, HOLDTORUNRC, HOLDTORUNRC2, HOLDTORUNERROR si trovano in config>safety
+    PINCHPRESS, PRELOADUP, PRELOADPINCHDISAB si trovano in config>pinchpreload
+    RTCOUPLED si trova in config>rt
+    BPDISABLE* si trovano in config>bp
+    PUMPONCALC, GREASEALARMCALC, PUMPALARMCALC, GREASETR, GREASELEVEL si trovano in config>grease
+    RCV* (da 0 a 4, RCLEFTSEL, RCRIGHTSEL, RCLEFTMEM, RCRIGHTMEM si trovnano in config>radiocontrol
 - param:
     - pint: [COMMESSA,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x]
-
 - di: [NAME, BOOL_DEFAULT_VALUE, x, SIM, BOOL_SIM_VALUE, ADDRESS, CAMPO_1, CAMPO_2, x, UM, MEMTYPE, MEMIND, TIMEOUT, IN, x, x, x, x, x, EXPRTYPE,
      EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR,
      EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR,
@@ -24,19 +36,14 @@ STRUTTURE:
      EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR,
      EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR,
      EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR]
-
 (EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR) si attivano se EXPRTYPE != -1 se no non ci sono proprio
 - io:
-    - ai: [Free,0,0,0,0,-1,0,0,29,-1,-1,-1,-1,-1,55,77,22.222,0,33.333,4.44,-1]
     - ai: [NAME, BOOL_DEFAULT_VALUE, x, SIM, BOOL_SIM_VALUE, ADDRESS, CAMPO_1, CAMPO_2, NBYTES, UM, MEMTYPE, MEMIND, TIMEOUT, IN, DINTDEFAULTVALUE, DINTSIMVALUE, DEADBAND, x, TOTDELTAMAX, COEFFMULT, x]
     - ao: [NAME, BOOL_DEFAULT_VALUE, PROG, SIM, BOOL_SIM_VALUE, ADDRESS, CAMPO_1, CAMPO_2, NBYTES, UM, MEMTYPE, MEMIND, IN, AODUAL, DINTDEFAULTVALUE, DINTSIMVALUE, x, x, x, AOPRIORITY, x]
     - do: [NAME, BOOL_DEFAULT_VALUE, x, SIM, BOOL_SIM_VALUE, ADDRESS, CAMPO_1, CAMPO_2, x, UM, MEMTYPE, MEMIND, TIMEOUT, IN, x, x, x, x, x, x,x]
-
 - obj:
     - fb: [FB_TYPE, FB_MESURETYPE, RESETIND, ININD, FB_ERR_DEPRECATED, INFUNDERFLOW, SUPOVERFLOW, DEADBAND, RATIO, x, x]
     - input: [HOLDTORUNENAB,x,INPUT_TYPE,INPUT_MESURETYPE, ANA, DIGUP1, DIGDOWN1, K, DIGUP2, DIGDOWN2, K2, ACT, ENAB1, ENAB2, ENAB3, SUP, SEQ, VMIN, VMAX, VMIN2, VMAX2]
-    - output: [9,111,112,113,114,115,116,-1,-1,-1,117,118,119,120,121,122,123,124,125,126,127,128,129,130,143,144,131,137,132,138,133,139,134,140,135,141,136,142,145,151,146,152,147,153,148,154,149,155,150,156]
-    - output: [5,111,112,113,114,115,116,117,-1,-1,-1,-1,-1,-1,121,122,123,124,125,126,127,128,129,130,143,144,131,137,132,138,133,139,134,140,135,141,136,142,145,151,146,152,147,153,148,154,149,155,150,156]
     - output: [OUTPUT_TYPE, ANA1, ANA2, DIG1, DIG2, CC, RPM, TIMEOUTBRKADV,ADVDEFSIDE,FREE,ACT,ENAB1,ENAB2,ENAB3, SCALEMIN1, SCALEMAX1, SCALEMIN2, SCALEMAX2, SCALEMIN1H, SCALEMAX1H, SCALEMIN2H, SCALEMAX2H, VALMIN1, VALMAX1, VALMIN2, VALMAX2, VIN0, VOUT0, VIN1, VOUT1, VIN2, VOUT2, VIN3, VOUT3, VIN4, VOUT4, VIN5, VOUT5, V2IN0, V2OUT0, V2IN1, V2OUT1, V2IN2, V2OUT2, V2IN3, V2OUT3, V2IN4, V2OUT4, V2IN5, V2OUT5] 
         se OUTPUT_TYPE = ADV
         ANA1 = ADVIND
@@ -58,20 +65,6 @@ STRUTTURE:
         bool: [x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x]
         int: ["x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","SUP","INF","x","x","x","x","x","x","x","x","x","x","ALTFBDIG","HH","H","L","LL","SAFETYUP1","SAFETYUP2","SAFETYUP3","SAFETYUP4","SAFETYUP5","SAFETYUP6","H0","L0","x","x","x","x","x","x","x","x","SAFETYDOWN1","SAFETYDOWN2","SAFETYDOWN3","SAFETYDOWN4","SAFETYDOWN5","SAFETYDOWN6","x","x","x","DECOUPLE1AUTO","DECOUPLE2MAN","DECOUPLE3MAN","DECOUPLE4MAN","DECOUPLE5MAN","DECOUPLE6MAN","PS1","x","x","PS2","PS3","x","x","x","x","x","FREE70","FREE71","x","x","x","x","x","x","x","BPDISABLE1","BPDISABLE2","BPDISABLE3","BPDISABLE4","BPDISABLE5","BPDISABLE6","BPDISABLE7","BPDISABLE8","BPDISABLE9","BPDISABLE10","BPDISABLE11","BPDISABLE12","OPTPARAM1","OPTPARAM2","OPTPARAM3"]
         type: [x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x]
-    - in: [AUTOSEL, TEACHSEL, CYCLESEL, STARTRESET, REMOTESEL, PINCHPRESS, x, x, x, DEBALNOTPRESS, CONSOLE1SEL, SINGLEMOVSEL, STARTIN, STOPIN, MACSTARTEDIN, HOLDTORUN, RTCOUPLED, RCLEFTSEL, PINCHPRESS, RCRIGHTSEL, x, x, MANSEL, TESTSEL, x, AUTOSTARTING, BPDISABLE1, BPDISABLE2, BPDISABLE3, BPDISABLE4, BPDISABLE5, BPDISABLE6, BPDISABLE7, BPDISABLE8, BPDISABLE9, BPDISABLE10, BPDISABLE11, BPDISABLE12, AUTOMODE, AUTOCYCLEMODE, AUTOSTEPMODE, SEMIAUTOMODE, TEACHMODE, MANMODE, x, CONSOLE2MODE, x, CHROLLMODE, SINGLEMOVMODE, MACHINESTERTED, x, PUMPONCALC, x, x, x, x, ALARMON, x, ALARMSTOP, MAINTON, RTFWDISABLED, RCLEFTMEM, x, RCRIGHTMEM, HOLDTORUNERROR, x, x, x, MICROSEL, x, QUALITYEND, AUTOSTARTBLINK, QUALITYGOOD, PARTEND, x, PARTBEGIN, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, EMGCYRESETBTN, x, x, REMOTESEL, x, x, x, x, HOLDTORUNRC, x, x, x, x, x, x, UNBALLEFT, UNBALRIGHT, x, LEFTSUPPINTERL, GREASELEVEL, GREASETR, x, HOLDTORUNRC2, x, x, x, x, RIGHTSUPPINTERL, x, x, x]
-        per il print:
-        AUTOSEL, TEACHSEL, CYCLESEL, REMOTESEL, CONSOLE2SEL, CHROLLSEL, CONSOLE1SEL, SINGMOV, MANSEL, TESTSEL, SEMIAUTOSEL, MICROSEL si trovano in config>main>selio
-        AUTOMODE, AUTOCYCLEMODE, AUTOSTEPMODE, SEMIAUTOMODE, TEACHMODE, MANMODE, CONSOLE1MODE, CONSOLE2MODE, REMOTEMODE, CHROLLMODE, SINGMOBMODE si trovano in config>main>modeio
-        DEBELNOTPRESS, MACSTERTEDIN, ROLLTILTBALANCED, STARTSENSORIN, STARTSENSOR2IN, AUTOSTARTING, AUTOSTARTBLINK, RTFWDISABLED, INTERVERTRESET, INVERTERALARM, INTERTEROVERLOAD, LEFTSUPPINTERL, RIGHTSUPPINTERL si trovano in config>main>statusio
-        STARTRESET, STARTIN, STOPIN, MAINTRESET, UNBALLEFT, UNBALRIGHT, TILTDISABLED si trovano in config>main>cmdio
-        MACHINESTARTED, ALARMON, ALARMSTOP, MAINTON, QUALITYEND, QUALITYGOOD, PARTEND, PARTBEGIN si trovano in config>main>rsmio
-        EMGCYRESETBTN, EMGCYPB, HOLDTORUN, HOLDTORUN2, HOLDTORUNRC, HOLDTORUNRC2, HOLDTORUNERROR si trovano in config>safety
-        PINCHPRESS, PRELOADUP, PRELOADPINCHDISAB si trovano in config>pinchpreload
-        RTCOUPLED si trova in config>rt
-        BPDISABLE* si trovano in config>bp
-        PUMPONCALC, GREASEALARMCALC, PUMPALARMCALC, GREASETR, GREASELEVEL si trovano in config>grease
-        RCV* (da 0 a 4, RCLEFTSEL, RCRIGHTSEL, RCLEFTMEM, RCRIGHTMEM si trovnano in config>radiocontrol
-
 """
 
 '''
@@ -850,7 +843,8 @@ def search_mot_di_field_matches(mot_list: List[list], target_number: int) -> Lis
     return results
 
 
-def search_axis_int_di_field_matches(axis_int_lists: List[List[Any]], target_number: int) -> List[Tuple[int, List[str]]]:
+def search_axis_int_di_field_matches(axis_int_lists: List[List[Any]], target_number: int) -> List[
+    Tuple[int, List[str]]]:
     """
     Cerca in ciascun array 'axis.int' i campi etichettati (SUP, INF, ALTFBDIG, HH, H, L, LL,
     SAFETYUP1..6, H0, L0, INDMEM, SAFETYDOWN1..6, DECOUPLE1AUTO..6, FREE70, FREE71,
@@ -884,6 +878,7 @@ def _find_in_arrays(root: Any) -> List[List[Any]]:
     """Raccoglie tutte le liste associate alla chiave 'in' in obj."""
     return find_section(root, ['in']) or []
 
+
 def _is_mostly_ints(arr: List[Any]) -> bool:
     ints = 0
     for v in arr:
@@ -896,111 +891,140 @@ def _is_mostly_ints(arr: List[Any]) -> bool:
             pass
     return ints >= max(1, len(arr) // 2)
 
+
 def _is_mostly_strings(arr: List[Any]) -> bool:
     strings = sum(1 for v in arr if isinstance(v, str))
     return strings >= max(1, len(arr) // 2)
 
+
 # Mappa (grezza) label -> "origine" per le stampe
 _IN_ORIGIN_SETS = {
     "config>main>selio": {
-        "AUTOSEL","TEACHSEL","CYCLESEL","REMOTESEL","CONSOLE2SEL","CHROLLSEL",
-        "CONSOLE1SEL","SINGLEMOVSEL","MANSEL","TESTSEL","SEMIAUTOSEL","MICROSEL"
+        "AUTOSEL", "TEACHSEL", "CYCLESEL", "REMOTESEL", "CONSOLE2SEL", "CHROLLSEL",
+        "CONSOLE1SEL", "SINGLEMOVSEL", "MANSEL", "TESTSEL", "SEMIAUTOSEL", "MICROSEL"
     },
     "config>main>modeio": {
-        "AUTOMODE","AUTOCYCLEMODE","AUTOSTEPMODE","SEMIAUTOMODE","TEACHMODE","MANMODE",
-        "CONSOLE1MODE","CONSOLE2MODE","REMOTEMODE","CHROLLMODE","SINGMOBMODE","SINGLEMOVMODE"
+        "AUTOMODE", "AUTOCYCLEMODE", "AUTOSTEPMODE", "SEMIAUTOMODE", "TEACHMODE", "MANMODE",
+        "CONSOLE1MODE", "CONSOLE2MODE", "REMOTEMODE", "CHROLLMODE", "SINGMOBMODE", "SINGLEMOVMODE"
     },
     "config>main>statusio": {
-        "DEBALNOTPRESS","MACSTERTEDIN","ROLLTILTBALANCED","STARTSENSORIN","STARTSENSOR2IN",
-        "AUTOSTARTING","AUTOSTARTBLINK","RTFWDISABLED","INVERTERRESET","INVERTERALARM",
-        "INVERTEROVERLOAD","LEFTSUPPINTERL","RIGHTSUPPINTERL","MACHINESTERTED"
+        "DEBALNOTPRESS", "MACSTERTEDIN", "ROLLTILTBALANCED", "STARTSENSORIN", "STARTSENSOR2IN",
+        "AUTOSTARTING", "AUTOSTARTBLINK", "RTFWDISABLED", "INVERTERRESET", "INVERTERALARM",
+        "INVERTEROVERLOAD", "LEFTSUPPINTERL", "RIGHTSUPPINTERL", "MACHINESTERTED"
     },
     "config>main>cmdio": {
-        "STARTRESET","STARTIN","STOPIN","MAINTRESET","UNBALLEFT","UNBALRIGHT","TILTDISABLED"
+        "STARTRESET", "STARTIN", "STOPIN", "MAINTRESET", "UNBALLEFT", "UNBALRIGHT", "TILTDISABLED"
     },
     "config>main>rsmio": {
-        "MACHINESTARTED","ALARMON","ALARMSTOP","MAINTON","QUALITYEND","QUALITYGOOD","PARTEND","PARTBEGIN"
+        "MACHINESTARTED", "ALARMON", "ALARMSTOP", "MAINTON", "QUALITYEND", "QUALITYGOOD", "PARTEND", "PARTBEGIN"
     },
     "config>safety": {
-        "EMGCYRESETBTN","EMGCYPB","HOLDTORUN","HOLDTORUN2","HOLDTORUNRC","HOLDTORUNRC2","HOLDTORUNERROR"
+        "EMGCYRESETBTN", "EMGCYPB", "HOLDTORUN", "HOLDTORUN2", "HOLDTORUNRC", "HOLDTORUNRC2", "HOLDTORUNERROR"
     },
     "config>pinchpreload": {
-        "PINCHPRESS","PRELOADUP","PRELOADPINCHDISAB"
+        "PINCHPRESS", "PRELOADUP", "PRELOADPINCHDISAB"
     },
     "config>rt": {"RTCOUPLED"},
     "config>grease": {
-        "PUMPONCALC","GREASEALARMCALC","PUMPALARMCALC","GREASETR","GREASELEVEL"
+        "PUMPONCALC", "GREASEALARMCALC", "PUMPALARMCALC", "GREASETR", "GREASELEVEL"
     },
+    "config>radiocontrol": {'RCV0', 'RCV1', 'RCV2', 'RCV3', 'RCV4','RCV5', "RCLEFTSEL", "RCRIGHTSEL", "RCLEFTMEM", "RCRIGHTMEM"},
+    "config>bp": {"BPDISABLE1", "BPDISABLE2", "BPDISABLE3", "BPDISABLE4", "BPDISABLE5", "BPDISABLE6", "BPDISABLE7", "BPDISABLE8", "BPDISABLE9", "BPDISABLE10", "BPDISABLE11", "BPDISABLE12"}
 }
 
-def _infer_in_origin(label: str) -> Optional[str]:
-    if not isinstance(label, str):
-        return None
-    # pattern-based
-    if label.startswith("BPDISABLE"):
-        return "config>bp"
-    if label.startswith("RCV") or label in {"RCLEFTSEL","RCRIGHTSEL","RCLEFTMEM","RCRIGHTMEM"}:
-        return "config>radiocontrol"
-    for origin, names in _IN_ORIGIN_SETS.items():
-        if label in names:
-            return origin
+# Mappatura per indice del blocco "- in:" (etichette nominali)
+IN_INDEX_LABELS = [
+    "AUTOSEL", "TEACHSEL", "CYCLESEL", "STARTRESET", "REMOTESEL", "PINCHPRESS", "x", "x", "x",
+    "DEBALNOTPRESS", "CONSOLE1SEL", "SINGLEMOVSEL", "STARTIN", "STOPIN", "MACSTARTEDIN",
+    "HOLDTORUN", "RTCOUPLED", "RCLEFTSEL", "PINCHPRESS", "RCRIGHTSEL", "x", "x", "MANSEL",
+    "TESTSEL", "x", "AUTOSTARTING", "BPDISABLE1", "BPDISABLE2", "BPDISABLE3", "BPDISABLE4",
+    "BPDISABLE5", "BPDISABLE6", "BPDISABLE7", "BPDISABLE8", "BPDISABLE9", "BPDISABLE10",
+    "BPDISABLE11", "BPDISABLE12", "AUTOMODE", "AUTOCYCLEMODE", "AUTOSTEPMODE", "SEMIAUTOMODE",
+    "TEACHMODE", "MANMODE", "x", "CONSOLE2MODE", "x", "CHROLLMODE", "SINGLEMOVMODE",
+    "MACHINESTERTED", "x", "PUMPONCALC", "x", "x", "x", "x", "ALARMON", "x", "ALARMSTOP",
+    "MAINTON", "RTFWDISABLED", "RCLEFTMEM", "x", "RCRIGHTMEM", "HOLDTORUNERROR", "x", "x", "x",
+    "MICROSEL", "x", "QUALITYEND", "AUTOSTARTBLINK", "QUALITYGOOD", "PARTEND", "x", "PARTBEGIN",
+    "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "RCV0", "RCV1",
+    "RCV2", "RCV3", "RCV4", "x", "x", "x", "x", "x", "x", "x", "x", "x", "EMGCYRESETBTN", "x", "x",
+    "REMOTESEL", "x", "x", "x", "x", "HOLDTORUNRC", "x", "x", "x", "x", "x", "x", "UNBALLEFT",
+    "UNBALRIGHT", "x", "LEFTSUPPINTERL", "GREASELEVEL", "GREASETR", "x", "HOLDTORUNRC2", "x", "x",
+    "x", "x", "RIGHTSUPPINTERL", "x", "x", "x"
+]
+
+
+def _label_from_in_index(idx: int) -> Optional[str]:
+    if 0 <= idx < len(IN_INDEX_LABELS):
+        lab = IN_INDEX_LABELS[idx]
+        if isinstance(lab, str) and lab.strip().lower() != 'x' and lab.strip() != '':
+            return lab.strip()
     return None
 
-def _pair_in_arrays(in_arrays: List[List[Any]]) -> List[Tuple[int, Optional[List[Any]], Optional[List[Any]]]]:
-    """
-    Restituisce coppie (pair_id, numerica, labels) tentando di associare
-    una lista 'numerica' (prevalentemente int) ad una 'labels' (prevalentemente str) di uguale lunghezza.
-    Se esiste solo una lista, verrà restituita come numerica o labels a seconda del contenuto.
-    """
-    numeric = []
-    labels = []
-    for i, arr in enumerate(in_arrays):
-        if _is_mostly_ints(arr):
-            numeric.append((i, arr))
-        elif _is_mostly_strings(arr):
-            labels.append((i, arr))
+def _origin_from_in_index(idx: int) -> Optional[str]:
+    lab = _label_from_in_index(idx)
+    return _infer_in_origin(lab) if lab else None
 
-    used_lab = set()
-    pairs = []
+
+def _normalize_label(s: str) -> str:
+    # Uppercase e rimuove tutto ciò che non è A-Z/0-9 per confronti robusti
+    return re.sub(r'[^A-Z0-9]', '', str(s).strip().upper())
+
+
+def _infer_in_origin(label: str) -> Optional[str]:
+    if not isinstance(label, str) or not label.strip():
+        return None
+    L = _normalize_label(label)
+
+    # matching contro l'elenco noto, ma normalizzato
+    for origin, names in _IN_ORIGIN_SETS.items():
+        for n in names:
+            if _normalize_label(n) == L:
+                return origin
+    return None
+
+
+
+def _pair_in_arrays(in_arrays: List[List[Any]]) -> List[Tuple[int, Optional[List[Any]], Optional[List[Any]]]]:
+    numeric = [(i, a) for i, a in enumerate(in_arrays) if _is_mostly_ints(a)]
+    labels  = [(i, a) for i, a in enumerate(in_arrays) if _is_mostly_strings(a)]
+
+    pairs: List[Tuple[int, Optional[List[Any]], Optional[List[Any]]]] = []
+    used = set()
     pid = 0
 
-    # abbina per stessa lunghezza
     for _, n in numeric:
-        match = None
+        # scegli la labels-list con differenza di lunghezza minima (preferendo quella più lunga a parità)
+        best_j = None
+        best_la = None
+        best_key = None  # (diff, -len)
         for j, (li, la) in enumerate(labels):
-            if j in used_lab:
+            if j in used:
                 continue
-            if len(la) == len(n):
-                match = (j, la)
-                break
-        if match:
-            used_lab.add(match[0])
-            pairs.append((pid, n, match[1]))
+            diff = abs(len(la) - len(n))
+            key = (diff, -len(la))
+            if best_key is None or key < best_key:
+                best_key = key
+                best_j = j
+                best_la = la
+        if best_la is not None:
+            used.add(best_j)
+            pairs.append((pid, n, best_la))
         else:
             pairs.append((pid, n, None))
         pid += 1
 
-    # eventuali labels rimaste senza numerici
     for j, (li, la) in enumerate(labels):
-        if j not in used_lab:
+        if j not in used:
             pairs.append((pid, None, la))
-            pid += 1
-
-    # nessuna classificazione: passa “as-is” in singoli
-    if not pairs and in_arrays:
-        for arr in in_arrays:
-            if _is_mostly_ints(arr):
-                pairs.append((pid, arr, None))
-            else:
-                pairs.append((pid, None, arr))
             pid += 1
 
     return pairs
 
 def search_in_field_matches(obj_node: Any, target_number: int) -> List[Tuple[int, int, Optional[str], Optional[str]]]:
     """
-    Cerca il numero 'target_number' all'interno degli array '- in:'.
-    Ritorna una lista di tuple: (pair_id, index, label_opzionale, origine_opzionale)
+    Cerca il numero 'target_number' all'interno degli array '- in:' dovunque nel documento.
+    Preferisce l'etichetta dalla lista labels abbinata; se mancante/insufficiente/'x',
+    usa la mappatura per indice (IN_INDEX_LABELS) per ricavare label e origine.
+    Ritorna: (pair_id, index, label_opzionale, origine_opzionale)
     """
     results: List[Tuple[int, int, Optional[str], Optional[str]]] = []
     in_arrays = _find_in_arrays(obj_node)
@@ -1010,17 +1034,36 @@ def search_in_field_matches(obj_node: Any, target_number: int) -> List[Tuple[int
     pairs = _pair_in_arrays(in_arrays)
 
     for pid, num_arr, lab_arr in pairs:
-        if num_arr:
-            for idx, v in enumerate(num_arr):
-                try:
-                    if int(v) == target_number:
-                        label = lab_arr[idx] if (lab_arr and idx < len(lab_arr)) else None
-                        origin = _infer_in_origin(label) if label else None
-                        results.append((pid, idx, label, origin))
-                except Exception:
-                    continue
-        # Se non ho array numerico ma SOLO labels, non posso cercare il numero
+        if not num_arr:
+            continue
+        for idx, v in enumerate(num_arr):
+            # confronto numerico robusto
+            try:
+                val = int(str(v).strip())
+            except Exception:
+                continue
+            if val != target_number:
+                continue
+
+            # 1) prova a prendere la label dalla lista di etichette abbinata
+            raw_label = lab_arr[idx] if (lab_arr and idx < len(lab_arr)) else None
+            label = None
+            if isinstance(raw_label, str):
+                s = raw_label.strip()
+                if s and s.lower() != 'x':
+                    label = s
+
+            # 2) se mancante/non utile, fallback alla mappa per indice
+            if not label:
+                label = _label_from_in_index(idx)
+
+            # 3) calcola l'origine
+            origin = _infer_in_origin(label) if label else _origin_from_in_index(idx)
+
+            results.append((pid, idx, label, origin))
+
     return results
+
 
 
 def _build_download_url(addr: str) -> str:
@@ -1095,7 +1138,7 @@ def choose_and_prepare_config() -> Path:
             print("Indirizzo non valido.")
             sys.exit(1)
         url = _build_download_url(base)
-        dest = base_dir / "config.yaml"   # <<-- salva accanto all'eseguibile
+        dest = base_dir / "config.yaml"  # <<-- salva accanto all'eseguibile
         try:
             download_file(url, dest)
         except PermissionError:
@@ -1110,7 +1153,7 @@ def choose_and_prepare_config() -> Path:
             sys.exit(1)
         return dest
     elif choice == 1:
-        path = base_dir / "config.yaml"   # <<-- cerca accanto all'eseguibile
+        path = base_dir / "config.yaml"  # <<-- cerca accanto all'eseguibile
         if not path.exists():
             # opzionale: prova anche nella working dir se diverso
             wd_path = Path.cwd() / "config.yaml"
@@ -1224,8 +1267,8 @@ def main():
             axis_matches = search_axis_int_di_field_matches(axis_int_lists, target_number)
             for axis_idx, fields in axis_matches:
                 print(f"AXIS>{axis_idx} - match (-axis.int) - fields: {', '.join(fields)}")
-        # ricerca nei campi -in
-        in_matches = search_in_field_matches(data.get('obj'), target_number)
+        # ricerca nei campi -in (sta in config>main, non sotto obj)
+        in_matches = search_in_field_matches(data, target_number)
         for pid, idx, label, origin in in_matches:
             if label and origin:
                 print(f"IN>{pid}[{idx}] - match (-in) - label: {label} ({origin})")

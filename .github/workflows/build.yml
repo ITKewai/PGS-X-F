@@ -27,6 +27,10 @@ jobs:
           )
           pip install pyinstaller
 
+      - name: Set UTF-8 for console
+        run: chcp 65001
+        shell: cmd
+
       - name: Generate version file
         run: |
           python make_version_file.py

@@ -1,0 +1,38 @@
+name: Build EXE
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          if exist requirements.txt (
+            pip install -r requirements.txt
+          )
+          pip install pyinstaller
+
+      - name: Build with PyInstaller
+        run: |
+          pyinstaller --onefile main.py --name PSG-X-F
+          # ↑ cambia "main.py" con il tuo script principale
+
+      - name: Upload EXE artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: exe-build
+          path: dist/*.exe

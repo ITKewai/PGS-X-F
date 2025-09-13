@@ -27,10 +27,13 @@ jobs:
           )
           pip install pyinstaller
 
-      - name: Build with PyInstaller
+      - name: Generate version file
         run: |
-          pyinstaller --onefile --icon=logo.ico main.py --name PSG-X-FindIndex
-          # ↑ cambia "main.py" con il tuo script principale
+          python make_version_file.py
+
+      - name: Build with PyInstaller (.spec)
+        run: |
+          pyinstaller main.spec
 
       - name: Upload EXE artifact
         uses: actions/upload-artifact@v4

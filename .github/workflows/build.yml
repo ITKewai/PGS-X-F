@@ -28,7 +28,7 @@ jobs:
 
       - name: Build with PyInstaller
         run: |
-          pyinstaller --onefile main.py --name PSG-X-F
+          pyinstaller --onefile --icon=logo.ico main.py --name PSG-X-F
           # ↑ cambia "main.py" con il tuo script principale
 
       - name: Upload EXE artifact

@@ -5,11 +5,16 @@ import sys
 from typing import Any, List, Tuple, Optional, Dict
 from pathlib import Path
 import yaml  # PyYAML
-
-# Dipendenze per download non protetto
 import requests
-from urllib3.exceptions import InsecureRequestWarning  # type: ignore
+from urllib3.exceptions import InsecureRequestWarning
 import warnings as _warnings
+
+__version__ = "1.0.0"
+__author__ = "ITKewai"
+__company__ = ""
+__product__ = "PSG-X-FindIndex"
+__copyright__ = f"Autore: {__author__} © 2025 {__company__}"
+
 
 """
 STRUTTURE:

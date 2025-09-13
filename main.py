@@ -885,10 +885,15 @@ def choose_and_prepare_config() -> Path:
     """
     script_dir = Path(__file__).resolve().parent
     print("Selezione sorgente file 'config.yaml'")
-    print("  [L] Usa file locale (stessa cartella dello script)")
-    print("  [D] Scarica da internet (connessione NON protetta)")
-    # choice = input("Scelta [L/D]: ").strip().upper()
-    choice = 'l'  # debug
+    print("  [1] Usa file locale (stessa cartella dello script)")
+    print("  [2] Scarica da internet e sovrascrivi il file locale (connessione NON protetta)")
+    choice = input("Scelta: ").strip().upper()
+
+    try:
+        choice = int(choice)
+    except ValueError:
+        print(f"Opzione non valida")
+        sys.exit(1)
 
     if choice == 'D':
         base = input("Inserisci indirizzo/IP (es: 10.3.73.177 oppure https://10.3.73.177): ").strip()

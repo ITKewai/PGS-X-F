@@ -39,5 +39,5 @@ content = f"""VSVersionInfo(
 )"""
 
 Path("version_info.txt").write_text(content, encoding="utf-8")
-print("✅ Creato version_info.txt con version =", main.__version__.encode("utf-8", errors="ignore").decode("utf-8"))
+print("Creato version_info.txt con version =", main.__version__)
 

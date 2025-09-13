@@ -13,11 +13,16 @@ import warnings as _warnings
 
 """
 STRUTTURE:
-- in: [AUTOSEL, TEACHSEL, CYCLESEL, STARTRESET, REMOTESEL, PINCHPRESS, x, x, x, DEBALNOTPRESS, CONSOLE1SEL, SINGLEMOVSEL, STARTIN, STOPIN, MACSTARTEDIN, HOLDTORUN, RTCOUPLED, RCLEFTSEL, PINCHPRESS, RCRIGHTSEL, x, x, MANSEL, TESTSEL, x, AUTOSTARTING, BPDISABLE1, BPDISABLE2, BPDISABLE3, BPDISABLE4, BPDISABLE5, BPDISABLE6, BPDISABLE7, BPDISABLE8, BPDISABLE9, BPDISABLE10, BPDISABLE11, BPDISABLE12, AUTOMODE, AUTOCYCLEMODE, AUTOSTEPMODE, SEMIAUTOMODE, TEACHMODE, MANMODE, x, CONSOLE2MODE, x, CHROLLMODE, SINGLEMOVMODE, MACHINESTERTED, x, PUMPONCALC, x, x, x, x, ALARMON, x, ALARMSTOP, MAINTON, RTFWDISABLED, RCLEFTMEM, x, RCRIGHTMEM, HOLDTORUNERROR, x, x, x, MICROSEL, x, QUALITYEND, AUTOSTARTBLINK, QUALITYGOOD, PARTEND, x, PARTBEGIN, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, EMGCYRESETBTN, x, x, REMOTESEL, x, x, x, x, HOLDTORUNRC, x, x, x, x, x, x, UNBALLEFT, UNBALRIGHT, x, LEFTSUPPINTERL, GREASELEVEL, GREASETR, x, HOLDTORUNRC2, x, x, x, x, RIGHTSUPPINTERL, x, x, x]
+- header: [...]
+- ifm:
+    - card: [TYPE, DITHERFREQ, DITHERVAL]
+    - exc: [EXCTYPE, EXCDITHERFREQ, EXCDITHERVAL]
+- axind: [...]
+- in: [AUTOSEL, TEACHSEL, CYCLESEL, STARTRESET, REMOTESEL, EMGCYPB, CONSOLE2SEL, CHROLLSEL, x, DEBALNOTPRESS, CONSOLE1SEL, SINGLEMOVSEL, STARTIN, STOPIN, MACSTARTEDIN, HOLDTORUN, RTCOUPLED, RCLEFTSEL, PINCHPRESS, RCRIGHTSEL, STARTSENSORIN, MAINTRESET, MANSEL, TESTSEL, SEMIAUTOSEL, HOLDTORUN2, BPDISABLE1, BPDISABLE2, BPDISABLE3, BPDISABLE4, BPDISABLE5, BPDISABLE6, BPDISABLE7, BPDISABLE8, BPDISABLE9, BPDISABLE10, BPDISABLE11, BPDISABLE12, AUTOMODE, AUTOCYCLEMODE, AUTOSTEPMODE, SEMIAUTOMODE, TEACHMODE, MANMODE, CONSOLE1MODE, CONSOLE2MODE, REMOTEMODE, CHROLLMODE, SINGLEMOVMODE, MACHINESTERTED, x, PUMPONCALC, GREASEALARMCALC, PUMPALARMCALC, x, x, ALARMON, x, ALARMSTOP, MAINTON, RTFWDISABLED, RCLEFTMEM, x, RCRIGHTMEM, HOLDTORUNERROR, x, x, x, MICROSEL, x, QUALITYEND, AUTOSTARTBLINK, QUALITYGOOD, PARTEND, x, PARTBEGIN, x, TILTDISABLED, x, x, x, x, x, x, x, x, x, x, x, x, x, RCV0, RCV1, RCV2, RCV3, RCV4, x, x, x, x, x, x, x, x, x, EMGCYRESETBTN, x, x, INVERTERRESET, INVERTERALARM, AUTOSTARTING, x, x, HOLDTORUNRC, PRELOADUP, PRELOADPINCHDISAB, x, x, x, x, UNBALLEFT, UNBALRIGHT, INVERTEROVERLOAD, LEFTSUPPINTERL, GREASELEVEL, GREASETR, STARTSENSOR2IN, HOLDTORUNRC2, ROLLTILTBALANCED, x, x, x, RIGHTSUPPINTERL, x, x, x]
     per il print:
-    AUTOSEL, TEACHSEL, CYCLESEL, REMOTESEL, CONSOLE2SEL, CHROLLSEL, CONSOLE1SEL, SINGMOV, MANSEL, TESTSEL, SEMIAUTOSEL, MICROSEL si trovano in config>main>selio
-    AUTOMODE, AUTOCYCLEMODE, AUTOSTEPMODE, SEMIAUTOMODE, TEACHMODE, MANMODE, CONSOLE1MODE, CONSOLE2MODE, REMOTEMODE, CHROLLMODE, SINGMOBMODE si trovano in config>main>modeio
-    DEBELNOTPRESS, MACSTERTEDIN, ROLLTILTBALANCED, STARTSENSORIN, STARTSENSOR2IN, AUTOSTARTING, AUTOSTARTBLINK, RTFWDISABLED, INTERVERTRESET, INVERTERALARM, INTERTEROVERLOAD, LEFTSUPPINTERL, RIGHTSUPPINTERL si trovano in config>main>statusio
+    AUTOSEL, TEACHSEL, CYCLESEL, REMOTESEL, CONSOLE2SEL, CHROLLSEL, CONSOLE1SEL, SINGLEMOVSEL, MANSEL, TESTSEL, SEMIAUTOSEL, MICROSEL si trovano in config>main>selio
+    AUTOMODE, AUTOCYCLEMODE, AUTOSTEPMODE, SEMIAUTOMODE, TEACHMODE, MANMODE, CONSOLE1MODE, CONSOLE2MODE, REMOTEMODE, CHROLLMODE, SINGLEMOVMODE si trovano in config>main>modeio
+    DEBALNOTPRESS, MACSTARTEDIN/MACHINESTERTED, ROLLTILTBALANCED, STARTSENSORIN, STARTSENSOR2IN, AUTOSTARTING, AUTOSTARTBLINK, RTFWDISABLED, INVERTERRESET, INVERTERALARM, INVERTEROVERLOAD, LEFTSUPPINTERL, RIGHTSUPPINTERL si trovano in config>main>statusio
     STARTRESET, STARTIN, STOPIN, MAINTRESET, UNBALLEFT, UNBALRIGHT, TILTDISABLED si trovano in config>main>cmdio
     MACHINESTARTED, ALARMON, ALARMSTOP, MAINTON, QUALITYEND, QUALITYGOOD, PARTEND, PARTBEGIN si trovano in config>main>rsmio
     EMGCYRESETBTN, EMGCYPB, HOLDTORUN, HOLDTORUN2, HOLDTORUNRC, HOLDTORUNRC2, HOLDTORUNERROR si trovano in config>safety
@@ -25,25 +30,28 @@ STRUTTURE:
     RTCOUPLED si trova in config>rt
     BPDISABLE* si trovano in config>bp
     PUMPONCALC, GREASEALARMCALC, PUMPALARMCALC, GREASETR, GREASELEVEL si trovano in config>grease
-    RCV* (da 0 a 4, RCLEFTSEL, RCRIGHTSEL, RCLEFTMEM, RCRIGHTMEM si trovnano in config>radiocontrol
+    RCV* (0..4), RCLEFTSEL, RCRIGHTSEL, RCLEFTMEM, RCRIGHTMEM si trovano in config>radiocontrol
+- out: [...]
 - param:
+    - pstring: [MODEL, COSTUMER,x,x]
+    - pbool: [...]
     - pint: [COMMESSA,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x]
-- di: [NAME, BOOL_DEFAULT_VALUE, x, SIM, BOOL_SIM_VALUE, ADDRESS, CAMPO_1, CAMPO_2, x, UM, MEMTYPE, MEMIND, TIMEOUT, IN, x, x, x, x, x, EXPRTYPE,
-     EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR,
-     EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR,
-     EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR,
-     EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR,
-     EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR,
-     EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR,
-     EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR]
-(EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR) si attivano se EXPRTYPE != -1 se no non ci sono proprio
+    - preal: [...]
+    - ptype: [...]
 - io:
+    - di: [NAME, BOOL_DEFAULT_VALUE, x, SIM, BOOL_SIM_VALUE, ADDRESS, CAMPO_1, CAMPO_2, x, UM, MEMTYPE, MEMIND, TIMEOUT, IN, x, x, x, x, x, EXPRTYPE, EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR, EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR, EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR, EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR, EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR, EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR, EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR]
+        (EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR) si attivano se EXPRTYPE != -1 se no non ci sono proprio
     - ai: [NAME, BOOL_DEFAULT_VALUE, x, SIM, BOOL_SIM_VALUE, ADDRESS, CAMPO_1, CAMPO_2, NBYTES, UM, MEMTYPE, MEMIND, TIMEOUT, IN, DINTDEFAULTVALUE, DINTSIMVALUE, DEADBAND, x, TOTDELTAMAX, COEFFMULT, x]
     - ao: [NAME, BOOL_DEFAULT_VALUE, PROG, SIM, BOOL_SIM_VALUE, ADDRESS, CAMPO_1, CAMPO_2, NBYTES, UM, MEMTYPE, MEMIND, IN, AODUAL, DINTDEFAULTVALUE, DINTSIMVALUE, x, x, x, AOPRIORITY, x]
     - do: [NAME, BOOL_DEFAULT_VALUE, x, SIM, BOOL_SIM_VALUE, ADDRESS, CAMPO_1, CAMPO_2, x, UM, MEMTYPE, MEMIND, TIMEOUT, IN, x, x, x, x, x, x,x]
+    - ri: [...]
 - obj:
-    - fb: [FB_TYPE, FB_MESURETYPE, RESETIND, ININD, FB_ERR_DEPRECATED, INFUNDERFLOW, SUPOVERFLOW, DEADBAND, RATIO, x, x]
+    - axis: [NAME]
+        bool: [x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x]
+        int: ["x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","SUP","INF","x","x","x","x","x","x","x","x","x","x","ALTFBDIG","HH","H","L","LL","SAFETYUP1","SAFETYUP2","SAFETYUP3","SAFETYUP4","SAFETYUP5","SAFETYUP6","H0","L0","x","x","x","x","x","x","x","x","SAFETYDOWN1","SAFETYDOWN2","SAFETYDOWN3","SAFETYDOWN4","SAFETYDOWN5","SAFETYDOWN6","x","x","x","DECOUPLE1AUTO","DECOUPLE2MAN","DECOUPLE3MAN","DECOUPLE4MAN","DECOUPLE5MAN","DECOUPLE6MAN","PS1","x","x","PS2","PS3","x","x","x","x","x","FREE70","FREE71","x","x","x","x","x","x","x","BPDISABLE1","BPDISABLE2","BPDISABLE3","BPDISABLE4","BPDISABLE5","BPDISABLE6","BPDISABLE7","BPDISABLE8","BPDISABLE9","BPDISABLE10","BPDISABLE11","BPDISABLE12","OPTPARAM1","OPTPARAM2","OPTPARAM3"]
+        type: [x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x]
     - input: [HOLDTORUNENAB,x,INPUT_TYPE,INPUT_MESURETYPE, ANA, DIGUP1, DIGDOWN1, K, DIGUP2, DIGDOWN2, K2, ACT, ENAB1, ENAB2, ENAB3, SUP, SEQ, VMIN, VMAX, VMIN2, VMAX2]
+    - fb: [FB_TYPE, FB_MESURETYPE, RESETIND, ININD, FB_ERR_DEPRECATED, INFUNDERFLOW, SUPOVERFLOW, DEADBAND, RATIO, x, x]
     - output: [OUTPUT_TYPE, ANA1, ANA2, DIG1, DIG2, CC, RPM, TIMEOUTBRKADV,ADVDEFSIDE,FREE,ACT,ENAB1,ENAB2,ENAB3, SCALEMIN1, SCALEMAX1, SCALEMIN2, SCALEMAX2, SCALEMIN1H, SCALEMAX1H, SCALEMIN2H, SCALEMAX2H, VALMIN1, VALMAX1, VALMIN2, VALMAX2, VIN0, VOUT0, VIN1, VOUT1, VIN2, VOUT2, VIN3, VOUT3, VIN4, VOUT4, VIN5, VOUT5, V2IN0, V2OUT0, V2IN1, V2OUT1, V2IN2, V2OUT2, V2IN3, V2OUT3, V2IN4, V2OUT4, V2IN5, V2OUT5] 
         se OUTPUT_TYPE = ADV
         ANA1 = ADVIND
@@ -61,10 +69,8 @@ STRUTTURE:
         ANA1 = DIG1ADD
         ANA2 = DIG2ADD
     - mot: [CONFIG, SELECTABLE, SEQ, OPT, DEFAULT, LSSTOP,LS2START, TR, CMD, STAT, TIMEOUT, CMD1, CMD2, CMD3, TIMEOUT2, MOT_TYPE, TIMEOUTBTN, TR2, STARTING]
-    - axis: [NAME]
-        bool: [x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x]
-        int: ["x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","SUP","INF","x","x","x","x","x","x","x","x","x","x","ALTFBDIG","HH","H","L","LL","SAFETYUP1","SAFETYUP2","SAFETYUP3","SAFETYUP4","SAFETYUP5","SAFETYUP6","H0","L0","x","x","x","x","x","x","x","x","SAFETYDOWN1","SAFETYDOWN2","SAFETYDOWN3","SAFETYDOWN4","SAFETYDOWN5","SAFETYDOWN6","x","x","x","DECOUPLE1AUTO","DECOUPLE2MAN","DECOUPLE3MAN","DECOUPLE4MAN","DECOUPLE5MAN","DECOUPLE6MAN","PS1","x","x","PS2","PS3","x","x","x","x","x","FREE70","FREE71","x","x","x","x","x","x","x","BPDISABLE1","BPDISABLE2","BPDISABLE3","BPDISABLE4","BPDISABLE5","BPDISABLE6","BPDISABLE7","BPDISABLE8","BPDISABLE9","BPDISABLE10","BPDISABLE11","BPDISABLE12","OPTPARAM1","OPTPARAM2","OPTPARAM3"]
-        type: [x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x]
+    - alarm: [NAME,CONFIG,INVOUT,MODE,IN,OUT,COD,ENAB,DISAB,REQACK,ACK,TIMEOUT, FREE]
+    - maint [...] TODO: ci sono in e out da cercare poi
 """
 
 '''
@@ -934,21 +940,23 @@ _IN_ORIGIN_SETS = {
 
 # Mappatura per indice del blocco "- in:" (etichette nominali)
 IN_INDEX_LABELS = [
-    "AUTOSEL", "TEACHSEL", "CYCLESEL", "STARTRESET", "REMOTESEL", "PINCHPRESS", "x", "x", "x",
+    "AUTOSEL", "TEACHSEL", "CYCLESEL", "STARTRESET", "REMOTESEL", "EMGCYPB", "CONSOLE2SEL", "CHROLLSEL", "x",
     "DEBALNOTPRESS", "CONSOLE1SEL", "SINGLEMOVSEL", "STARTIN", "STOPIN", "MACSTARTEDIN",
-    "HOLDTORUN", "RTCOUPLED", "RCLEFTSEL", "PINCHPRESS", "RCRIGHTSEL", "x", "x", "MANSEL",
-    "TESTSEL", "x", "AUTOSTARTING", "BPDISABLE1", "BPDISABLE2", "BPDISABLE3", "BPDISABLE4",
+    "HOLDTORUN", "RTCOUPLED", "RCLEFTSEL", "PINCHPRESS", "RCRIGHTSEL",
+    "STARTSENSORIN", "MAINTRESET", "MANSEL", "TESTSEL", "SEMIAUTOSEL", "HOLDTORUN2",
+    "BPDISABLE1", "BPDISABLE2", "BPDISABLE3", "BPDISABLE4",
     "BPDISABLE5", "BPDISABLE6", "BPDISABLE7", "BPDISABLE8", "BPDISABLE9", "BPDISABLE10",
     "BPDISABLE11", "BPDISABLE12", "AUTOMODE", "AUTOCYCLEMODE", "AUTOSTEPMODE", "SEMIAUTOMODE",
-    "TEACHMODE", "MANMODE", "x", "CONSOLE2MODE", "x", "CHROLLMODE", "SINGLEMOVMODE",
-    "MACHINESTERTED", "x", "PUMPONCALC", "x", "x", "x", "x", "ALARMON", "x", "ALARMSTOP",
+    "TEACHMODE", "MANMODE", "CONSOLE1MODE", "CONSOLE2MODE", "REMOTEMODE", "CHROLLMODE", "SINGLEMOVMODE",
+    "MACHINESTERTED", "x", "PUMPONCALC", "GREASEALARMCALC", "PUMPALARMCALC", "x", "x", "ALARMON", "x", "ALARMSTOP",
     "MAINTON", "RTFWDISABLED", "RCLEFTMEM", "x", "RCRIGHTMEM", "HOLDTORUNERROR", "x", "x", "x",
     "MICROSEL", "x", "QUALITYEND", "AUTOSTARTBLINK", "QUALITYGOOD", "PARTEND", "x", "PARTBEGIN",
-    "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "RCV0", "RCV1",
-    "RCV2", "RCV3", "RCV4", "x", "x", "x", "x", "x", "x", "x", "x", "x", "EMGCYRESETBTN", "x", "x",
-    "REMOTESEL", "x", "x", "x", "x", "HOLDTORUNRC", "x", "x", "x", "x", "x", "x", "UNBALLEFT",
-    "UNBALRIGHT", "x", "LEFTSUPPINTERL", "GREASELEVEL", "GREASETR", "x", "HOLDTORUNRC2", "x", "x",
-    "x", "x", "RIGHTSUPPINTERL", "x", "x", "x"
+    "x", "TILTDISABLED", "x", "x", "x", "x", "x", "x", "x", "x",
+    "x", "x", "x", "x", "x", "RCV0", "RCV1", "RCV2", "RCV3", "RCV4",
+    "x", "x", "x", "x", "x", "x", "x", "x", "x", "EMGCYRESETBTN",
+    "x", "x", "INVERTERRESET", "INVERTERALARM", "AUTOSTARTING", "x", "x", "HOLDTORUNRC", "PRELOADUP", "PRELOADPINCHDISAB",
+    "x", "x", "x", "x", "UNBALLEFT", "UNBALRIGHT", "INVERTEROVERLOAD", "LEFTSUPPINTERL", "GREASELEVEL", "GREASETR",
+    "STARTSENSOR2IN", "HOLDTORUNRC2", "ROLLTILTBALANCED", "x", "x", "x", "RIGHTSUPPINTERL", "x", "x", "x"
 ]
 
 
@@ -1177,128 +1185,173 @@ def _pause_if_frozen():
 
 
 def main():
+    # 1) Carico una volta il config
     cfg_path = choose_and_prepare_config()
 
     try:
         data = load_yaml(str(cfg_path))
     except Exception as e:
         print(f"Errore nel parsing YAML: {e}")
-        sys.exit(1)
+        _pause_if_frozen()
+        return
+
     commessa = get_commessa_from_param(data)
     if commessa:
         print(f"Caricato config della commessa: {commessa}")
-    tipo = input("Che tipo stai cercando? (1=DI, 2=AI, 3=DO, 4=AO): ").strip()
-    try:
-        tipo = int(tipo)
-    except ValueError:
-        sys.exit(1)
-    if tipo not in range(1, 5):
-        print("Tipo non valido. Usa 'DI', 'AI', 'DO' o 'AO'.")
-        sys.exit(1)
-    try:
-        target_str = input("Inserisci il numero da cercare: ").strip()
-        target_number = int(target_str)
-    except ValueError:
-        print("Numero non valido.")
-        sys.exit(1)
 
-    if tipo == 1:
-        di_list = (data.get('io') or {}).get('di')  # <-- lista indicizzata
-        if not di_list:
-            print("Sezione 'di' non trovata.")
-            sys.exit(1)
-        # ricerca nelle espressioni dei -di
-        matches = search_di_matches(di_list, target_number)
-        if matches:
-            for di_idx, exprtype_str, group_idx in matches:
-                print(f"IO>DI>{di_idx} - {exprtype_str} - EXPRESSION N°{group_idx}")
+    # 2) Loop interattivo: ripeti la domanda dopo ogni ricerca
+    while True:
+        print("\n" + "-" * 60)
+        tipo_raw = input("Che tipo stai cercando? (1=DI, 2=AI, 3=DO, 4=AO, Invio per uscire): ").strip().lower()
+        # TODO: fare che una volta entrato nel tipo si rimane in loop a cercare i numeri finche non si scrive ESC per uscire a riselezionare DI AI DO AO
+        if tipo_raw in ("", "q", "quit", "exit", "esci"):
+            print("Uscita.")
+            _pause_if_frozen()
+            return
 
-        # ricerca nel campo IN dei -di (il campo si vede su HMI se messo come tipo CALC)
-        in_matches = search_di_in_matches(di_list, target_number)
-        for di_idx in in_matches:
-            print(f"IO>DI>{di_idx} - IN match")
-        # ricerca nel campo IN dei -do
-        do_list = (data.get('io') or {}).get('do')
-        if do_list:
-            do_matches = search_do_in_matches(do_list, target_number)
-            for do_idx, name in do_matches:
-                if name:
-                    print(f"IO>DO>{do_idx} - IN match (-do) - DO name: {name}")
-                else:
-                    print(f"IO>DO>{do_idx} - IN match (-do)")
-        # ricerca nel campo FB_ERR_DEPRECATED dei -fb
-        fb_list = (data.get('obj') or {}).get('fb')
-        if fb_list:
-            fb_matches = search_fb_err_deprecated_matches(fb_list, target_number)
-            for fb_idx, fb_type in fb_matches:
-                if fb_type:
-                    print(f"FEEDBACK>{fb_idx} - FB_ERR_DEPRECATED match (-fb)")
-                else:
-                    print(f"FEEDBACK>{fb_idx} - FB_ERR_DEPRECATED match (-fb)")
-        # ricerca nel campo RESETIND dei -fb
-        if fb_list:
-            fb_reset_matches = search_fb_resetind_matches(fb_list, target_number)
-            for fb_idx, fb_type in fb_reset_matches:
-                if fb_type:
-                    print(f"FEEDBACK>{fb_idx} - RESETIND match (-fb)")
-                else:
-                    print(f"FEEDBACK>{fb_idx} - RESETIND match (-fb)")
-        # ricerca nei campi DIGUP*/DIGDOWN*/ENAB*/ACT dei -input
-        input_list = (data.get('obj') or {}).get('input')
-        if input_list:
-            in_input_matches = search_input_di_field_matches(input_list, target_number)
-            for inp_idx, fields in in_input_matches:
-                print(f"INPUT>{inp_idx} - match (-input) - fields: {', '.join(fields)}")
-        # ricerca nei campi ACT/ENAB* dei -output
-        output_list = (data.get('obj') or {}).get('output')
-        if output_list:
-            out_matches = search_output_di_field_matches(output_list, target_number)
-            for out_idx, fields in out_matches:
-                print(f"OUTPUT>{out_idx} - match (-output) - fields: {', '.join(fields)}")
-        # ricerca nei campi LSSTOP, LS2START, TR, STAT, TR2, STARTING dei -mot
-        mot_list = (data.get('obj') or {}).get('mot')
-        if mot_list:
-            mot_matches = search_mot_di_field_matches(mot_list, target_number)
-            for mot_idx, fields in mot_matches:
-                print(f"MOT>{mot_idx} - match (-mot) - fields: {', '.join(fields)}")
-        # ricerca nei campi etichettati dell’array -axis.int
-        axis_int_lists = _find_axis_int_lists(data.get('obj'))
-        if axis_int_lists:
-            axis_matches = search_axis_int_di_field_matches(axis_int_lists, target_number)
-            for axis_idx, fields in axis_matches:
-                print(f"AXIS>{axis_idx} - match (-axis.int) - fields: {', '.join(fields)}")
-        # ricerca nei campi -in (sta in config>main, non sotto obj)
-        in_matches = search_in_field_matches(data, target_number)
-        for pid, idx, label, origin in in_matches:
-            if label and origin:
-                print(f"IN>{pid}[{idx}] - match (-in) - label: {label} ({origin})")
-            elif label:
-                print(f"IN>{pid}[{idx}] - match (-in) - label: {label}")
-            else:
-                print(f"IN>{pid}[{idx}] - match (-in)")
+        try:
+            tipo = int(tipo_raw)
+        except ValueError:
+            print("Tipo non valido. Inserisci 1, 2, 3 o 4.")
+            continue
 
-    elif tipo == 2:
-        # Ricerca AI negli AO (IN/AODUAL)
-        ao_list = (data.get('io') or {}).get('ao')
-        if ao_list:
-            matches = search_ai_in_ao_matches(ao_list, target_number, only_bus=True)
+        if tipo not in (1, 2, 3, 4):
+            print("Tipo non valido. Usa 1=DI, 2=AI, 3=DO, 4=AO.")
+            continue
+
+        target_str = input("Inserisci il numero da cercare (Invio per tornare al menu): ").strip()
+        if not target_str:
+            continue
+        try:
+            target_number = int(target_str)
+        except ValueError:
+            print("Numero non valido.")
+            continue
+
+        print("-" * 60)
+
+        if tipo == 1:
+            # ---- Ricerche su DI ----
+            di_list = (data.get('io') or {}).get('di')  # lista indicizzata
+            if not di_list:
+                print("Sezione 'di' non trovata.")
+                continue
+
+            # Campi EXPR nei -io.di
+            matches = search_di_matches(di_list, target_number)
             if matches:
-                for ao_idx, where, name in matches:
+                for di_idx, exprtype_str, group_idx in matches:
+                    print(f"IO>DI>{di_idx} - {exprtype_str} - EXPRESSION N°{group_idx}")
+
+            # Campi IN dei DI # TODO: RICORDARSI DOVE CERCAVA
+            in_matches = search_di_in_matches(di_list, target_number)
+            for di_idx in in_matches:
+                print(f"IO>DI>{di_idx} - IN match")
+
+            # Campo IN dei -io.do
+            do_list = (data.get('io') or {}).get('do')
+            if do_list:
+                do_matches = search_do_in_matches(do_list, target_number)
+                for do_idx, name in do_matches:
                     if name:
-                        print(f"{ao_idx} - {where} match - AO name: {name}")
+                        print(f"IO>DO>{do_idx} - IN match (-do) - DO name: {name}")
                     else:
-                        print(f"{ao_idx} - {where} match")
-        # ricerca nel campo ANA SUP dei -input
-        # elif tipo == 4:
-        # RICERCA NEL CAMPO DEI -fb4
-        # TODO: se tipo fb è AI o AI2 va cercato in ININD
+                        print(f"IO>DO>{do_idx} - IN match (-do)")
 
-        sys.exit(0)
-    else:
-        print(f"Ricerca per '{tipo}' non ancora implementata. Al momento è attiva solo la ricerca nei 'DI'.")
-        sys.exit(0)
+            # Campi FB_ERR_DEPRECATED/RESETIND nei -obj.fb
+            fb_list = (data.get('obj') or {}).get('fb')
+            if fb_list:
+                fb_matches = search_fb_err_deprecated_matches(fb_list, target_number)
+                for fb_idx, fb_type in fb_matches:
+                    print(f"FEEDBACK>{fb_idx} - FB_ERR_DEPRECATED match (-fb)")
 
+                fb_reset_matches = search_fb_resetind_matches(fb_list, target_number)
+                for fb_idx, fb_type in fb_reset_matches:
+                    print(f"FEEDBACK>{fb_idx} - RESETIND match (-fb)")
 
+            # Campi DIG*/ENAB*/ACT nei -obj.input
+            input_list = (data.get('obj') or {}).get('input')
+            if input_list:
+                in_input_matches = search_input_di_field_matches(input_list, target_number)
+                for inp_idx, fields in in_input_matches:
+                    print(f"INPUT>{inp_idx} - match (-input) - fields: {', '.join(fields)}")
+
+            # Campi ACT/ENAB* nei -obj.output
+            output_list = (data.get('obj') or {}).get('output')
+            if output_list:
+                out_matches = search_output_di_field_matches(output_list, target_number)
+                for out_idx, fields in out_matches:
+                    print(f"OUTPUT>{out_idx} - match (-output) - fields: {', '.join(fields)}")
+
+            # Campi LS*/TR*/STAT/STARTING nei -obj.mot
+            mot_list = (data.get('obj') or {}).get('mot')
+            if mot_list:
+                mot_matches = search_mot_di_field_matches(mot_list, target_number)
+                for mot_idx, fields in mot_matches:
+                    print(f"MOT>{mot_idx} - match (-mot) - fields: {', '.join(fields)}")
+
+            # Campi -obj.axis.int
+            axis_int_lists = _find_axis_int_lists(data.get('obj'))
+            if axis_int_lists:
+                axis_matches = search_axis_int_di_field_matches(axis_int_lists, target_number)
+                for axis_idx, fields in axis_matches:
+                    print(f"AXIS>{axis_idx} - match (-axis.int) - fields: {', '.join(fields)}")
+
+            # Campi generici configurazione nei -in
+            in_matches2 = search_in_field_matches(data, target_number)
+            for pid, idx, label, origin in in_matches2:
+                if label and origin:
+                    print(f"IN>{pid}[{idx}] - match (-in) - label: {label} ({origin})")
+                elif label:
+                    print(f"IN>{pid}[{idx}] - match (-in) - label: {label}")
+                else:
+                    print(f"IN>{pid}[{idx}] - match (-in)")
+
+            # Campi IN/ENAB/DISAB/REQACK/ACK nei -alarm
+
+        elif tipo == 2:
+            # ---- Ricerche su AI ----
+            ao_list = (data.get('io') or {}).get('ao')
+            if ao_list:
+                matches = search_ai_in_ao_matches(ao_list, target_number, only_bus=True)
+                if matches:
+                    for ao_idx, where, name in matches:
+                        if name:
+                            print(f"{ao_idx} - {where} match - AO name: {name}")
+                        else:
+                            print(f"{ao_idx} - {where} match")
+                else:
+                    print("Nessuna referenza trovata negli AO (IN/AODUAL).")
+            else:
+                print("Sezione 'ao' non trovata.")
+
+        elif tipo in (3, 4):
+            print("Ricerca per DO/AO (DI target) non ancora implementata qui.")
+"""
+EMGCYPB = 5
+PRELOADUP = 114
+PRELOADPINCHDISAB = 115
+CONSOLE2SEL = 6
+CHROLLSEL = 7 O 8
+SEMIAUTOSEL = 24
+CONSOLE1MODE = 44
+REMOTEMODE = 46
+ROLLTILTBALANCED = 128
+STARTSENSORIN = 20
+STARTSENSOR2IN = 126
+AUTOSTARTING = 110
+INVERTERRESET = 108°
+INVERTERALARM = 109
+INVERTEROVERLOAD = 122
+MAINTRESET = 21
+TILTDISABLED = 77
+HOLDTORUN2 = 25*
+PRELOADUP = 114
+PRELOADPINCHDISAB = 115
+GREASEALARMCALC = 52
+PUMPALARMCALC = 53
+
+"""
 if __name__ == "__main__":
     try:
         main()

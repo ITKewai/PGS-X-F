@@ -1495,7 +1495,7 @@ def main():
     # 2) Loop interattivo: ripeti la domanda dopo ogni ricerca
     while True:
         print("\n" + "-" * 60)
-        tipo_raw = input("Che tipo stai cercando? (1=DI, 2=AI, 3=DO, 4=AO, Invio per uscire): ").strip().lower()
+        tipo_raw = input("Che tipo stai cercando? (1=DI, 2=AI, 3=DO, 4=AO 5=SYS, Invio per uscire): ").strip().lower()
         # TODO: fare che una volta entrato nel tipo si rimane in loop a cercare i numeri finche non si scrive ESC per uscire a riselezionare DI AI DO AO
         if tipo_raw in ("", "q", "quit", "exit", "esci"):
             print("Uscita.")
@@ -1505,13 +1505,12 @@ def main():
         try:
             tipo = int(tipo_raw)
         except ValueError:
-            print("Tipo non valido. Inserisci 1, 2, 3 o 4.")
+            print("Tipo non valido. Inserisci 1, 2, 3, 4 o 5.")
             continue
 
-        if tipo not in (1, 2, 3, 4):
-            print("Tipo non valido. Usa 1=DI, 2=AI, 3=DO, 4=AO.")
+        if tipo not in (1, 2, 3, 4, 5):
+            print("Tipo non valido. Usa 1=DI, 2=AI, 3=DO, 4=AO, 5=SYSTEM.")
             continue
-
         target_str = input("Inserisci il numero da cercare (Invio per tornare al menu): ").strip()
         if not target_str:
             continue
@@ -1630,6 +1629,116 @@ def main():
 
         elif tipo in (3, 4):
             print("Ricerca per DO/AO (DI target) non ancora implementata qui.")
+        elif tipo == 5:
+            # --- SYSTEM lookup: scegli TYPE -> INDEX -> FIELD, calcola numero e cerca nei DI ---
+            print("Scegli il TYPE di sistema (nome o numero):")
+            for name, val in SYSTEM_TYPE.items():
+                print(f"  {val} = {name}")
+            sel = input("TYPE: ").strip()
+
+            # Normalizzo la scelta (accetta sia numero sia nome)
+            if sel.isdigit():
+                type_id = int(sel)
+                sys_type = SYSTEM_TYPE_REV.get(type_id)
+                if not sys_type:
+                    print("TYPE non valido.")
+                    continue
+            else:
+                sys_type = sel.strip().upper()
+                if sys_type not in SYSTEM_TYPE:
+                    print("TYPE non valido.")
+                    continue
+
+            if sys_type not in ("AXIS", "ALARM"):
+                print(f"TYPE '{sys_type}' non ancora supportato qui (solo AXIS/ALARM).")
+                continue
+
+            # --- Prima di chiedere l'indice, mostra mappa indice -> nome ---
+            if sys_type == "AXIS":
+                axis_nodes = ((data.get('obj') or {}).get('axis') or [])
+                def axis_name(i: int) -> str:
+                    try:
+                        node = axis_nodes[i]
+                        if isinstance(node, dict):
+                            a = node.get('axis')
+                            if isinstance(a, list) and a and isinstance(a[0], (str, int, float)):
+                                return str(a[0])
+                    except Exception:
+                        pass
+                    return f"axis[{i}]"
+                n_to_show = min(len(axis_nodes), AXIS_MAX_INDEX + 1)
+                print("\nMappa AXIS (indice → nome):")
+                for i in range(n_to_show):
+                    print(f"  [{i:02d}] {axis_name(i)}")
+                if n_to_show < AXIS_MAX_INDEX + 1:
+                    print(f"... (definiti {n_to_show} assi su {AXIS_MAX_INDEX + 1})")
+
+                idx_prompt_max = AXIS_MAX_INDEX
+            else:  # ALARM
+                alarm_rows = ((data.get('obj') or {}).get('alarm') or [])
+                print("\nAlcuni ALARM definiti (indice → nome):")
+                # Mostra tutti quelli disponibili, ma salta quelli senza nome
+                for i, row in enumerate(alarm_rows):
+                    try:
+                        nm = row[0] if (isinstance(row, list) and row and isinstance(row[0], (str, int, float))) else None
+                        if nm not in (None, "", "x", "X"):
+                            print(f"  [{i:03d}] {nm}")
+                    except Exception:
+                        continue
+                if len(alarm_rows) < ALARM_MAX_INDEX + 1:
+                    print(f"(presenti {len(alarm_rows)} righe alarm; range massimo supportato 0..{ALARM_MAX_INDEX})")
+
+                idx_prompt_max = ALARM_MAX_INDEX
+
+            # --- Scelta INDEX con validazione ---
+            try:
+                idx_raw = input(f"\nInserisci INDEX per {sys_type} (0..{idx_prompt_max}): ").strip()
+                index = int(idx_raw)
+                validate_system_index(sys_type, index)
+            except Exception as e:
+                print(f"INDEX non valido: {e}")
+                continue
+
+            # --- Scelta FIELD (nome o indice) ---
+            fields = AXIS_GROUPS_ORDER if sys_type == "AXIS" else ALARM_GROUPS_ORDER
+            print(f"Scegli FIELD per {sys_type} (nome o indice):")
+            for i, f in enumerate(fields):
+                print(f"  [{i}] {f}")
+            fsel = input("FIELD: ").strip()
+
+            if fsel.isdigit():
+                fidx = int(fsel)
+                if not (0 <= fidx < len(fields)):
+                    print("FIELD index fuori range.")
+                    continue
+                field = fields[fidx]
+            else:
+                field = fsel.strip().upper()
+                if field not in fields:
+                    print("FIELD sconosciuto.")
+                    continue
+
+            # --- Calcolo del numero di sistema ---
+            try:
+                if sys_type == "AXIS":
+                    number = make_axis_sys_addr(field, index)
+                else:  # ALARM
+                    number = make_alarm_sys_addr(field, index)
+            except Exception as e:
+                print(f"Errore nel calcolo dell'indirizzo di sistema: {e}")
+                continue
+
+            human = decode_system_addr(number) or f"{sys_type}.{field}[{index}]"
+            print(f"\nSYSTEM → {human}  => numero: {number}")
+
+            # --- Ricerca tra TUTTI i DI che referenziano quel numero nelle espressioni ---
+            di_list = (data.get('io') or {}).get('di') or []
+            matches = search_di_matches(di_list, number)
+            if matches:
+                for di_idx, exprtype_str, group_idx in matches:
+                    print(f"IO>DI>{di_idx} - {exprtype_str} - EXPRESSION N°{group_idx}")
+            else:
+                print("Nessun DI che referenzia questo numero nelle espressioni.")
 
 
 """

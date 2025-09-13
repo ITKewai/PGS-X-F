@@ -13,6 +13,8 @@ import warnings as _warnings
 
 """
 STRUTTURE:
+- param:
+    - pint: [COMMESSA,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x]
 
 - di: [NAME, BOOL_DEFAULT_VALUE, x, SIM, BOOL_SIM_VALUE, ADDRESS, CAMPO_1, CAMPO_2, x, UM, MEMTYPE, MEMIND, TIMEOUT, IN, x, x, x, x, x, EXPRTYPE,
      EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR,
@@ -312,6 +314,19 @@ def _sanitize_yaml_like(text: str) -> str:
     return text
 
 
+def get_run_dir() -> Path:
+    """
+    Ritorna la cartella di riferimento per i file esterni.
+    - Se il programma è 'frozen' (PyInstaller), usa la cartella dell'eseguibile.
+    - Altrimenti usa la cartella del file sorgente.
+    """
+    if getattr(sys, 'frozen', False):
+        # es. C:\cartella\del\tuo\programma (dove risiede .exe)
+        return Path(sys.executable).resolve().parent
+    # esecuzione da sorgente
+    return Path(__file__).resolve().parent
+
+
 def load_yaml(path: str) -> Any:
     text = Path(path).read_text(encoding='utf-8')
     try:
@@ -494,6 +509,33 @@ def find_section(root: Any, keys: List[str]) -> Optional[List[list]]:
 
     walk(root)
     return found or None
+
+
+def get_commessa_from_param(data: Any) -> Optional[str]:
+    """
+    Ritorna la stringa della commessa da param.pint[0], se presente.
+    Supporta sia:
+      - param: { pint: [COMMESSA, ...] }
+      - param: [ { pint: [COMMESSA, ...] }, ... ]
+    """
+    if not isinstance(data, dict):
+        return None
+    param = data.get('param')
+
+    # Caso 1: param è un dict con chiave 'pint'
+    if isinstance(param, dict) and isinstance(param.get('pint'), list):
+        row = param['pint']
+        if row and isinstance(row[0], (str, int, float)):
+            return str(row[0])
+
+    # Caso 2: usa find_section per trovare righe 'pint' annidate/liste
+    rows = find_section(param, ['pint']) if param is not None else None
+    if rows:
+        row0 = rows[0]
+        if row0 and isinstance(row0[0], (str, int, float)):
+            return str(row0[0])
+
+    return None
 
 
 def _find_axis_int_lists(root: Any) -> List[List[Any]]:
@@ -879,42 +921,53 @@ def download_file(url: str, dest_path: Path) -> None:
 
 
 def choose_and_prepare_config() -> Path:
-    """
-    Chiede se usare file locale o scaricare da internet.
-    Ritorna il Path del file pronto da leggere.
-    """
-    script_dir = Path(__file__).resolve().parent
+    base_dir = get_run_dir()  # <- usa la cartella dell'eseguibile se frozen
+
     print("Selezione sorgente file 'config.yaml'")
-    print("  [1] Usa file locale (stessa cartella dello script)")
-    print("  [2] Scarica da internet e sovrascrivi il file locale (connessione NON protetta)")
-    choice = input("Scelta: ").strip().upper()
+    print("  [1] Usa file locale (stessa cartella dell'eseguibile)")
+    print("  [2] Scarica da internet e salva accanto all'eseguibile (connessione NON protetta)")
+    choice = input("Scelta: ").strip()
 
     try:
         choice = int(choice)
     except ValueError:
-        print(f"Opzione non valida")
+        print("Opzione non valida")
         sys.exit(1)
 
-    if choice == 'D':
+    if choice == 2:
         base = input("Inserisci indirizzo/IP (es: 10.3.73.177 oppure https://10.3.73.177): ").strip()
         if not base:
             print("Indirizzo non valido.")
             sys.exit(1)
         url = _build_download_url(base)
-        dest = script_dir / "config.yaml"
+        dest = base_dir / "config.yaml"   # <<-- salva accanto all'eseguibile
         try:
             download_file(url, dest)
+        except PermissionError:
+            # fallback se la cartella dell'eseguibile non è scrivibile (es. Program Files)
+            fallback = Path.home() / "Documents" / "search_config" / "config.yaml"
+            fallback.parent.mkdir(parents=True, exist_ok=True)
+            print(f"Permesso negato su {dest}. Salvo in {fallback}")
+            download_file(url, fallback)
+            return fallback
         except Exception as e:
             print(f"Errore nel download: {e}")
             sys.exit(1)
         return dest
-
-    # Locale
-    path = script_dir / "config.yaml"
-    if not path.exists():
-        print(f"File locale non trovato: {path}")
+    elif choice == 1:
+        path = base_dir / "config.yaml"   # <<-- cerca accanto all'eseguibile
+        if not path.exists():
+            # opzionale: prova anche nella working dir se diverso
+            wd_path = Path.cwd() / "config.yaml"
+            if wd_path.exists():
+                print(f"File non trovato in {path}, uso {wd_path}")
+                return wd_path
+            print(f"File locale non trovato: {path}")
+            sys.exit(1)
+        return path
+    else:
+        print("Opzione non valida")
         sys.exit(1)
-    return path
 
 
 def main():
@@ -925,7 +978,9 @@ def main():
     except Exception as e:
         print(f"Errore nel parsing YAML: {e}")
         sys.exit(1)
-
+    commessa = get_commessa_from_param(data)
+    if commessa:
+        print(f"Caricato config della commessa: {commessa}")
     tipo = input("Che tipo stai cercando? (1=DI, 2=AI, 3=DO, 4=AO): ").strip()
     try:
         tipo = int(tipo)

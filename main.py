@@ -254,7 +254,12 @@ IDX_MOT_TR = 7
 IDX_MOT_STAT = 9
 IDX_MOT_TR2 = 17
 IDX_MOT_STARTING = 18
-AXIS_INT_INDEXES: Dict[str, int] = {
+IDX_ALARM_IN = 4
+IDX_ALARM_ENAB = 7
+IDX_ALARM_DISAB = 8
+IDX_ALARM_REQACK = 9
+IDX_ALARM_ACK = 10
+IDX_AXIS_INT: Dict[str, int] = {
     "SUP": 19,
     "INF": 20,
     "ALTFBDIG": 31,
@@ -417,7 +422,7 @@ def _group_io(io_node: Any, keys=('di', 'ai', 'do', 'ao', 'ri', 'fb')) -> Dict[s
 
 def _group_obj(obj_node: Any) -> Dict[str, List[list] | List[dict]]:
     """
-    Raggruppa fb/input/output/mot come prima e in più PRESERVA i blocchi 'axis'
+    Raggruppa fb/input/output/mot/alarm come liste di righe e PRESERVA i blocchi 'axis'
     (dict che contengono almeno la chiave 'axis' e tipicamente anche 'int','bool','type').
     Ritorna:
       {
@@ -425,6 +430,7 @@ def _group_obj(obj_node: Any) -> Dict[str, List[list] | List[dict]]:
         'input': [...],
         'output': [...],
         'mot': [...],
+        'alarm': [...],
         'axis': [ { 'axis': [...], 'int': [...], 'bool': [...], 'type': [...] }, ... ]
       }
     """
@@ -433,7 +439,8 @@ def _group_obj(obj_node: Any) -> Dict[str, List[list] | List[dict]]:
         'input': [],
         'output': [],
         'mot': [],
-        'axis': [],  # <--- NOVITÀ: conserviamo i blocchi axis interi
+        'alarm': [],   # <--- aggiunto
+        'axis': [],
     }
 
     def _is_row(x: Any) -> bool:
@@ -444,13 +451,12 @@ def _group_obj(obj_node: Any) -> Dict[str, List[list] | List[dict]]:
             # Se è un blocco axis (ha la chiave 'axis'), lo conserviamo intero
             if 'axis' in node and isinstance(node.get('axis'), list):
                 grouped['axis'].append(node)
-                # Continuiamo comunque a scendere per catturare eventuali fb/input annidati
             # Raggruppa chiavi note se in forma semplice
             for k, v in node.items():
                 kl = str(k).lower()
-                if kl in ('fb', 'input', 'output', 'mot'):
+                if kl in ('fb', 'input', 'output', 'mot', 'alarm'):  # <--- alarm incluso
                     if _is_row(v):
-                        grouped[kl].append(v)  # es. {'fb': [ ...campi... ]}
+                        grouped[kl].append(v)         # es. {'fb': [ ...campi... ]}
                     elif isinstance(v, list):
                         grouped[kl].extend([el for el in v if _is_row(el)])  # es. {'fb': [[...],[...]]}
                 # Scendi ricorsivamente per trovare altri blocchi/righe
@@ -849,6 +855,39 @@ def search_mot_di_field_matches(mot_list: List[list], target_number: int) -> Lis
     return results
 
 
+def search_alarm_di_field_matches(alarm_list: List[list], target_number: int) -> List[Tuple[int, List[str], Optional[str]]]:
+    """
+    Cerca nei -obj.alarm i campi IN, ENAB, DISAB, REQACK, ACK che referenziano il DI `target_number`.
+    Ritorna: [(indice_alarm, [nomi_campi_match], nome_alarm_opzionale)]
+    """
+    results: List[Tuple[int, List[str], Optional[str]]] = []
+    fields = [
+        ("IN", IDX_ALARM_IN),
+        ("ENAB", IDX_ALARM_ENAB),
+        ("DISAB", IDX_ALARM_DISAB),
+        ("REQACK", IDX_ALARM_REQACK),
+        ("ACK", IDX_ALARM_ACK),
+    ]
+    for alarm_idx, alarm_fields in enumerate(alarm_list or []):
+        if not isinstance(alarm_fields, list):
+            continue
+        matched: List[str] = []
+        for label, idx in fields:
+            if len(alarm_fields) > idx:
+                try:
+                    val = int(alarm_fields[idx])
+                except Exception:
+                    continue
+                if val == target_number:
+                    matched.append(label)
+        if matched:
+            name: Optional[str] = None
+            if len(alarm_fields) > 0 and isinstance(alarm_fields[0], (str, int, float)):
+                name = str(alarm_fields[0])
+            results.append((alarm_idx, matched, name))
+    return results
+
+
 def search_axis_int_di_field_matches(axis_int_lists: List[List[Any]], target_number: int) -> List[
     Tuple[int, List[str]]]:
     """
@@ -862,7 +901,7 @@ def search_axis_int_di_field_matches(axis_int_lists: List[List[Any]], target_num
         if not isinstance(arr, list):
             continue
         matched: List[str] = []
-        for label, idx in AXIS_INT_INDEXES.items():
+        for label, idx in IDX_AXIS_INT.items():
             if idx < 0:
                 continue
             if idx >= len(arr):
@@ -1243,10 +1282,10 @@ def main():
                 for di_idx, exprtype_str, group_idx in matches:
                     print(f"IO>DI>{di_idx} - {exprtype_str} - EXPRESSION N°{group_idx}")
 
-            # Campi IN dei DI # TODO: RICORDARSI DOVE CERCAVA
+            # Campo TIMEOUT dei CALC nei -io.di #
             in_matches = search_di_in_matches(di_list, target_number)
             for di_idx in in_matches:
-                print(f"IO>DI>{di_idx} - IN match")
+                print(f"IO>DI>{di_idx} - TIMEOUT match")
 
             # Campo IN dei -io.do
             do_list = (data.get('io') or {}).get('do')
@@ -1301,13 +1340,21 @@ def main():
             in_matches2 = search_in_field_matches(data, target_number)
             for pid, idx, label, origin in in_matches2:
                 if label and origin:
-                    print(f"IN>{pid}[{idx}] - match (-in) - label: {label} ({origin})")
+                    print(f"*IN>{pid}[{idx}] - match (-in) - label: {label} ({origin})")
                 elif label:
-                    print(f"IN>{pid}[{idx}] - match (-in) - label: {label}")
+                    print(f"*IN>{pid}[{idx}] - match (-in) - label: {label}")
                 else:
-                    print(f"IN>{pid}[{idx}] - match (-in)")
+                    print(f"*IN>{pid}[{idx}] - match (-in)")
 
-            # Campi IN/ENAB/DISAB/REQACK/ACK nei -alarm
+            # Campi IN/ENAB/DISAB/REQACK/ACK nei -obj.alarm
+            alarm_list = (data.get('obj') or {}).get('alarm')
+            if alarm_list:
+                alarm_matches = search_alarm_di_field_matches(alarm_list, target_number)
+                for alarm_idx, fields, name in alarm_matches:
+                    if name:
+                        print(f"ALARMS/MAINT>ALARM>{alarm_idx} - match (-alarm) - fields: {', '.join(fields)} - name: {name}")
+                    else:
+                        print(f"ALARMS/MAINT>ALARM>{alarm_idx} - match (-alarm) - fields: {', '.join(fields)}")
 
         elif tipo == 2:
             # ---- Ricerche su AI ----

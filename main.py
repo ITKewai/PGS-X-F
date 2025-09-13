@@ -1,4 +1,4 @@
-# !/usr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import re
 import sys
@@ -35,11 +35,11 @@ STRUTTURE:
 - param:
     - pstring: [MODEL, COSTUMER,x,x]
     - pbool: [...]
-    - pint: [COMMESSA,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x]
+    - pint: [COMMESSA,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x]
     - preal: [...]
     - ptype: [...]
 - io:
-    - di: [NAME, BOOL_DEFAULT_VALUE, x, SIM, BOOL_SIM_VALUE, ADDRESS, CAMPO_1, CAMPO_2, x, UM, MEMTYPE, MEMIND, TIMEOUT, IN, x, x, x, x, x, EXPRTYPE, EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR, EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR, EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR, EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR, EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR, EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR, EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR]
+    - di: [NAME, BOOL_DEFAULT_VALUE, x, SIM, BOOL_SIM_VALUE, ADDRESS, CAMPO_1, CAMPO_2, x, UM, MEMTYPE, MEMIND, TIMEOUT, IN, x, x, x, x, x, EXPRTYPE, EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR, EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR, EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR, EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR, EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR, EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR]
         (EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR) si attivano se EXPRTYPE != -1 se no non ci sono proprio
     - ai: [NAME, BOOL_DEFAULT_VALUE, x, SIM, BOOL_SIM_VALUE, ADDRESS, CAMPO_1, CAMPO_2, NBYTES, UM, MEMTYPE, MEMIND, TIMEOUT, IN, DINTDEFAULTVALUE, DINTSIMVALUE, DEADBAND, x, TOTDELTAMAX, COEFFMULT, x]
     - ao: [NAME, BOOL_DEFAULT_VALUE, PROG, SIM, BOOL_SIM_VALUE, ADDRESS, CAMPO_1, CAMPO_2, NBYTES, UM, MEMTYPE, MEMIND, IN, AODUAL, DINTDEFAULTVALUE, DINTSIMVALUE, x, x, x, AOPRIORITY, x]
@@ -164,6 +164,7 @@ AXISREAL:
 '''
 NOTE: dentro gli -ao se tipo = PNET o CAN, trovo in IN e AO_DUAL gli -ai
 '''
+
 # --- Mappe fornite ---
 ADDRESS = {
     -1: '',
@@ -569,7 +570,6 @@ def _sanitize_yaml_like(text: str) -> str:
       [,a,,b,]   -> [null, a, null, b, null]
     NOTE: approccio best-effort basato su regex; pensato per casi reali del file.
     """
-    import re
     prev = None
     while prev != text:
         prev = text
@@ -689,7 +689,7 @@ def _group_obj(obj_node: Any) -> Dict[str, List[list] | List[dict]]:
         'input': [],
         'output': [],
         'mot': [],
-        'alarm': [],  # <--- aggiunto
+        'alarm': [],
         'axis': [],
     }
 
@@ -842,15 +842,15 @@ def iter_expr_groups(di_fields: list) -> List[Tuple[int, int, int]]:
     while i + 2 < limit and len(groups) < DI_NUM_EXPR_GROUPS:
         try:
             operand = int(di_fields[i])
-        except:
+        except Exception:
             operand = -999999
         try:
             address = int(di_fields[i + 1])
-        except:
+        except Exception:
             address = -999999
         try:
             operator = int(di_fields[i + 2])
-        except:
+        except Exception:
             operator = -999999
         groups.append((operand, address, operator))  # (OPERAND, ADDRESS, OPERATOR)
         i += DI_EXPR_GROUP_SIZE
@@ -1662,7 +1662,7 @@ def main():
                 # prepara le stringhe "[ii] nome"
                 entries = [f"[{i:02d}] {axis_name(i)}" for i in range(n_to_show)]
                 if entries:
-                    cols = 6 # raggruppa per 6
+                    cols = 6  # raggruppa per 6
                     colw = max(len(s) for s in entries) + 2  # padding
                     for k in range(0, len(entries), cols):
                         row = entries[k:k + cols]
@@ -1807,6 +1807,7 @@ def print_in_columns(entries: List[str], cols: int = 3) -> None:
     for i in range(0, len(entries), cols):
         row = entries[i:i+cols]
         print("  " + "".join(s.ljust(colw) for s in row))
+
 
 if __name__ == "__main__":
     try:

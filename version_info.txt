@@ -1,0 +1,40 @@
+# make_version_file.py
+from main import __version__, __company__, __product__, __copyright__
+from pathlib import Path
+
+content = f"""
+# UTF-8
+VSVersionInfo(
+  ffi=FixedFileInfo(
+    filevers=({__version__.replace('.', ',')},0),
+    prodvers=({__version__.replace('.', ',')},0),
+    mask=0x3f,
+    flags=0x0,
+    OS=0x40004,
+    fileType=0x1,
+    subtype=0x0,
+    date=(0, 0)
+  ),
+  kids=[
+    StringFileInfo(
+      [
+      StringTable(
+        '040904B0',
+        [
+        StringStruct('CompanyName', '{__company__}'),
+        StringStruct('FileDescription', '{__product__}'),
+        StringStruct('FileVersion', '{__version__}'),
+        StringStruct('InternalName', '{__product__}'),
+        StringStruct('OriginalFilename', '{__product__}.exe'),
+        StringStruct('ProductName', '{__product__}'),
+        StringStruct('ProductVersion', '{__version__}'),
+        StringStruct('LegalCopyright', '{__copyright__}')
+        ])
+      ]
+    )
+  ]
+)
+"""
+
+Path("version_info.txt").write_text(content, encoding="utf-8")
+print("Creato version_info.txt")

@@ -73,6 +73,94 @@ STRUTTURE:
     - maint [...] TODO: ci sono in e out da cercare poi
 """
 
+"""
+Variabili di sistema
+TYPE: (IDX_SYSTEM)
+    INDEX = 1
+    AXIS = 2
+    FEEDBACK = 3
+    INPUT = 4
+    OUTPUT = 5
+    MOTOR = 6
+    PID = 7
+    TOOLSET = 8
+    ALARM = 9
+    MAINT = 10
+    AXISREAL = 11
+in base al tipo partendo da 0 che è axis[0] e incrementando
+AXIS: 
+    MOVING (2048=0, 2049=1, ...)
+    UP (2112=0, ...)
+    DOWN (2176=0, ...)
+    MAX (2240=0, ...)
+    MIN (2304=0, ...)
+    SUPLS (2368=0, ...)
+    INFLS (2432=0, ...)
+    HH (2496=0, ...)
+    H (2560=0, ...)
+    L (2624=0, ...)
+    LL (2688=0, ...)
+    H0 (2752=0, ...)
+    L0 (2816=0, ...)
+    SAF (2880=0, ...)
+    ALTFB (2944=0, ...)
+    BAD (3008=0, ...)
+    TILT (3072=0, ...)
+    P1UP (3136=0, ...)
+    P1DOWN (3200=0, ...)
+    P2UP (3264=0, ...)
+    P2DOWN (3328=0, ...)
+    SLOW (3392=0, ...)
+    FAST (3456=0, ...)
+FEEDBACK:
+    ERR
+    RESET
+INPUT:
+    ACT
+    ENAB1
+    ENAB2
+    ENAB3
+    ENAB
+OUTPUT:
+    ACT
+    ENAB1
+    ENAB2
+    ENAB3
+    ENAB
+MOTOR:
+    STAT
+    CMD
+    STOP
+    START
+    TR
+    TR2
+    CMD1
+    CMD2
+    CMD3
+    STARTING
+    SEL
+    SEQ
+    OPT
+    DEF
+TOOLSET:
+    SELECTED
+ALARM:
+    VAL (16384=0, ..)
+    ENAB (16640=0, ..)
+    DISAB (16896=0, ..)
+    REQ (17152=0, ..)
+    ACK (17408=0, ..)
+    IN (17664=0, ..)
+MAINT:
+    VAL
+    ENAB
+    DISAB
+AXISREAL:
+    POS
+    SPEED
+    DELTA
+    SUP
+"""
 '''
 NOTE: dentro gli -ao se tipo = PNET o CAN, trovo in IN e AO_DUAL gli -ai
 '''
@@ -310,6 +398,168 @@ IDX_AXIS_INT: Dict[str, int] = {
     "PS3": 67,
 }
 
+# --- Variabili di sistema: TYPE (IDX_SYSTEM) ---
+SYSTEM_TYPE = {
+    "INDEX": 1,
+    "AXIS": 2,
+    "FEEDBACK": 3,
+    "INPUT": 4,
+    "OUTPUT": 5,
+    "MOTOR": 6,
+    "PID": 7,
+    "TOOLSET": 8,
+    "ALARM": 9,
+    "MAINT": 10,
+    "AXISREAL": 11,
+}
+SYSTEM_TYPE_REV = {v: k for k, v in SYSTEM_TYPE.items()}
+
+# --- Limiti di indice per ciascun tipo ---
+# 48 assi (0..47) per INPUT/OUTPUT/FEEDBACK/AXISREAL
+AXIS_MAX_INDEX = 47
+INPUT_MAX_INDEX = 47
+OUTPUT_MAX_INDEX = 47
+FEEDBACK_MAX_INDEX = 47
+AXISREAL_MAX_INDEX = 47
+
+# Motori da 1 a 7 (inclusi)
+MOTOR_MIN_INDEX = 1
+MOTOR_MAX_INDEX = 7
+
+# Toolset 0..7
+TOOLSET_MAX_INDEX = 7
+
+# Allarmi 0..191
+ALARM_MAX_INDEX = 191
+
+# Manutenzioni 0..31
+MAINT_MAX_INDEX = 31
+
+# --- AXIS: gruppi bit con base + indice asse (0->axis[0], 1->axis[1], ...) ---
+# Ogni gruppo è distanziato di 64. Dentro al gruppo: base + axis_index
+AXIS_GROUPS_ORDER = [
+    "MOVING", "UP", "DOWN", "MAX", "MIN", "SUPLS", "INFLS",
+    "HH", "H", "L", "LL", "H0", "L0", "SAF", "ALTFB", "BAD",
+    "TILT", "P1UP", "P1DOWN", "P2UP", "P2DOWN", "SLOW", "FAST"
+]
+AXIS_GROUP_BASE = {name: (2048 + i * 64) for i, name in enumerate(AXIS_GROUPS_ORDER)}
+AXIS_GROUP_STEP = 64  # numero max assi per gruppo
+
+# --- ALARM: campi con base + indice allarme (0..191) ---
+# Ogni gruppo è distanziato di 256. Dentro al gruppo: base + alarm_index
+ALARM_GROUPS_ORDER = ["VAL", "ENAB", "DISAB", "REQ", "ACK", "IN"]
+ALARM_GROUP_BASE = {name: (16384 + i * 256) for i, name in enumerate(ALARM_GROUPS_ORDER)}
+ALARM_GROUP_STEP = 256
+
+
+# ---- Funzioni AXIS ----
+def make_axis_sys_addr(group: str, axis_index: int) -> int:
+    g = group.strip().upper()
+    if g not in AXIS_GROUP_BASE:
+        raise KeyError(f"Gruppo AXIS sconosciuto: {group}")
+    if not (0 <= axis_index <= AXIS_MAX_INDEX):  # 0..47
+        raise ValueError(f"axis_index fuori range (0..{AXIS_MAX_INDEX}): {axis_index}")
+    return AXIS_GROUP_BASE[g] + axis_index
+
+
+def parse_axis_sys_addr(addr: int) -> Optional[Tuple[str, int]]:
+    if addr < 2048 or addr >= 2048 + AXIS_GROUP_STEP * len(AXIS_GROUPS_ORDER):
+        return None
+    group_idx = (addr - 2048) // AXIS_GROUP_STEP
+    if not (0 <= group_idx < len(AXIS_GROUPS_ORDER)):
+        return None
+    base = 2048 + group_idx * AXIS_GROUP_STEP
+    axis_index = addr - base
+    if not (0 <= axis_index <= AXIS_MAX_INDEX):  # 0..47
+        return None
+    return (AXIS_GROUPS_ORDER[group_idx], axis_index)
+
+
+def make_alarm_sys_addr(group: str, alarm_index: int) -> int:
+    g = group.strip().upper()
+    if g not in ALARM_GROUP_BASE:
+        raise KeyError(f"Gruppo ALARM sconosciuto: {group}")
+    if not (0 <= alarm_index <= ALARM_MAX_INDEX):  # 0..191
+        raise ValueError(f"alarm_index fuori range (0..{ALARM_MAX_INDEX}): {alarm_index}")
+    return ALARM_GROUP_BASE[g] + alarm_index
+
+
+def parse_alarm_sys_addr(addr: int) -> Optional[Tuple[str, int]]:
+    if addr < 16384 or addr >= 16384 + ALARM_GROUP_STEP * len(ALARM_GROUPS_ORDER):
+        return None
+    group_idx = (addr - 16384) // ALARM_GROUP_STEP
+    if not (0 <= group_idx < len(ALARM_GROUPS_ORDER)):
+        return None
+    base = 16384 + group_idx * ALARM_GROUP_STEP
+    alarm_index = addr - base
+    if not (0 <= alarm_index <= ALARM_MAX_INDEX):  # 0..191
+        return None
+    return (ALARM_GROUPS_ORDER[group_idx], alarm_index)
+
+
+# ---- Decoder generale (AXIS / ALARM; altri tipi in futuro) ----
+def decode_system_addr(addr: int) -> Optional[str]:
+    """
+    Prova a decodificare un indirizzo di sistema in forma umana.
+    Ritorna stringa tipo 'AXIS.MOVING[3]' oppure 'ALARM.ACK[12]' oppure None.
+    """
+    ax = parse_axis_sys_addr(addr)
+    if ax:
+        g, i = ax
+        return f"AXIS.{g}[{i}]"
+    al = parse_alarm_sys_addr(addr)
+    if al:
+        g, i = al
+        return f"ALARM.{g}[{i}]"
+    return None
+
+
+def validate_system_index(sys_type: str, index: int) -> None:
+    """Lancia ValueError se l'indice non rientra nei limiti dichiarati per il tipo."""
+    t = sys_type.strip().upper()
+    if t in {"AXIS", "INPUT", "OUTPUT", "FEEDBACK", "AXISREAL"}:
+        if not (0 <= index <= AXIS_MAX_INDEX):
+            raise ValueError(f"{t} index fuori range (0..{AXIS_MAX_INDEX}): {index}")
+    elif t == "MOTOR":
+        if not (MOTOR_MIN_INDEX <= index <= MOTOR_MAX_INDEX):
+            raise ValueError(f"MOTOR index fuori range ({MOTOR_MIN_INDEX}..{MOTOR_MAX_INDEX}): {index}")
+    elif t == "TOOLSET":
+        if not (0 <= index <= TOOLSET_MAX_INDEX):
+            raise ValueError(f"TOOLSET index fuori range (0..{TOOLSET_MAX_INDEX}): {index}")
+    elif t == "ALARM":
+        if not (0 <= index <= ALARM_MAX_INDEX):
+            raise ValueError(f"ALARM index fuori range (0..{ALARM_MAX_INDEX}): {index}")
+    elif t == "MAINT":
+        if not (0 <= index <= MAINT_MAX_INDEX):
+            raise ValueError(f"MAINT index fuori range (0..{MAINT_MAX_INDEX}): {index}")
+    else:
+        raise ValueError(f"Tipo di sistema sconosciuto: {sys_type}")
+
+
+def sysref(sys_type: str, field: str, index: int) -> str:
+    """
+    Ritorna una stringa tipo 'AXIS.MOVING[3]' o 'ALARM.ACK[12]'.
+    Per gli altri tipi valida il range e usa lo stesso formato 'TIPO.CAMPO[idx]'.
+    """
+    t = sys_type.strip().upper()
+    f = field.strip().upper()
+    validate_system_index(t, index)
+
+    if t == "AXIS":
+        if f not in AXIS_GROUP_BASE:
+            raise KeyError(f"Campo AXIS sconosciuto: {field}")
+        return f"AXIS.{f}[{index}]"
+
+    if t == "ALARM":
+        if f not in ALARM_GROUP_BASE:
+            raise KeyError(f"Campo ALARM sconosciuto: {field}")
+        return f"ALARM.{f}[{index}]"
+
+    # altri tipi (INPUT/OUTPUT/FEEDBACK/MOTOR/TOOLSET/MAINT/AXISREAL)
+    return f"{t}.{f}[{index}]"
+
+
+# --- END SYSTEM LOGIC
 
 def _sanitize_yaml_like(text: str) -> str:
     """
@@ -439,7 +689,7 @@ def _group_obj(obj_node: Any) -> Dict[str, List[list] | List[dict]]:
         'input': [],
         'output': [],
         'mot': [],
-        'alarm': [],   # <--- aggiunto
+        'alarm': [],  # <--- aggiunto
         'axis': [],
     }
 
@@ -456,7 +706,7 @@ def _group_obj(obj_node: Any) -> Dict[str, List[list] | List[dict]]:
                 kl = str(k).lower()
                 if kl in ('fb', 'input', 'output', 'mot', 'alarm'):  # <--- alarm incluso
                     if _is_row(v):
-                        grouped[kl].append(v)         # es. {'fb': [ ...campi... ]}
+                        grouped[kl].append(v)  # es. {'fb': [ ...campi... ]}
                     elif isinstance(v, list):
                         grouped[kl].extend([el for el in v if _is_row(el)])  # es. {'fb': [[...],[...]]}
                 # Scendi ricorsivamente per trovare altri blocchi/righe
@@ -627,7 +877,7 @@ def search_di_matches(di_list: List[list], target_number: int) -> List[Tuple[int
     return results
 
 
-def search_di_in_matches(di_list: List[list], target_number: int) -> List[Tuple[int, str]]:
+def search_di_in_matches(di_list: List[list], target_number: int) -> List[int]:
     """
     Cerca tutti i DI che hanno il campo IN (indice 13) uguale a target_number.
     Ritorna una lista di indici di DI.
@@ -855,7 +1105,8 @@ def search_mot_di_field_matches(mot_list: List[list], target_number: int) -> Lis
     return results
 
 
-def search_alarm_di_field_matches(alarm_list: List[list], target_number: int) -> List[Tuple[int, List[str], Optional[str]]]:
+def search_alarm_di_field_matches(alarm_list: List[list], target_number: int) -> List[
+    Tuple[int, List[str], Optional[str]]]:
     """
     Cerca nei -obj.alarm i campi IN, ENAB, DISAB, REQACK, ACK che referenziano il DI `target_number`.
     Ritorna: [(indice_alarm, [nomi_campi_match], nome_alarm_opzionale)]
@@ -973,8 +1224,10 @@ _IN_ORIGIN_SETS = {
     "config>grease": {
         "PUMPONCALC", "GREASEALARMCALC", "PUMPALARMCALC", "GREASETR", "GREASELEVEL"
     },
-    "config>radiocontrol": {'RCV0', 'RCV1', 'RCV2', 'RCV3', 'RCV4','RCV5', "RCLEFTSEL", "RCRIGHTSEL", "RCLEFTMEM", "RCRIGHTMEM"},
-    "config>bp": {"BPDISABLE1", "BPDISABLE2", "BPDISABLE3", "BPDISABLE4", "BPDISABLE5", "BPDISABLE6", "BPDISABLE7", "BPDISABLE8", "BPDISABLE9", "BPDISABLE10", "BPDISABLE11", "BPDISABLE12"}
+    "config>radiocontrol": {'RCV0', 'RCV1', 'RCV2', 'RCV3', 'RCV4', "RCLEFTSEL", "RCRIGHTSEL", "RCLEFTMEM",
+                            "RCRIGHTMEM"},
+    "config>bp": {"BPDISABLE1", "BPDISABLE2", "BPDISABLE3", "BPDISABLE4", "BPDISABLE5", "BPDISABLE6", "BPDISABLE7",
+                  "BPDISABLE8", "BPDISABLE9", "BPDISABLE10", "BPDISABLE11", "BPDISABLE12"}
 }
 
 # Mappatura per indice del blocco "- in:" (etichette nominali)
@@ -987,13 +1240,14 @@ IN_INDEX_LABELS = [
     "BPDISABLE5", "BPDISABLE6", "BPDISABLE7", "BPDISABLE8", "BPDISABLE9", "BPDISABLE10",
     "BPDISABLE11", "BPDISABLE12", "AUTOMODE", "AUTOCYCLEMODE", "AUTOSTEPMODE", "SEMIAUTOMODE",
     "TEACHMODE", "MANMODE", "CONSOLE1MODE", "CONSOLE2MODE", "REMOTEMODE", "CHROLLMODE", "SINGLEMOVMODE",
-    "MACHINESTERTED", "x", "PUMPONCALC", "GREASEALARMCALC", "PUMPALARMCALC", "x", "x", "ALARMON", "x", "ALARMSTOP",
+    "MACHINESTARTED", "x", "PUMPONCALC", "GREASEALARMCALC", "PUMPALARMCALC", "x", "x", "ALARMON", "x", "ALARMSTOP",
     "MAINTON", "RTFWDISABLED", "RCLEFTMEM", "x", "RCRIGHTMEM", "HOLDTORUNERROR", "x", "x", "x",
     "MICROSEL", "x", "QUALITYEND", "AUTOSTARTBLINK", "QUALITYGOOD", "PARTEND", "x", "PARTBEGIN",
     "x", "TILTDISABLED", "x", "x", "x", "x", "x", "x", "x", "x",
     "x", "x", "x", "x", "x", "RCV0", "RCV1", "RCV2", "RCV3", "RCV4",
     "x", "x", "x", "x", "x", "x", "x", "x", "x", "EMGCYRESETBTN",
-    "x", "x", "INVERTERRESET", "INVERTERALARM", "AUTOSTARTING", "x", "x", "HOLDTORUNRC", "PRELOADUP", "PRELOADPINCHDISAB",
+    "x", "x", "INVERTERRESET", "INVERTERALARM", "AUTOSTARTING", "x", "x", "HOLDTORUNRC", "PRELOADUP",
+    "PRELOADPINCHDISAB",
     "x", "x", "x", "x", "UNBALLEFT", "UNBALRIGHT", "INVERTEROVERLOAD", "LEFTSUPPINTERL", "GREASELEVEL", "GREASETR",
     "STARTSENSOR2IN", "HOLDTORUNRC2", "ROLLTILTBALANCED", "x", "x", "x", "RIGHTSUPPINTERL", "x", "x", "x"
 ]
@@ -1005,6 +1259,7 @@ def _label_from_in_index(idx: int) -> Optional[str]:
         if isinstance(lab, str) and lab.strip().lower() != 'x' and lab.strip() != '':
             return lab.strip()
     return None
+
 
 def _origin_from_in_index(idx: int) -> Optional[str]:
     lab = _label_from_in_index(idx)
@@ -1029,10 +1284,9 @@ def _infer_in_origin(label: str) -> Optional[str]:
     return None
 
 
-
 def _pair_in_arrays(in_arrays: List[List[Any]]) -> List[Tuple[int, Optional[List[Any]], Optional[List[Any]]]]:
     numeric = [(i, a) for i, a in enumerate(in_arrays) if _is_mostly_ints(a)]
-    labels  = [(i, a) for i, a in enumerate(in_arrays) if _is_mostly_strings(a)]
+    labels = [(i, a) for i, a in enumerate(in_arrays) if _is_mostly_strings(a)]
 
     pairs: List[Tuple[int, Optional[List[Any]], Optional[List[Any]]]] = []
     used = set()
@@ -1065,6 +1319,7 @@ def _pair_in_arrays(in_arrays: List[List[Any]]) -> List[Tuple[int, Optional[List
             pid += 1
 
     return pairs
+
 
 def search_in_field_matches(obj_node: Any, target_number: int) -> List[Tuple[int, int, Optional[str], Optional[str]]]:
     """
@@ -1110,7 +1365,6 @@ def search_in_field_matches(obj_node: Any, target_number: int) -> List[Tuple[int
             results.append((pid, idx, label, origin))
 
     return results
-
 
 
 def _build_download_url(addr: str) -> str:
@@ -1285,6 +1539,7 @@ def main():
             # Campo TIMEOUT dei CALC nei -io.di #
             in_matches = search_di_in_matches(di_list, target_number)
             for di_idx in in_matches:
+                # print(f"IO>DI>{di_idx} - IN match")
                 print(f"IO>DI>{di_idx} - TIMEOUT match")
 
             # Campo IN dei -io.do
@@ -1352,7 +1607,8 @@ def main():
                 alarm_matches = search_alarm_di_field_matches(alarm_list, target_number)
                 for alarm_idx, fields, name in alarm_matches:
                     if name:
-                        print(f"ALARMS/MAINT>ALARM>{alarm_idx} - match (-alarm) - fields: {', '.join(fields)} - name: {name}")
+                        print(
+                            f"ALARMS/MAINT>ALARM>{alarm_idx} - match (-alarm) - fields: {', '.join(fields)} - name: {name}")
                     else:
                         print(f"ALARMS/MAINT>ALARM>{alarm_idx} - match (-alarm) - fields: {', '.join(fields)}")
 
@@ -1374,6 +1630,8 @@ def main():
 
         elif tipo in (3, 4):
             print("Ricerca per DO/AO (DI target) non ancora implementata qui.")
+
+
 """
 EMGCYPB = 5
 PRELOADUP = 114

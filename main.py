@@ -959,6 +959,59 @@ def run_di_search(data: Any, target_number: int) -> None:
                 print(f"ALARMS/MAINT>ALARM>{alarm_idx} - match (-alarm) - fields: {', '.join(fields)}")
 
 
+def run_do_serach(data: Any, target_number: int) -> None:
+    """Esegue la ricerca di un DO dato l'indice di -out."""
+    # --- dove viene usato ---
+    # Campi IN nei -io.do TODO:provare
+    do_list = (data.get('io') or {}).get('do')
+    if do_list:
+        matches = search_do_in_matches(do_list, target_number)
+        for do_idx, name in matches:
+            if name:
+                print(f"IO>DO>{do_idx} - IN match - DO name: {name}")
+            else:
+                print(f"IO>DO>{do_idx} - IN match")
+
+    # 2) obj>output TODO: scrivere dove cerca e fare funzione
+    output_list = (data.get('obj') or {}).get('output')
+    if output_list:
+        matches = search_output_do_field_matches(output_list, target_number)
+        for out_idx, fields in matches:
+            print(f"OUTPUT>{out_idx} - match (-output) - fields: {', '.join(fields)}")
+
+    # 3) Campi CMD* dei -mot  TODO: (forse piu avanti va messo anche starting)
+    mot_list = (data.get('obj') or {}).get('mot')
+    if mot_list:
+        matches = search_mot_do_field_matches(mot_list, target_number)
+        for mot_idx, fields in matches:
+            print(f"MOT>{mot_idx} - match (-mot) - fields: {', '.join(fields)}")
+
+    # 4) Campo OUT dei obj.alarm
+    alarm_list = (data.get('obj') or {}).get('alarm')
+    if alarm_list:
+        for alarm_idx, alarm_fields in enumerate(alarm_list):
+            if not isinstance(alarm_fields, list) or len(alarm_fields) <= 5:
+                continue
+            try:
+                out_val = int(alarm_fields[5])  # OUT
+            except Exception:
+                continue
+            if out_val == target_number:
+                name = alarm_fields[0] if alarm_fields and isinstance(alarm_fields[0], str) else None
+                if name:
+                    print(f"ALARMS/MAINT>ALARM>{alarm_idx} - OUT match - name: {name}")
+                else:
+                    print(f"ALARMS/MAINT>ALARM>{alarm_idx} - OUT match")
+
+    # 5) Campi DIG1, DIG2, DIG1ADD, DIG2ADD, CC, ADVSTART, ADVENABLE, ADVBRAKE configurazione nei -out TODO: fare funzione
+    label = _label_from_out_index(target_number)
+    origin = _infer_out_origin(label) if label else None
+    if label and origin:
+        print(f"*OUT>[{target_number}] - match (-out) - label: {label} ({origin})")
+    elif label:
+        print(f"*OUT>[{target_number}] - match (-out) - label: {label}")
+
+
 def get_axis_int_di(data: Any, axis_index: int, label: str) -> Optional[int]:
     """Ritorna il DI configurato nell'array AXIS.INT per l'asse e la label dati."""
     axis_nodes = ((data.get('obj') or {}).get('axis') or [])
@@ -1347,6 +1400,15 @@ _IN_ORIGIN_SETS = {
                   "BPDISABLE8", "BPDISABLE9", "BPDISABLE10", "BPDISABLE11", "BPDISABLE12"}
 }
 
+_OUT_ORIGIN_SETS = {
+    "config>main>cmdio": {"MACSTARTLIGHT_DO","MACREADYLIGHT_DO","STARTCMD_DO","STOPCMD_DO"},
+    "config>safety": {"EMGCYRESETLIGHT_DO","EMGCYRESETBTN_DO"},
+    "config>pinchpreload": {"PINCHPRESSAR_DO","PINCHPRESSAR2_DO"},
+    "config>bp": {"BP1_DO","BP2_DO","BP3_DO","BP4_DO","BP5_DO","BP6_DO","BP7_DO","BP8_DO","BP9_DO","BP10_DO","BP11_DO","BP12_DO"},
+    "config>checkmeasurement": {"EYEBENDON_DO"},
+    "config>radiocontrol": {"RCUM_DO","RCLEFTUP_DO","RCLEFTDOWN_DO","RCRIGHTUP_DO","RCRIGHTDOWN_DO",
+                            "RCBOTTONUP_DO","RCBOTTOMDOWN_DO","RCTOPLEFT_DO","RCTOPRIGHT_DO","RCALARM_DO"}
+}
 # Mappatura per indice del blocco "- in:" (etichette nominali)
 IN_INDEX_LABELS = [
     "AUTOSEL", "TEACHSEL", "CYCLESEL", "STARTRESET", "REMOTESEL", "EMGCYPB", "CONSOLE2SEL", "CHROLLSEL", "x",
@@ -1369,6 +1431,18 @@ IN_INDEX_LABELS = [
     "STARTSENSOR2IN", "HOLDTORUNRC2", "ROLLTILTBALANCED", "x", "x", "x", "RIGHTSUPPINTERL", "x", "x", "x"
 ]
 
+OUT_INDEX_LABELS = [
+    "x","x","x","x","x","x","x","x","x","x",
+    # ...
+    "MACSTARTLIGHT_DO","x","x","x","x","MACREADYLIGHT_DO",
+    "x","x","STARTCMD_DO","x","x","x","x","STOPCMD_DO",
+    # ...
+    "EYEBENDON_DO","BP1_DO","BP2_DO","BP3_DO","BP4_DO","BP5_DO","BP6_DO","BP7_DO","BP8_DO","BP9_DO",
+    "BP10_DO","BP11_DO","BP12_DO","x","x","x","x","x","RCUM_DO","RCLEFTUP_DO","RCLEFTDOWN_DO",
+    "RCRIGHTUP_DO","RCRIGHTDOWN_DO","RCBOTTONUP_DO","RCBOTTOMDOWN_DO","RCTOPLEFT_DO","RCTOPRIGHT_DO","RCALARM_DO",
+    "EMGCYRESETBTN_DO","EMGCYRESETLIGHT_DO","x","PINCHPRESSAR_DO","PINCHPRESSAR2_DO","x","x","x","x","x"
+]
+
 
 def _label_from_in_index(idx: int) -> Optional[str]:
     if 0 <= idx < len(IN_INDEX_LABELS):
@@ -1382,6 +1456,22 @@ def _origin_from_in_index(idx: int) -> Optional[str]:
     lab = _label_from_in_index(idx)
     return _infer_in_origin(lab) if lab else None
 
+def _label_from_out_index(idx: int) -> Optional[str]:
+    if 0 <= idx < len(OUT_INDEX_LABELS):
+        lab = OUT_INDEX_LABELS[idx]
+        if isinstance(lab, str) and lab.strip().lower() != 'x' and lab.strip():
+            return lab
+    return None
+
+def _infer_out_origin(label: str) -> Optional[str]:
+    if not label:
+        return None
+    L = re.sub(r'[^A-Z0-9]', '', label.upper())
+    for origin, names in _OUT_ORIGIN_SETS.items():
+        for n in names:
+            if re.sub(r'[^A-Z0-9]', '', n.upper()) == L:
+                return origin
+    return None
 
 def _normalize_label(s: str) -> str:
     # Uppercase e rimuove tutto ciò che non è A-Z/0-9 per confronti robusti
@@ -1805,12 +1895,12 @@ def main():
                             print(f"{ao_idx} - {where} match - AO name: {name}")
                         else:
                             print(f"{ao_idx} - {where} match")
-                else:
-                    print("Nessuna referenza trovata negli AO (IN/AODUAL).")
+            # ri
             else:
                 print("Sezione 'ao' non trovata.")
-
-        elif tipo in (3, 4):
+        elif tipo == 3:
+            run_do_serach(data, target_number)
+        else:
             print("Ricerca per DO/AO (DI target) non ancora implementata qui.")
 
 

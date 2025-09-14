@@ -15,7 +15,8 @@ __company__ = ""
 __product__ = "PSG-X-FindIndex"
 __copyright__ = f"Autore: {__author__} © 2025 {__company__}"
 
-
+# TODO: download config non corrotto,
+# TODO: ricerca dei DO, ricerca dei AI, ricerca dei AO
 """
 STRUTTURE:
 - header: [...]
@@ -36,7 +37,15 @@ STRUTTURE:
     BPDISABLE* si trovano in config>bp
     PUMPONCALC, GREASEALARMCALC, PUMPALARMCALC, GREASETR, GREASELEVEL si trovano in config>grease
     RCV* (0..4), RCLEFTSEL, RCRIGHTSEL, RCLEFTMEM, RCRIGHTMEM si trovano in config>radiocontrol
-- out: [...]
+- out: ["x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","MACSTARTLIGHT_DO","x","x","x","x","MACREADYLIGHT_DO","x","x","STARTCMD_DO","x","x","x","x","STOPCMD_DO","x","x","x","x","x","x","x","x","x","x","EYEBENDON_DO","BP1_DO","BP2_DO","BP3_DO","BP4_DO","BP5_DO","BP6_DO","BP7_DO","BP8_DO","BP9_DO","BP10_DO","BP11_DO","BP12_DO","x","x","x","x","x","RCUM_DO","RCLEFTUP_DO","RCLEFTDOWN_DO","RCRIGHTUP_DO","RCRIGHTDOWN_DO","RCBOTTONUP_DO","RCBOTTOMDOWN_DO","RCTOPLEFT_DO","RCTOPRIGHT_DO","RCALARM_DO","EMGCYRESETBTN_DO","EMGCYRESETLIGHT_DO","x","PINCHPRESSAR_DO","PINCHPRESSAR2_DO","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x"]
+    per il print
+    MACSTARTLIGHT_DO, MACREADYLIGHT_DO, STARTCMD_DO, STOPCMD_DO  si trovano in config>main>cmdio
+    EMGCYRESETLIGHT_DO, EMGCYRESETBTN_DO  si trovano in config>safety
+    PINCHPRESSAR_DO, PINCHPRESSAR2_DO si trovano in config>pinchprelaod
+    BP*_DO si trovano in config>bp
+    EYEBEND_DO si trova in config>checkmeasurement
+    RCUM_DO, RCLEFTUP_DO,RCLEFTDOWN_DO,RCRIGHTUP_DO,RCRIGHTDOWN_DO,RCBOTTOMUP_DO,RCBOTTOMDOWN_DO,RCTOPLEFT_DO,RCTOPRIGHT_DO,RCALARM_DO si trovano in config>radiocontrol>in
+    
 - param:
     - pstring: [MODEL, COSTUMER,x,x]
     - pbool: [...]

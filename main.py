@@ -1665,12 +1665,46 @@ IN_INDEX_LABELS = [
 ]
 
 OUT_INDEX_LABELS = [
-    "x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x",
-    "MACSTARTLIGHT_DO","MACREADYLIGHT_DO","x","x","x","x","x","x","STARTCMD_DO","x","x","x","x","STOPCMD_DO","x","x","x","x","x","x","x","x","x","x",
-    "EYEBENDON_DO","BP1_DO","BP2_DO","BP3_DO","BP4_DO","BP5_DO","BP6_DO","BP7_DO","BP8_DO","BP9_DO","BP10_DO","BP11_DO","BP12_DO","x","x","x","x","x",
-    "RCUM_DO","RCLEFTUP_DO","RCLEFTDOWN_DO","RCRIGHTUP_DO","RCRIGHTDOWN_DO","RCBOTTONUP_DO","RCBOTTOMDOWN_DO","RCTOPLEFT_DO","RCTOPRIGHT_DO","RCALARM_DO",
-    "EMGCYRESETBTN_DO","EMGCYRESETLIGHT_DO","x","PINCHPRESSAR_DO","PINCHPRESSAR2_DO","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x"
+    # 0..48
+    "x","x","x","x","x","x","x","x","x","x",
+    "x","x","x","x","x","x","x","x","x","x",
+    "x","x","x","x","x","x","x","x","x","x",
+    "x","x","x","x","x","x","x","x","x","x",
+    "x","x","x","x","x","x","x","x","x",
+    # 49
+    "MACSTARTLIGHT_DO",
+    # 50..53
+    "x","x","x","x",
+    # 54
+    "MACREADYLIGHT_DO",
+    # 55..56
+    "x","x",
+    # 57
+    "STARTCMD_DO",
+    # 58..64
+    "x","x","x","x","x","x","x",
+    # 65
+    "STOPCMD_DO",
+    # 66..75
+    "x","x","x","x","x","x","x","x","x","x",
+    # 76..88
+    "EYEBENDON_DO",
+    "BP1_DO","BP2_DO","BP3_DO","BP4_DO","BP5_DO","BP6_DO","BP7_DO","BP8_DO","BP9_DO","BP10_DO","BP11_DO","BP12_DO",
+    # 89..95
+    "x","x","x","x","x","x","x",
+    # 96..104
+    "RCUM_DO","RCLEFTUP_DO","RCLEFTDOWN_DO","RCRIGHTUP_DO","RCRIGHTDOWN_DO","RCBOTTOMUP_DO","RCBOTTOMDOWN_DO","RCTOPLEFT_DO","RCTOPRIGHT_DO",
+    # 105..107
+    "EMGCYRESETBTN_DO","RCALARM_DO","EMGCYRESETLIGHT_DO",
+    # 108..110
+    "x","x","x",
+    # 111..112
+    "PINCHPRESSAR_DO","PINCHPRESSAR2_DO",
+    # 113..123
+    "x","x","x","x","x","x","x","x","x","x","x"
 ]
+
+
 
 def _label_from_in_index(idx: int) -> Optional[str]:
     if 0 <= idx < len(IN_INDEX_LABELS):
@@ -1932,7 +1966,8 @@ def main():
     # 2) Loop interattivo: ripeti la domanda dopo ogni ricerca
     while True:
         print("\n" + "-" * 60)
-        tipo_raw = input("Che tipo stai cercando? (1=DI, 2=AI, 3=DO, 4=AO, 5=SYSTEM, Invio per uscire): ").strip().lower()
+        # tipo_raw = input("Che tipo stai cercando? (1=DI, 2=AI, 3=DO, 4=AO, 5=SYSTEM, Invio per uscire): ").strip().lower()
+        tipo_raw = 3 # debug
         if tipo_raw in ("", "q", "quit", "exit", "esci"):
             print("Uscita.")
             _pause_if_frozen()

@@ -592,6 +592,7 @@ def _sanitize_yaml_like(text: str) -> str:
         prev = text
         text = re.sub(r',\s*,', ', null,', text)  # elemento vuoto tra due virgole
     text = re.sub(r'\[\s*,', '[ null,', text)  # vuoto subito dopo '['
+    text = re.sub(r'\[\s*,', '[ null,', text)  # vuoto subito dopo '['
     text = re.sub(r',\s*\]', ', null]', text)  # vuoto prima di ']'
     return text
 
@@ -2033,8 +2034,7 @@ def main():
     # 2) Loop interattivo: ripeti la domanda dopo ogni ricerca
     while True:
         print("\n" + "-" * 60)
-        # tipo_raw = input("Che tipo stai cercando? (1=DI, 2=AI, 3=DO, 4=AO, 5=SYSTEM, Invio per uscire): ").strip().lower()
-        tipo_raw = 3  # debug
+        tipo_raw = input("Che tipo stai cercando? (1=DI, 2=AI, 3=DO, 4=AO, 5=SYSTEM, Invio per uscire): ").strip().lower()
         if tipo_raw in ("", "q", "quit", "exit", "esci"):
             print("Uscita.")
             _pause_if_frozen()

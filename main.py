@@ -490,7 +490,7 @@ def parse_axis_sys_addr(addr: int) -> Optional[Tuple[str, int]]:
     axis_index = addr - base
     if not (0 <= axis_index <= AXIS_MAX_INDEX):  # 0..47
         return None
-    return (AXIS_GROUPS_ORDER[group_idx], axis_index)
+    return AXIS_GROUPS_ORDER[group_idx], axis_index
 
 
 def make_alarm_sys_addr(group: str, alarm_index: int) -> int:
@@ -512,7 +512,7 @@ def parse_alarm_sys_addr(addr: int) -> Optional[Tuple[str, int]]:
     alarm_index = addr - base
     if not (0 <= alarm_index <= ALARM_MAX_INDEX):  # 0..191
         return None
-    return (ALARM_GROUPS_ORDER[group_idx], alarm_index)
+    return ALARM_GROUPS_ORDER[group_idx], alarm_index
 
 
 # ---- Decoder generale (AXIS / ALARM; altri tipi in futuro) ----
@@ -1070,8 +1070,7 @@ def search_di_in_matches(di_list: List[list], target_number: int) -> List[int]:
     return results
 
 
-def search_ai_in_ao_matches(ao_list: List[list], target_number: int, only_bus: bool = True) -> List[
-    Tuple[int, str, Optional[str]]]:
+def search_ai_in_ao_matches(ao_list: List[list], target_number: int, only_bus: bool = True) -> List[Tuple[int, str, Optional[str]]]:
     """
     Cerca tutti gli AO che referenziano l'AI `target_number` in IN o AODUAL.
     Se only_bus=True, considera solo AO con ADDRESS PNET(0) o CAN(1).
@@ -1376,7 +1375,7 @@ def search_mot_do_field_matches(mot_list: List[list], target_number: int) -> Lis
         return []
 
     # Indici costanti per i campi DO nei -obj.mot
-    IDX_CMD  = 8
+    IDX_CMD = 8
     IDX_CMD1 = 11
     IDX_CMD2 = 12
     IDX_CMD3 = 13
@@ -1411,6 +1410,7 @@ def search_mot_do_field_matches(mot_list: List[list], target_number: int) -> Lis
             results.append((mot_idx, matched))
 
     return results
+
 
 def search_alarm_di_field_matches(alarm_list: List[list], target_number: int) -> List[Tuple[int, List[str], Optional[str]]]:
     """
@@ -1511,7 +1511,7 @@ def _pair_out_arrays(out_arrays: List[List[Any]]) -> List[Tuple[int, Optional[Li
     minimizzando la differenza di lunghezza e preferendo la labels-list più lunga a parità.
     """
     numeric = [(i, a) for i, a in enumerate(out_arrays) if _is_mostly_ints(a)]
-    labels  = [(i, a) for i, a in enumerate(out_arrays) if _is_mostly_strings(a)]
+    labels = [(i, a) for i, a in enumerate(out_arrays) if _is_mostly_strings(a)]
 
     pairs: List[Tuple[int, Optional[List[Any]], Optional[List[Any]]]] = []
     used = set()
@@ -1595,6 +1595,7 @@ def search_out_field_matches(obj_node: Any, target_number: int) -> List[Tuple[in
             results.append((pid, idx, label, origin))
 
     return results
+
 
 # Mappa (grezza) label -> "origine" per le stampe
 _IN_ORIGIN_SETS = {
@@ -1733,8 +1734,6 @@ IN_INDEX_LABELS[121] = "HOLDTORUNRC2"
 IN_INDEX_LABELS[122] = "ROLLTILTBALANCED"
 IN_INDEX_LABELS[126] = "RIGHTSUPPINTERL"
 
-
-# reset e ricostruzione OUT_INDEX_LABELS (lunghezza 136)
 OUT_INDEX_LABELS = ["x"] * 136
 OUT_INDEX_LABELS[49] = "MACSTARTLIGHT_DO"     # valore 1
 OUT_INDEX_LABELS[54] = "MACREADYLIGHT_DO"     # valore 21
@@ -1768,7 +1767,6 @@ OUT_INDEX_LABELS[105] = "EMGCYRESETBTN_DO"    # 555
 OUT_INDEX_LABELS[107] = "EMGCYRESETLIGHT_DO"  # 999
 OUT_INDEX_LABELS[115] = "PINCHPRESSAR_DO"     # 38
 OUT_INDEX_LABELS[116] = "PINCHPRESSAR2_DO"    # 39
-
 
 
 def _label_from_in_index(idx: int) -> Optional[str]:

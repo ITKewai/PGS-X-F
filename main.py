@@ -62,6 +62,7 @@ per config 0.25.40
     - ao: [NAME, BOOL_DEFAULT_VALUE, PROG, SIM, BOOL_SIM_VALUE, ADDRESS, CAMPO_1, CAMPO_2, NBYTES, UM, MEMTYPE, MEMIND, IN, AODUAL, DINTDEFAULTVALUE, DINTSIMVALUE, x, x, x, AOPRIORITY, x]
     - do: [NAME, BOOL_DEFAULT_VALUE, x, SIM, BOOL_SIM_VALUE, ADDRESS, CAMPO_1, CAMPO_2, x, UM, MEMTYPE, MEMIND, TIMEOUT, IN, x, x, x, x, x, x,x]
     - ri: [...]
+    - ao: [NAME,x,x,x,x,x,CAMPO_1,x,x,x,x,x,AODUAL,IN,x,x,x,x,x,x,x]
 - obj:
     - axis: [NAME]
         bool: [x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x]
@@ -336,6 +337,7 @@ IDX_AO_DUAL = 13
 IDX_DO_IN = 13
 IDX_FB_TYPE = 0
 IDX_FB_RESETIND = 2
+IDX_FB_ININD = 3
 IDX_FB_ERR_DEPRECATED = 4
 DI_NUM_EXPR_GROUPS = 8
 DI_EXPR_GROUP_SIZE = 3  # (EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR)
@@ -1018,6 +1020,30 @@ def run_do_serach(data: Any, target_number: int) -> None:
             print(f"*OUT>{pid}[{idx}] - match (-out)")
 
 
+def run_ai_search(data: Any, target_number: int) -> None:
+    # Campi IN dei -io.ao
+    ao_list = (data.get('io') or {}).get('ao', [])
+    if ao_list:
+        matches = search_ai_in_ao_matches(ao_list, target_number, only_bus=True)
+        if matches:
+            for ao_idx, where, name in matches:
+                if name:
+                    print(f"IO>AO>{ao_idx} - {where} match - AO name: {name}")
+                else:
+                    print(f"IO>AO>{ao_idx} - {where} match")
+
+    # Campi ININD dei -obj.fb (solo se tipo AI o AI2)
+    fb_list = (data.get('obj') or {}).get('fb')
+    if fb_list:
+        inind_matches = search_fb_inind_ai_matches(fb_list, target_number)
+        for fb_idx, fb_type in inind_matches:
+            # stessa forma delle altre stampe fb; aggiungo il tipo se disponibile
+            if fb_type:
+                print(f"FEEDBACK>{fb_idx} - ININD match (-fb) - type: {fb_type}")
+            else:
+                print(f"FEEDBACK>{fb_idx} - ININD match (-fb)")
+
+
 def get_axis_int_di(data: Any, axis_index: int, label: str) -> Optional[int]:
     """Ritorna il DI configurato nell'array AXIS.INT per l'asse e la label dati."""
     axis_nodes = ((data.get('obj') or {}).get('axis') or [])
@@ -1080,6 +1106,8 @@ def search_ai_in_ao_matches(ao_list: List[list], target_number: int, only_bus: b
     """
     matches: List[Tuple[int, str, Optional[str]]] = []
     for ao_index, ao_fields in enumerate(ao_list or []):
+        if ao_index == 47:
+            x = 1
         if not isinstance(ao_fields, list):
             continue
 
@@ -1177,6 +1205,46 @@ def search_fb_resetind_matches(fb_list: List[list], target_number: int) -> List[
                     fb_type_val = -1
                 fb_type_str = FB_TYPE.get(fb_type_val, str(fb_type_val))
             results.append((fb_index, fb_type_str))
+    return results
+
+
+def search_fb_inind_ai_matches(fb_list: List[list], target_number: int) -> List[Tuple[int, Optional[str]]]:
+    """
+    Cerca in -obj.fb le righe con FB_TYPE AI (1) o AI2 (7) che hanno ININD (idx 3)
+    uguale a target_number.
+
+    Ritorna: [(indice_fb, fb_type_string_opzionale)]
+    """
+    results: List[Tuple[int, Optional[str]]] = []
+    AI_TYPES = {1, 7}  # 1=AI, 7=AI2
+
+    for fb_index, fb_fields in enumerate(fb_list or []):
+        if not isinstance(fb_fields, list):
+            continue
+
+        # Tipo FB
+        fb_type_val = None
+        if len(fb_fields) > IDX_FB_TYPE:
+            try:
+                fb_type_val = int(fb_fields[IDX_FB_TYPE])
+            except Exception:
+                fb_type_val = None
+
+        if fb_type_val not in AI_TYPES:
+            continue  # considera solo AI/AI2
+
+        # ININD
+        if len(fb_fields) <= IDX_FB_ININD:
+            continue
+        try:
+            inind_val = int(fb_fields[IDX_FB_ININD])
+        except Exception:
+            continue
+
+        if inind_val == target_number:
+            fb_type_str = FB_TYPE.get(fb_type_val, str(fb_type_val) if fb_type_val is not None else None)
+            results.append((fb_index, fb_type_str))
+
     return results
 
 
@@ -2218,19 +2286,7 @@ def main():
         if tipo == 1:
             run_di_search(data, target_number)
         elif tipo == 2:
-            # ---- Ricerche su AI ----
-            ao_list = (data.get('io') or {}).get('ao')
-            if ao_list:
-                matches = search_ai_in_ao_matches(ao_list, target_number, only_bus=True)
-                if matches:
-                    for ao_idx, where, name in matches:
-                        if name:
-                            print(f"{ao_idx} - {where} match - AO name: {name}")
-                        else:
-                            print(f"{ao_idx} - {where} match")
-            # ri
-            else:
-                print("Sezione 'ao' non trovata.")
+            run_ai_search(data, target_number)
         elif tipo == 3:
             run_do_serach(data, target_number)
         else:

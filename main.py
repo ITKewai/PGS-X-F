@@ -1070,7 +1070,8 @@ def search_di_in_matches(di_list: List[list], target_number: int) -> List[int]:
     return results
 
 
-def search_ai_in_ao_matches(ao_list: List[list], target_number: int, only_bus: bool = True) -> List[Tuple[int, str, Optional[str]]]:
+def search_ai_in_ao_matches(ao_list: List[list], target_number: int, only_bus: bool = True) -> List[
+    Tuple[int, str, Optional[str]]]:
     """
     Cerca tutti gli AO che referenziano l'AI `target_number` in IN o AODUAL.
     Se only_bus=True, considera solo AO con ADDRESS PNET(0) o CAN(1).
@@ -1412,7 +1413,8 @@ def search_mot_do_field_matches(mot_list: List[list], target_number: int) -> Lis
     return results
 
 
-def search_alarm_di_field_matches(alarm_list: List[list], target_number: int) -> List[Tuple[int, List[str], Optional[str]]]:
+def search_alarm_di_field_matches(alarm_list: List[list], target_number: int) -> List[
+    Tuple[int, List[str], Optional[str]]]:
     """
     Cerca nei -obj.alarm i campi IN, ENAB, DISAB, REQACK, ACK che referenziano il DI `target_number`.
     Ritorna: [(indice_alarm, [nomi_campi_match], nome_alarm opz.)]
@@ -1445,7 +1447,8 @@ def search_alarm_di_field_matches(alarm_list: List[list], target_number: int) ->
     return results
 
 
-def search_axis_int_di_field_matches(axis_int_lists: List[List[Any]], target_number: int) -> List[Tuple[int, List[str]]]:
+def search_axis_int_di_field_matches(axis_int_lists: List[List[Any]], target_number: int) -> List[
+    Tuple[int, List[str]]]:
     """
     Cerca in ciascun array 'axis.int' i campi etichettati (SUP, INF, ALTFBDIG, HH, H, L, LL,
     SAFETYUP1..6, H0, L0, INDMEM, SAFETYDOWN1..6, DECOUPLE1AUTO..6, FREE70, FREE71,
@@ -1496,6 +1499,7 @@ def _is_mostly_ints(arr: List[Any]) -> bool:
 def _is_mostly_strings(arr: List[Any]) -> bool:
     strings = sum(1 for v in arr if isinstance(v, str))
     return strings >= max(1, len(arr) // 2)
+
 
 # ---- Ricerca nei campi -out --------------------------------------------------
 
@@ -1635,13 +1639,14 @@ _IN_ORIGIN_SETS = {
 }
 
 _OUT_ORIGIN_SETS = {
-    "config>main>cmdio": {"MACSTARTLIGHT_DO","MACREADYLIGHT_DO","STARTCMD_DO","STOPCMD_DO"},
-    "config>safety": {"EMGCYRESETLIGHT_DO","EMGCYRESETBTN_DO"},
-    "config>pinchpreload": {"PINCHPRESSAR_DO","PINCHPRESSAR2_DO"},
-    "config>bp": {"BP1_DO","BP2_DO","BP3_DO","BP4_DO","BP5_DO","BP6_DO","BP7_DO","BP8_DO","BP9_DO","BP10_DO","BP11_DO","BP12_DO"},
+    "config>main>cmdio": {"MACSTARTLIGHT_DO", "MACREADYLIGHT_DO", "STARTCMD_DO", "STOPCMD_DO"},
+    "config>safety": {"EMGCYRESETLIGHT_DO", "EMGCYRESETBTN_DO"},
+    "config>pinchpreload": {"PINCHPRESSAR_DO", "PINCHPRESSAR2_DO"},
+    "config>bp": {"BP1_DO", "BP2_DO", "BP3_DO", "BP4_DO", "BP5_DO", "BP6_DO", "BP7_DO", "BP8_DO", "BP9_DO", "BP10_DO",
+                  "BP11_DO", "BP12_DO"},
     "config>checkmeasurement": {"EYEBENDON_DO"},
-    "config>radiocontrol": {"RCUM_DO","RCLEFTUP_DO","RCLEFTDOWN_DO","RCRIGHTUP_DO","RCRIGHTDOWN_DO",
-                            "RCBOTTONUP_DO","RCBOTTOMDOWN_DO","RCTOPLEFT_DO","RCTOPRIGHT_DO","RCALARM_DO"}
+    "config>radiocontrol": {"RCUM_DO", "RCLEFTUP_DO", "RCLEFTDOWN_DO", "RCRIGHTUP_DO", "RCRIGHTDOWN_DO",
+                            "RCBOTTONUP_DO", "RCBOTTOMDOWN_DO", "RCTOPLEFT_DO", "RCTOPRIGHT_DO", "RCALARM_DO"}
 }
 # Mappatura per indice del blocco "- in:" (etichette nominali)
 IN_INDEX_LABELS = ["x"] * 136
@@ -1735,38 +1740,38 @@ IN_INDEX_LABELS[122] = "ROLLTILTBALANCED"
 IN_INDEX_LABELS[126] = "RIGHTSUPPINTERL"
 
 OUT_INDEX_LABELS = ["x"] * 136
-OUT_INDEX_LABELS[49] = "MACSTARTLIGHT_DO"     # valore 1
-OUT_INDEX_LABELS[54] = "MACREADYLIGHT_DO"     # valore 21
-OUT_INDEX_LABELS[57] = "STARTCMD_DO"          # valore 777
-OUT_INDEX_LABELS[64] = "STOPCMD_DO"           # valore 888
-OUT_INDEX_LABELS[76] = "EYEBENDON_DO"         # valore 32
-OUT_INDEX_LABELS[78] = "EYEBENDON_DO"         # (nel tuo out c'è un altro 32 qui)
-OUT_INDEX_LABELS[79] = "BP1_DO"               # valore 22
-OUT_INDEX_LABELS[80] = "BP2_DO"               # valore 23
-OUT_INDEX_LABELS[81] = "BP3_DO"               # valore 20
-OUT_INDEX_LABELS[82] = "BP4_DO"               # valore 20
-OUT_INDEX_LABELS[83] = "BP5_DO"               # valore 20
-OUT_INDEX_LABELS[84] = "BP6_DO"               # valore 20
-OUT_INDEX_LABELS[85] = "BP7_DO"               # valore 20
-OUT_INDEX_LABELS[86] = "BP8_DO"               # valore 20
-OUT_INDEX_LABELS[87] = "BP9_DO"               # valore 20
-OUT_INDEX_LABELS[88] = "BP10_DO"               # valore 20
-OUT_INDEX_LABELS[89] = "BP11_DO"               # valore 20
-OUT_INDEX_LABELS[90] = "BP12_DO"               # valore 20
-OUT_INDEX_LABELS[96]  = "RCUM_DO"             # 120
-OUT_INDEX_LABELS[97]  = "RCLEFTUP_DO"         # 114
-OUT_INDEX_LABELS[98]  = "RCLEFTDOWN_DO"       # 115
-OUT_INDEX_LABELS[99]  = "RCRIGHTUP_DO"        # 116
-OUT_INDEX_LABELS[100] = "RCRIGHTDOWN_DO"      # 117
-OUT_INDEX_LABELS[101] = "RCBOTTOMUP_DO"       # 118 (corretto il typo)
-OUT_INDEX_LABELS[102] = "RCBOTTOMDOWN_DO"     # 119
-OUT_INDEX_LABELS[103] = "RCTOPLEFT_DO"        # 112
-OUT_INDEX_LABELS[104] = "RCTOPRIGHT_DO"       # 113
-OUT_INDEX_LABELS[106] = "RCALARM_DO"          # 121
-OUT_INDEX_LABELS[105] = "EMGCYRESETBTN_DO"    # 555
+OUT_INDEX_LABELS[49] = "MACSTARTLIGHT_DO"  # valore 1
+OUT_INDEX_LABELS[54] = "MACREADYLIGHT_DO"  # valore 21
+OUT_INDEX_LABELS[57] = "STARTCMD_DO"  # valore 777
+OUT_INDEX_LABELS[64] = "STOPCMD_DO"  # valore 888
+OUT_INDEX_LABELS[76] = "EYEBENDON_DO"  # valore 32
+OUT_INDEX_LABELS[78] = "EYEBENDON_DO"  # (nel tuo out c'è un altro 32 qui)
+OUT_INDEX_LABELS[79] = "BP1_DO"  # valore 22
+OUT_INDEX_LABELS[80] = "BP2_DO"  # valore 23
+OUT_INDEX_LABELS[81] = "BP3_DO"  # valore 20
+OUT_INDEX_LABELS[82] = "BP4_DO"  # valore 20
+OUT_INDEX_LABELS[83] = "BP5_DO"  # valore 20
+OUT_INDEX_LABELS[84] = "BP6_DO"  # valore 20
+OUT_INDEX_LABELS[85] = "BP7_DO"  # valore 20
+OUT_INDEX_LABELS[86] = "BP8_DO"  # valore 20
+OUT_INDEX_LABELS[87] = "BP9_DO"  # valore 20
+OUT_INDEX_LABELS[88] = "BP10_DO"  # valore 20
+OUT_INDEX_LABELS[89] = "BP11_DO"  # valore 20
+OUT_INDEX_LABELS[90] = "BP12_DO"  # valore 20
+OUT_INDEX_LABELS[96] = "RCUM_DO"  # 120
+OUT_INDEX_LABELS[97] = "RCLEFTUP_DO"  # 114
+OUT_INDEX_LABELS[98] = "RCLEFTDOWN_DO"  # 115
+OUT_INDEX_LABELS[99] = "RCRIGHTUP_DO"  # 116
+OUT_INDEX_LABELS[100] = "RCRIGHTDOWN_DO"  # 117
+OUT_INDEX_LABELS[101] = "RCBOTTOMUP_DO"  # 118 (corretto il typo)
+OUT_INDEX_LABELS[102] = "RCBOTTOMDOWN_DO"  # 119
+OUT_INDEX_LABELS[103] = "RCTOPLEFT_DO"  # 112
+OUT_INDEX_LABELS[104] = "RCTOPRIGHT_DO"  # 113
+OUT_INDEX_LABELS[106] = "RCALARM_DO"  # 121
+OUT_INDEX_LABELS[105] = "EMGCYRESETBTN_DO"  # 555
 OUT_INDEX_LABELS[107] = "EMGCYRESETLIGHT_DO"  # 999
-OUT_INDEX_LABELS[115] = "PINCHPRESSAR_DO"     # 38
-OUT_INDEX_LABELS[116] = "PINCHPRESSAR2_DO"    # 39
+OUT_INDEX_LABELS[115] = "PINCHPRESSAR_DO"  # 38
+OUT_INDEX_LABELS[116] = "PINCHPRESSAR2_DO"  # 39
 
 
 def _label_from_in_index(idx: int) -> Optional[str]:
@@ -1799,6 +1804,7 @@ def _infer_out_origin(label: str) -> Optional[str]:
             if re.sub(r'[^A-Z0-9]', '', n.upper()) == L:
                 return origin
     return None
+
 
 def _normalize_label(s: str) -> str:
     # Uppercase e rimuove tutto ciò che non è A-Z/0-9 per confronti robusti
@@ -2030,7 +2036,7 @@ def main():
     while True:
         print("\n" + "-" * 60)
         # tipo_raw = input("Che tipo stai cercando? (1=DI, 2=AI, 3=DO, 4=AO, 5=SYSTEM, Invio per uscire): ").strip().lower()
-        tipo_raw = 3 # debug
+        tipo_raw = 3  # debug
         if tipo_raw in ("", "q", "quit", "exit", "esci"):
             print("Uscita.")
             _pause_if_frozen()
@@ -2109,7 +2115,8 @@ def main():
                 print("\nAlcuni ALARM definiti (indice → nome):")
                 for i, row in enumerate(alarm_rows):
                     try:
-                        nm = row[0] if (isinstance(row, list) and row and isinstance(row[0], (str, int, float))) else None
+                        nm = row[0] if (
+                                    isinstance(row, list) and row and isinstance(row[0], (str, int, float))) else None
                         if nm not in (None, "", "x", "X"):
                             print(f"  [{i:03d}] {nm}")
                     except Exception:
@@ -2237,7 +2244,7 @@ def print_in_columns(entries: List[str], cols: int = 3) -> None:
         return
     colw = max(len(s) for s in entries) + 2  # padding
     for i in range(0, len(entries), cols):
-        row = entries[i:i+cols]
+        row = entries[i:i + cols]
         print("  " + "".join(s.ljust(colw) for s in row))
 
 

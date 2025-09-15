@@ -17,8 +17,11 @@ __copyright__ = f"Autore: {__author__} © 2025 {__company__}"
 
 # TODO: download config non corrotto,
 # TODO: ricerca dei DO, ricerca dei AI, ricerca dei AO
+# TODO: ricerca dei DI che si chiamano FREE o senza nome per vedere se sono usati da qualche parte
+
 """
 STRUTTURE:
+per config 0.25.40
 - header: [...]
 - ifm:
     - card: [TYPE, DITHERFREQ, DITHERVAL]
@@ -972,14 +975,14 @@ def run_do_serach(data: Any, target_number: int) -> None:
             else:
                 print(f"IO>DO>{do_idx} - IN match")
 
-    # 2) obj>output TODO: scrivere dove cerca e fare funzione
+    # 2) Campi DIG*/CC/DIG1ADD/DIG2ADD/ADVSTART/ADVENABLE/ADVBRAKE nei -obj.output TODO: scrivere dove cerca e fare funzione
     output_list = (data.get('obj') or {}).get('output')
     if output_list:
         matches = search_output_do_field_matches(output_list, target_number)
         for out_idx, fields in matches:
             print(f"OUTPUT>{out_idx} - match (-output) - fields: {', '.join(fields)}")
 
-    # 3) Campi CMD* dei -mot  TODO: (forse piu avanti va messo anche starting)
+    # 3) Campi CMD* dei -obj.mot
     mot_list = (data.get('obj') or {}).get('mot')
     if mot_list:
         matches = search_mot_do_field_matches(mot_list, target_number)
@@ -1003,13 +1006,15 @@ def run_do_serach(data: Any, target_number: int) -> None:
                 else:
                     print(f"ALARMS/MAINT>ALARM>{alarm_idx} - OUT match")
 
-    # 5) Campi DIG1, DIG2, DIG1ADD, DIG2ADD, CC, ADVSTART, ADVENABLE, ADVBRAKE configurazione nei -out TODO: fare funzione
-    label = _label_from_out_index(target_number)
-    origin = _infer_out_origin(label) if label else None
-    if label and origin:
-        print(f"*OUT>[{target_number}] - match (-out) - label: {label} ({origin})")
-    elif label:
-        print(f"*OUT>[{target_number}] - match (-out) - label: {label}")
+    # 5) Campi generici configurazione nei -out
+    out_matches2 = search_out_field_matches(data, target_number)
+    for pid, idx, label, origin in out_matches2:
+        if label and origin:
+            print(f"*OUT>{pid}[{idx}] - match (-out) - label: {label} ({origin})")
+        elif label:
+            print(f"*OUT>{pid}[{idx}] - match (-out) - label: {label}")
+        else:
+            print(f"*OUT>{pid}[{idx}] - match (-out)")
 
 
 def get_axis_int_di(data: Any, axis_index: int, label: str) -> Optional[int]:
@@ -1241,6 +1246,86 @@ def search_output_di_field_matches(output_list: List[list], target_number: int) 
     return results
 
 
+def search_output_do_field_matches(output_list: List[list], target_number: int) -> List[Tuple[int, List[str]]]:
+    """
+    Cerca nei -obj.output i campi che referenziano un DO `target_number`.
+
+    Campi verificati:
+      - Sempre: DIG1 (idx 3), DIG2 (idx 4), CC (idx 5)
+      - Se OUTPUT_TYPE = SELSLOW (3): ANA1 -> DIG1ADD, ANA2 -> DIG2ADD
+      - Se OUTPUT_TYPE = ADV (4): ANA2 -> ADVSTART, DIG1 -> ADVENABLE, DIG2 -> ADVBRAKE
+
+    Ritorna: [(indice_output, [nomi_campi_match])]
+             dove i nomi sono simbolici (es. 'DIG1', 'DIG1ADD', 'ADVSTART', 'ADVENABLE', 'ADVBRAKE').
+    """
+    if not isinstance(output_list, list):
+        return []
+
+    # Indici di colonna nella riga -obj.output
+    IDX_DIG1 = 3
+    IDX_DIG2 = 4
+    IDX_CC = 5
+
+    results: List[Tuple[int, List[str]]] = []
+
+    for out_index, out_fields in enumerate(output_list):
+        if not isinstance(out_fields, list):
+            continue
+
+        matched: List[str] = []
+
+        # Leggi OUTPUT_TYPE in modo robusto
+        out_type = -1
+        if len(out_fields) > IDX_OUTPUT_TYPE:
+            try:
+                out_type = int(out_fields[IDX_OUTPUT_TYPE])
+            except Exception:
+                out_type = -1
+
+        # Helper per confronto robusto su un indice
+        def _match_at(idx: int) -> bool:
+            if idx < 0 or idx >= len(out_fields):
+                return False
+            try:
+                val = int(out_fields[idx])
+            except Exception:
+                return False
+            return val == target_number
+
+        # Campi sempre presenti
+        if _match_at(IDX_DIG1):
+            matched.append("DIG1")
+        if _match_at(IDX_DIG2):
+            matched.append("DIG2")
+        if _match_at(IDX_CC):
+            matched.append("CC")
+
+        # Rimappature per SELSLOW (OUTPUT_TYPE = 3): ANA1 -> DIG1ADD, ANA2 -> DIG2ADD
+        if out_type == 3:
+            if len(out_fields) > IDX_OUTPUT_ANA1 and _match_at(IDX_OUTPUT_ANA1):
+                matched.append("DIG1ADD")
+            if len(out_fields) > IDX_OUTPUT_ANA2 and _match_at(IDX_OUTPUT_ANA2):
+                matched.append("DIG2ADD")
+
+        # Rimappature per ADV (OUTPUT_TYPE = 4):
+        #   ANA2 -> ADVSTART
+        #   DIG1 -> ADVENABLE (già controllato come DIG1; rinominiamo semanticamente)
+        #   DIG2 -> ADVBRAKE  (già controllato come DIG2; rinominiamo semanticamente)
+        if out_type == 4:
+            if len(out_fields) > IDX_OUTPUT_ANA2 and _match_at(IDX_OUTPUT_ANA2):
+                matched.append("ADVSTART")
+            # Se DIG1/2 hanno fatto match sopra, aggiungiamo anche i nomi semantici
+            if "DIG1" in matched:
+                matched.append("ADVENABLE")
+            if "DIG2" in matched:
+                matched.append("ADVBRAKE")
+
+        if matched:
+            results.append((out_index, matched))
+
+    return results
+
+
 def search_mot_di_field_matches(mot_list: List[list], target_number: int) -> List[Tuple[int, List[str]]]:
     """
     Cerca in obj>mot i campi LSSTOP, LS2START, TR, STAT, TR2, STARTING
@@ -1275,8 +1360,59 @@ def search_mot_di_field_matches(mot_list: List[list], target_number: int) -> Lis
     return results
 
 
-def search_alarm_di_field_matches(alarm_list: List[list], target_number: int) -> List[
-    Tuple[int, List[str], Optional[str]]]:
+def search_mot_do_field_matches(mot_list: List[list], target_number: int) -> List[Tuple[int, List[str]]]:
+    """
+    Cerca nei -obj.mot i campi che referenziano un DO `target_number`.
+
+    Campi verificati (indici nella riga mot):
+      - CMD  (idx 8)
+      - CMD1 (idx 11)
+      - CMD2 (idx 12)
+      - CMD3 (idx 13)
+
+    Ritorna: [(indice_mot, [nomi_campi_match])]
+    """
+    if not isinstance(mot_list, list):
+        return []
+
+    # Indici costanti per i campi DO nei -obj.mot
+    IDX_CMD  = 8
+    IDX_CMD1 = 11
+    IDX_CMD2 = 12
+    IDX_CMD3 = 13
+
+    results: List[Tuple[int, List[str]]] = []
+
+    for mot_idx, mot_fields in enumerate(mot_list or []):
+        if not isinstance(mot_fields, list):
+            continue
+
+        matched: List[str] = []
+
+        def _match_at(idx: int) -> bool:
+            if idx < 0 or idx >= len(mot_fields):
+                return False
+            try:
+                val = int(mot_fields[idx])
+            except Exception:
+                return False
+            return val == target_number
+
+        if _match_at(IDX_CMD):
+            matched.append("CMD")
+        if _match_at(IDX_CMD1):
+            matched.append("CMD1")
+        if _match_at(IDX_CMD2):
+            matched.append("CMD2")
+        if _match_at(IDX_CMD3):
+            matched.append("CMD3")
+
+        if matched:
+            results.append((mot_idx, matched))
+
+    return results
+
+def search_alarm_di_field_matches(alarm_list: List[list], target_number: int) -> List[Tuple[int, List[str], Optional[str]]]:
     """
     Cerca nei -obj.alarm i campi IN, ENAB, DISAB, REQACK, ACK che referenziano il DI `target_number`.
     Ritorna: [(indice_alarm, [nomi_campi_match], nome_alarm opz.)]
@@ -1309,8 +1445,7 @@ def search_alarm_di_field_matches(alarm_list: List[list], target_number: int) ->
     return results
 
 
-def search_axis_int_di_field_matches(axis_int_lists: List[List[Any]], target_number: int) -> List[
-    Tuple[int, List[str]]]:
+def search_axis_int_di_field_matches(axis_int_lists: List[List[Any]], target_number: int) -> List[Tuple[int, List[str]]]:
     """
     Cerca in ciascun array 'axis.int' i campi etichettati (SUP, INF, ALTFBDIG, HH, H, L, LL,
     SAFETYUP1..6, H0, L0, INDMEM, SAFETYDOWN1..6, DECOUPLE1AUTO..6, FREE70, FREE71,
@@ -1362,6 +1497,104 @@ def _is_mostly_strings(arr: List[Any]) -> bool:
     strings = sum(1 for v in arr if isinstance(v, str))
     return strings >= max(1, len(arr) // 2)
 
+# ---- Ricerca nei campi -out --------------------------------------------------
+
+
+def _find_out_arrays(root: Any) -> List[List[Any]]:
+    """Raccoglie tutte le liste associate alla chiave 'out' in obj."""
+    return find_section(root, ['out']) or []
+
+
+def _pair_out_arrays(out_arrays: List[List[Any]]) -> List[Tuple[int, Optional[List[Any]], Optional[List[Any]]]]:
+    """
+    Abbina array numerici a array di etichette come in _pair_in_arrays,
+    minimizzando la differenza di lunghezza e preferendo la labels-list più lunga a parità.
+    """
+    numeric = [(i, a) for i, a in enumerate(out_arrays) if _is_mostly_ints(a)]
+    labels  = [(i, a) for i, a in enumerate(out_arrays) if _is_mostly_strings(a)]
+
+    pairs: List[Tuple[int, Optional[List[Any]], Optional[List[Any]]]] = []
+    used = set()
+    pid = 0
+
+    for _, n in numeric:
+        best_j = None
+        best_la = None
+        best_key = None  # (diff, -len)
+        for j, (li, la) in enumerate(labels):
+            if j in used:
+                continue
+            diff = abs(len(la) - len(n))
+            key = (diff, -len(la))
+            if best_key is None or key < best_key:
+                best_key = key
+                best_j = j
+                best_la = la
+        if best_la is not None:
+            used.add(best_j)
+            pairs.append((pid, n, best_la))
+        else:
+            pairs.append((pid, n, None))
+        pid += 1
+
+    for j, (li, la) in enumerate(labels):
+        if j not in used:
+            pairs.append((pid, None, la))
+            pid += 1
+
+    return pairs
+
+
+def search_out_field_matches(obj_node: Any, target_number: int) -> List[Tuple[int, int, Optional[str], Optional[str]]]:
+    """
+    Cerca il numero 'target_number' all'interno degli array '- out:' dovunque nel documento.
+    Preferisce l'etichetta dalla lista labels abbinata; se mancante/insufficiente/'x',
+    usa la mappatura per indice (OUT_INDEX_LABELS) per ricavare label e l'origine (config>...).
+
+    Ritorna: [(pair_id, index, label_opzionale, origine_opzionale)]
+    """
+    results: List[Tuple[int, int, Optional[str], Optional[str]]] = []
+    out_arrays = _find_out_arrays(obj_node)
+    if not out_arrays:
+        return results
+
+    pairs = _pair_out_arrays(out_arrays)
+
+    for pid, num_arr, lab_arr in pairs:
+        if not num_arr:
+            continue
+        for idx, v in enumerate(num_arr):
+            # confronto numerico robusto
+            try:
+                val = int(str(v).strip())
+            except Exception:
+                continue
+            if val != target_number:
+                continue
+
+            # 1) prova a prendere la label dalla lista di etichette abbinata
+            raw_label = lab_arr[idx] if (lab_arr and idx < len(lab_arr)) else None
+            label = None
+            if isinstance(raw_label, str):
+                s = raw_label.strip()
+                if s and s.lower() != 'x':
+                    label = s
+
+            # 2) se mancante/non utile, fallback alla mappa per indice
+            if not label:
+                label = _label_from_out_index(idx)
+
+            # 3) calcola l'origine
+            if label:
+                origin = _infer_out_origin(label)
+            else:
+                # fallback: prova a dedurre l'origine dalla label mappata da indice
+                mapped = _label_from_out_index(idx)
+                origin = _infer_out_origin(mapped) if mapped else None
+
+            results.append((pid, idx, label, origin))
+
+    return results
 
 # Mappa (grezza) label -> "origine" per le stampe
 _IN_ORIGIN_SETS = {
@@ -1432,17 +1665,12 @@ IN_INDEX_LABELS = [
 ]
 
 OUT_INDEX_LABELS = [
-    "x","x","x","x","x","x","x","x","x","x",
-    # ...
-    "MACSTARTLIGHT_DO","x","x","x","x","MACREADYLIGHT_DO",
-    "x","x","STARTCMD_DO","x","x","x","x","STOPCMD_DO",
-    # ...
-    "EYEBENDON_DO","BP1_DO","BP2_DO","BP3_DO","BP4_DO","BP5_DO","BP6_DO","BP7_DO","BP8_DO","BP9_DO",
-    "BP10_DO","BP11_DO","BP12_DO","x","x","x","x","x","RCUM_DO","RCLEFTUP_DO","RCLEFTDOWN_DO",
-    "RCRIGHTUP_DO","RCRIGHTDOWN_DO","RCBOTTONUP_DO","RCBOTTOMDOWN_DO","RCTOPLEFT_DO","RCTOPRIGHT_DO","RCALARM_DO",
-    "EMGCYRESETBTN_DO","EMGCYRESETLIGHT_DO","x","PINCHPRESSAR_DO","PINCHPRESSAR2_DO","x","x","x","x","x"
+    "x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x",
+    "MACSTARTLIGHT_DO","MACREADYLIGHT_DO","x","x","x","x","x","x","STARTCMD_DO","x","x","x","x","STOPCMD_DO","x","x","x","x","x","x","x","x","x","x",
+    "EYEBENDON_DO","BP1_DO","BP2_DO","BP3_DO","BP4_DO","BP5_DO","BP6_DO","BP7_DO","BP8_DO","BP9_DO","BP10_DO","BP11_DO","BP12_DO","x","x","x","x","x",
+    "RCUM_DO","RCLEFTUP_DO","RCLEFTDOWN_DO","RCRIGHTUP_DO","RCRIGHTDOWN_DO","RCBOTTONUP_DO","RCBOTTOMDOWN_DO","RCTOPLEFT_DO","RCTOPRIGHT_DO","RCALARM_DO",
+    "EMGCYRESETBTN_DO","EMGCYRESETLIGHT_DO","x","PINCHPRESSAR_DO","PINCHPRESSAR2_DO","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x"
 ]
-
 
 def _label_from_in_index(idx: int) -> Optional[str]:
     if 0 <= idx < len(IN_INDEX_LABELS):
@@ -1456,12 +1684,14 @@ def _origin_from_in_index(idx: int) -> Optional[str]:
     lab = _label_from_in_index(idx)
     return _infer_in_origin(lab) if lab else None
 
+
 def _label_from_out_index(idx: int) -> Optional[str]:
     if 0 <= idx < len(OUT_INDEX_LABELS):
         lab = OUT_INDEX_LABELS[idx]
         if isinstance(lab, str) and lab.strip().lower() != 'x' and lab.strip():
             return lab
     return None
+
 
 def _infer_out_origin(label: str) -> Optional[str]:
     if not label:

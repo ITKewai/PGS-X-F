@@ -1413,8 +1413,7 @@ def search_mot_do_field_matches(mot_list: List[list], target_number: int) -> Lis
     return results
 
 
-def search_alarm_di_field_matches(alarm_list: List[list], target_number: int) -> List[
-    Tuple[int, List[str], Optional[str]]]:
+def search_alarm_di_field_matches(alarm_list: List[list], target_number: int) -> List[Tuple[int, List[str], Optional[str]]]:
     """
     Cerca nei -obj.alarm i campi IN, ENAB, DISAB, REQACK, ACK che referenziano il DI `target_number`.
     Ritorna: [(indice_alarm, [nomi_campi_match], nome_alarm opz.)]
@@ -1447,8 +1446,7 @@ def search_alarm_di_field_matches(alarm_list: List[list], target_number: int) ->
     return results
 
 
-def search_axis_int_di_field_matches(axis_int_lists: List[List[Any]], target_number: int) -> List[
-    Tuple[int, List[str]]]:
+def search_axis_int_di_field_matches(axis_int_lists: List[List[Any]], target_number: int) -> List[Tuple[int, List[str]]]:
     """
     Cerca in ciascun array 'axis.int' i campi etichettati (SUP, INF, ALTFBDIG, HH, H, L, LL,
     SAFETYUP1..6, H0, L0, INDMEM, SAFETYDOWN1..6, DECOUPLE1AUTO..6, FREE70, FREE71,

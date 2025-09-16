@@ -15,7 +15,7 @@ __company__ = ""
 __product__ = "PSG-X-FindIndex"
 __copyright__ = f"Autore: {__author__} © 2025 {__company__}"
 
-# TODO: download config non corrotto,
+# TODO: download config con salvataggio versione data
 # TODO: ricerca dei DO, ricerca dei AI, ricerca dei AO
 # TODO: ricerca dei DI che si chiamano FREE o senza nome per vedere se sono usati da qualche parte
 
@@ -264,15 +264,16 @@ INPUT_MESURETYPE = UM.copy()
 
 OUTPUT_TYPE = {
     -1: '',
-    0: 'SEL',
-    1: 'DIR',
-    2: 'DIRINV',
-    3: 'SELSLOW',
-    4: 'ADV',
-    5: 'PSLCAN',
-    6: 'SELFL',
-    7: 'SEL2PV',
-    8: 'ATV340',
+    0: '',
+    1: 'SEL',
+    2: 'DIR',
+    3: 'DIRINV',
+    4: 'SELSLOW',
+    5: 'ADV',
+    6: 'PSLCAN',
+    7: 'SELFL',
+    8: 'SEL2PV',
+    9: 'ATV340',
 }
 
 MOT_TYPE = {
@@ -331,16 +332,21 @@ AO_PRIORITY = {
 # --- Indici attesi nella struttura obj>input ---
 IDX_EXPRTYPE = 20
 IDX_DI_IN = 13
+
 IDX_AO_ADDRESS = 5
 IDX_AO_IN = 12
 IDX_AO_DUAL = 13
+
 IDX_DO_IN = 13
+
 IDX_FB_TYPE = 0
 IDX_FB_RESETIND = 2
 IDX_FB_ININD = 3
 IDX_FB_ERR_DEPRECATED = 4
+
 DI_NUM_EXPR_GROUPS = 8
 DI_EXPR_GROUP_SIZE = 3  # (EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR)
+
 IDX_INPUT_DIGUP1 = 5
 IDX_INPUT_DIGDOWN1 = 6
 IDX_INPUT_DIGUP2 = 8
@@ -349,6 +355,10 @@ IDX_INPUT_ACT = 11
 IDX_INPUT_ENAB1 = 12
 IDX_INPUT_ENAB2 = 13
 IDX_INPUT_ENAB3 = 14
+
+IDX_OUTPUT_DIG1 = 3
+IDX_OUTPUT_DIG2 = 4
+IDX_OUTPUT_CC = 5
 IDX_OUTPUT_TYPE = 0
 IDX_OUTPUT_ANA1 = 1
 IDX_OUTPUT_ANA2 = 2
@@ -356,12 +366,14 @@ IDX_OUTPUT_ACT = 10
 IDX_OUTPUT_ENAB1 = 11
 IDX_OUTPUT_ENAB2 = 12
 IDX_OUTPUT_ENAB3 = 13
+
 IDX_MOT_LSSTOP = 5
 IDX_MOT_LS2START = 6
 IDX_MOT_TR = 7
 IDX_MOT_STAT = 9
 IDX_MOT_TR2 = 17
 IDX_MOT_STARTING = 18
+
 IDX_ALARM_IN = 4
 IDX_ALARM_ENAB = 7
 IDX_ALARM_DISAB = 8
@@ -470,6 +482,13 @@ AXIS_GROUP_STEP = 64  # numero max assi per gruppo
 ALARM_GROUPS_ORDER = ["VAL", "ENAB", "DISAB", "REQ", "ACK", "IN"]
 ALARM_GROUP_BASE = {name: (16384 + i * 256) for i, name in enumerate(ALARM_GROUPS_ORDER)}
 ALARM_GROUP_STEP = 256
+
+
+def key_for_value(d, value):
+    for k, v in d.items():
+        if v == value:
+            return k
+    raise KeyError(f"Value {value!r} not found")
 
 
 # ---- Funzioni AXIS ----
@@ -968,7 +987,7 @@ def run_di_search(data: Any, target_number: int) -> None:
 def run_do_serach(data: Any, target_number: int) -> None:
     """Esegue la ricerca di un DO dato l'indice di -out."""
     # --- dove viene usato ---
-    # Campi IN nei -io.do TODO:provare
+    # Campi IN nei -io.do
     do_list = (data.get('io') or {}).get('do')
     if do_list:
         matches = search_do_in_matches(do_list, target_number)
@@ -978,7 +997,7 @@ def run_do_serach(data: Any, target_number: int) -> None:
             else:
                 print(f"IO>DO>{do_idx} - IN match")
 
-    # 2) Campi DIG*/CC/DIG1ADD/DIG2ADD/ADVSTART/ADVENABLE/ADVBRAKE nei -obj.output TODO: scrivere dove cerca e fare funzione
+    # 2) Campi DIG*/CC/DIG1ADD/DIG2ADD/ADVSTART/ADVENABLE/ADVBRAKE nei -obj.output
     output_list = (data.get('obj') or {}).get('output')
     if output_list:
         matches = search_output_do_field_matches(output_list, target_number)
@@ -1330,11 +1349,6 @@ def search_output_do_field_matches(output_list: List[list], target_number: int) 
     if not isinstance(output_list, list):
         return []
 
-    # Indici di colonna nella riga -obj.output
-    IDX_DIG1 = 3
-    IDX_DIG2 = 4
-    IDX_CC = 5
-
     results: List[Tuple[int, List[str]]] = []
 
     for out_index, out_fields in enumerate(output_list):
@@ -1362,25 +1376,25 @@ def search_output_do_field_matches(output_list: List[list], target_number: int) 
             return val == target_number
 
         # Campi sempre presenti
-        if _match_at(IDX_DIG1):
+        if _match_at(IDX_OUTPUT_DIG1):
             matched.append("DIG1")
-        if _match_at(IDX_DIG2):
+        if _match_at(IDX_OUTPUT_DIG2):
             matched.append("DIG2")
-        if _match_at(IDX_CC):
+        if _match_at(IDX_OUTPUT_CC):
             matched.append("CC")
 
-        # Rimappature per SELSLOW (OUTPUT_TYPE = 3): ANA1 -> DIG1ADD, ANA2 -> DIG2ADD
-        if out_type == 3:
+        # Rimappature per SELSLOW: ANA1 -> DIG1ADD, ANA2 -> DIG2ADD
+        if out_type == key_for_value(OUTPUT_TYPE, "SELSLOW"):
             if len(out_fields) > IDX_OUTPUT_ANA1 and _match_at(IDX_OUTPUT_ANA1):
                 matched.append("DIG1ADD")
             if len(out_fields) > IDX_OUTPUT_ANA2 and _match_at(IDX_OUTPUT_ANA2):
                 matched.append("DIG2ADD")
 
-        # Rimappature per ADV (OUTPUT_TYPE = 4):
+        # Rimappature per ADV:
         #   ANA2 -> ADVSTART
         #   DIG1 -> ADVENABLE (già controllato come DIG1; rinominiamo semanticamente)
         #   DIG2 -> ADVBRAKE  (già controllato come DIG2; rinominiamo semanticamente)
-        if out_type == 4:
+        if out_type == key_for_value(OUTPUT_TYPE, "ADV"):
             if len(out_fields) > IDX_OUTPUT_ANA2 and _match_at(IDX_OUTPUT_ANA2):
                 matched.append("ADVSTART")
             # Se DIG1/2 hanno fatto match sopra, aggiungiamo anche i nomi semantici

@@ -15,7 +15,7 @@ __company__ = ""
 __product__ = "PSG-X-FindIndex"
 __copyright__ = f"Autore: {__author__} © 2025 {__company__}"
 
-# TODO: download config non corrotto,
+# TODO: download config con salvataggio versione data
 # TODO: ricerca dei DO, ricerca dei AI, ricerca dei AO
 # TODO: ricerca dei DI che si chiamano FREE o senza nome per vedere se sono usati da qualche parte
 
@@ -24,53 +24,54 @@ STRUTTURE:
 per config 0.25.40
 - header: [...]
 - ifm:
-    - card: [TYPE, DITHERFREQ, DITHERVAL]
-    - exc: [EXCTYPE, EXCDITHERFREQ, EXCDITHERVAL]
+    - card: [TYPE,DITHERFREQ,DITHERVAL]
+    - exc: [EXCTYPE,EXCDITHERFREQ,EXCDITHERVAL]
 - axind: [...]
-- in: [AUTOSEL, TEACHSEL, CYCLESEL, STARTRESET, REMOTESEL, EMGCYPB, CONSOLE2SEL, CHROLLSEL, x, DEBALNOTPRESS, CONSOLE1SEL, SINGLEMOVSEL, STARTIN, STOPIN, MACSTARTEDIN, HOLDTORUN, RTCOUPLED, RCLEFTSEL, PINCHPRESS, RCRIGHTSEL, STARTSENSORIN, MAINTRESET, MANSEL, TESTSEL, SEMIAUTOSEL, HOLDTORUN2, BPDISABLE1, BPDISABLE2, BPDISABLE3, BPDISABLE4, BPDISABLE5, BPDISABLE6, BPDISABLE7, BPDISABLE8, BPDISABLE9, BPDISABLE10, BPDISABLE11, BPDISABLE12, AUTOMODE, AUTOCYCLEMODE, AUTOSTEPMODE, SEMIAUTOMODE, TEACHMODE, MANMODE, CONSOLE1MODE, CONSOLE2MODE, REMOTEMODE, CHROLLMODE, SINGLEMOVMODE, MACHINESTERTED, x, PUMPONCALC, GREASEALARMCALC, PUMPALARMCALC, x, x, ALARMON, x, ALARMSTOP, MAINTON, RTFWDISABLED, RCLEFTMEM, x, RCRIGHTMEM, HOLDTORUNERROR, x, x, x, MICROSEL, x, QUALITYEND, AUTOSTARTBLINK, QUALITYGOOD, PARTEND, x, PARTBEGIN, x, TILTDISABLED, x, x, x, x, x, x, x, x, x, x, x, x, x, RCV0, RCV1, RCV2, RCV3, RCV4, x, x, x, x, x, x, x, x, x, EMGCYRESETBTN, x, x, INVERTERRESET, INVERTERALARM, AUTOSTARTING, x, x, HOLDTORUNRC, PRELOADUP, PRELOADPINCHDISAB, x, x, x, x, UNBALLEFT, UNBALRIGHT, INVERTEROVERLOAD, LEFTSUPPINTERL, GREASELEVEL, GREASETR, STARTSENSOR2IN, HOLDTORUNRC2, ROLLTILTBALANCED, x, x, x, RIGHTSUPPINTERL, x, x, x]
+- in: [AUTOSEL,TEACHSEL,CYCLESEL,STARTRESET,REMOTESEL,EMGCYPB,CONSOLE2SEL,CHROLLSEL,x,DEBALNOTPRESS,CONSOLE1SEL,SINGLEMOVSEL,STARTIN,STOPIN,MACSTARTEDIN,HOLDTORUN,RTCOUPLED,RCLEFTSEL,PINCHPRESS,RCRIGHTSEL,STARTSENSORIN,MAINTRESET,MANSEL,TESTSEL,SEMIAUTOSEL,HOLDTORUN2,BPDISABLE1,BPDISABLE2,BPDISABLE3,BPDISABLE4,BPDISABLE5,BPDISABLE6,BPDISABLE7,BPDISABLE8,BPDISABLE9,BPDISABLE10,BPDISABLE11,BPDISABLE12,AUTOMODE,AUTOCYCLEMODE,AUTOSTEPMODE,SEMIAUTOMODE,TEACHMODE,MANMODE,CONSOLE1MODE,CONSOLE2MODE,REMOTEMODE,CHROLLMODE,SINGLEMOVMODE,MACHINESTERTED,x,PUMPONCALC,GREASEALARMCALC,PUMPALARMCALC,x,x,ALARMON,x,ALARMSTOP,MAINTON,RTFWDISABLED,RCLEFTMEM,x,RCRIGHTMEM,HOLDTORUNERROR,x,x,x,MICROSEL,x,QUALITYEND,AUTOSTARTBLINK,QUALITYGOOD,PARTEND,x,PARTBEGIN,x,TILTDISABLED,x,x,x,x,x,x,x,x,x,x,x,x,x,RCV0,RCV1,RCV2,RCV3,RCV4,x,x,x,x,x,x,x,x,x,EMGCYRESETBTN,x,x,INVERTERRESET,INVERTERALARM,AUTOSTARTING,x,x,HOLDTORUNRC,PRELOADUP,PRELOADPINCHDISAB,x,x,x,x,UNBALLEFT,UNBALRIGHT,INVERTEROVERLOAD,LEFTSUPPINTERL,GREASELEVEL,GREASETR,STARTSENSOR2IN,HOLDTORUNRC2,ROLLTILTBALANCED,x,x,x,RIGHTSUPPINTERL,x,x,x]
     per il print:
-    AUTOSEL, TEACHSEL, CYCLESEL, REMOTESEL, CONSOLE2SEL, CHROLLSEL, CONSOLE1SEL, SINGLEMOVSEL, MANSEL, TESTSEL, SEMIAUTOSEL, MICROSEL si trovano in config>main>selio
-    AUTOMODE, AUTOCYCLEMODE, AUTOSTEPMODE, SEMIAUTOMODE, TEACHMODE, MANMODE, CONSOLE1MODE, CONSOLE2MODE, REMOTEMODE, CHROLLMODE, SINGLEMOVMODE si trovano in config>main>modeio
-    DEBALNOTPRESS, MACSTARTEDIN/MACHINESTERTED, ROLLTILTBALANCED, STARTSENSORIN, STARTSENSOR2IN, AUTOSTARTING, AUTOSTARTBLINK, RTFWDISABLED, INVERTERRESET, INVERTERALARM, INVERTEROVERLOAD, LEFTSUPPINTERL, RIGHTSUPPINTERL si trovano in config>main>statusio
-    STARTRESET, STARTIN, STOPIN, MAINTRESET, UNBALLEFT, UNBALRIGHT, TILTDISABLED si trovano in config>main>cmdio
-    MACHINESTARTED, ALARMON, ALARMSTOP, MAINTON, QUALITYEND, QUALITYGOOD, PARTEND, PARTBEGIN si trovano in config>main>rsmio
-    EMGCYRESETBTN, EMGCYPB, HOLDTORUN, HOLDTORUN2, HOLDTORUNRC, HOLDTORUNRC2, HOLDTORUNERROR si trovano in config>safety
-    PINCHPRESS, PRELOADUP, PRELOADPINCHDISAB si trovano in config>pinchpreload
+    AUTOSEL,TEACHSEL,CYCLESEL,REMOTESEL,CONSOLE2SEL,CHROLLSEL,CONSOLE1SEL,SINGLEMOVSEL,MANSEL,TESTSEL,SEMIAUTOSEL,MICROSEL si trovano in config>main>selio
+    AUTOMODE,AUTOCYCLEMODE,AUTOSTEPMODE,SEMIAUTOMODE,TEACHMODE,MANMODE,CONSOLE1MODE,CONSOLE2MODE,REMOTEMODE,CHROLLMODE,SINGLEMOVMODE si trovano in config>main>modeio
+    DEBALNOTPRESS,MACSTARTEDIN/MACHINESTERTED,ROLLTILTBALANCED,STARTSENSORIN,STARTSENSOR2IN,AUTOSTARTING,AUTOSTARTBLINK,RTFWDISABLED,INVERTERRESET,INVERTERALARM,INVERTEROVERLOAD,LEFTSUPPINTERL,RIGHTSUPPINTERL si trovano in config>main>statusio
+    STARTRESET,STARTIN,STOPIN,MAINTRESET,UNBALLEFT,UNBALRIGHT,TILTDISABLED si trovano in config>main>cmdio
+    MACHINESTARTED,ALARMON,ALARMSTOP,MAINTON,QUALITYEND,QUALITYGOOD,PARTEND,PARTBEGIN si trovano in config>main>rsmio
+    EMGCYRESETBTN,EMGCYPB,HOLDTORUN,HOLDTORUN2,HOLDTORUNRC,HOLDTORUNRC2,HOLDTORUNERROR si trovano in config>safety
+    PINCHPRESS,PRELOADUP,PRELOADPINCHDISAB si trovano in config>pinchpreload
     RTCOUPLED si trova in config>rt
     BPDISABLE* si trovano in config>bp
-    PUMPONCALC, GREASEALARMCALC, PUMPALARMCALC, GREASETR, GREASELEVEL si trovano in config>grease
-    RCV* (0..4), RCLEFTSEL, RCRIGHTSEL, RCLEFTMEM, RCRIGHTMEM si trovano in config>radiocontrol
+    PUMPONCALC,GREASEALARMCALC,PUMPALARMCALC,GREASETR,GREASELEVEL si trovano in config>grease
+    RCV* (0..4),RCLEFTSEL,RCRIGHTSEL,RCLEFTMEM,RCRIGHTMEM si trovano in config>radiocontrol
 - out: ["x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","MACSTARTLIGHT_DO","x","x","x","x","MACREADYLIGHT_DO","x","x","STARTCMD_DO","x","x","x","x","STOPCMD_DO","x","x","x","x","x","x","x","x","x","x","EYEBENDON_DO","BP1_DO","BP2_DO","BP3_DO","BP4_DO","BP5_DO","BP6_DO","BP7_DO","BP8_DO","BP9_DO","BP10_DO","BP11_DO","BP12_DO","x","x","x","x","x","RCUM_DO","RCLEFTUP_DO","RCLEFTDOWN_DO","RCRIGHTUP_DO","RCRIGHTDOWN_DO","RCBOTTONUP_DO","RCBOTTOMDOWN_DO","RCTOPLEFT_DO","RCTOPRIGHT_DO","RCALARM_DO","EMGCYRESETBTN_DO","EMGCYRESETLIGHT_DO","x","PINCHPRESSAR_DO","PINCHPRESSAR2_DO","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x"]
     per il print
-    MACSTARTLIGHT_DO, MACREADYLIGHT_DO, STARTCMD_DO, STOPCMD_DO  si trovano in config>main>cmdio
-    EMGCYRESETLIGHT_DO, EMGCYRESETBTN_DO  si trovano in config>safety
-    PINCHPRESSAR_DO, PINCHPRESSAR2_DO si trovano in config>pinchprelaod
+    MACSTARTLIGHT_DO,MACREADYLIGHT_DO,STARTCMD_DO,STOPCMD_DO  si trovano in config>main>cmdio
+    EMGCYRESETLIGHT_DO,EMGCYRESETBTN_DO  si trovano in config>safety
+    PINCHPRESSAR_DO,PINCHPRESSAR2_DO si trovano in config>pinchprelaod
     BP*_DO si trovano in config>bp
     EYEBEND_DO si trova in config>checkmeasurement
-    RCUM_DO, RCLEFTUP_DO,RCLEFTDOWN_DO,RCRIGHTUP_DO,RCRIGHTDOWN_DO,RCBOTTOMUP_DO,RCBOTTOMDOWN_DO,RCTOPLEFT_DO,RCTOPRIGHT_DO,RCALARM_DO si trovano in config>radiocontrol>in
+    RCUM_DO,RCLEFTUP_DO,RCLEFTDOWN_DO,RCRIGHTUP_DO,RCRIGHTDOWN_DO,RCBOTTOMUP_DO,RCBOTTOMDOWN_DO,RCTOPLEFT_DO,RCTOPRIGHT_DO,RCALARM_DO si trovano in config>radiocontrol>in
     
 - param:
-    - pstring: [MODEL, COSTUMER,x,x]
+    - pstring: [MODEL,COSTUMER,x,x]
     - pbool: [...]
-    - pint: [COMMESSA,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x]
+    - pint: [SN,MACHTYPE,CALCTYPE,CHECKTYPE,PRESSPINCHTYPE,REFTIME,HOLDTORUNTYPE,NUMCICLIAVG,DEFRADIUSTYPE,SEPCHTYPE,PINCHTYPE,HOLDTORUNTIMEOUT,HOLDTORUNTIMEOUT2,BP1TIMEOUT,BP2TIMEOUT,BP3TIMEOUT,BP4TIMEOUT,BP5TIMEOUT,BP6TIMEOUT,BP7TIMEOUT,BP8TIMEOUT,BP9TIMEOUT,BP10TIMEOUT,BP11TIMEOUT,BP12TIMEOUT,ROLLIND,GRESEPUMPSTART,GREASETIMEOUT1,GREASETIMEOUT2,GRESENUMFB,FREE31,GREASEIN1,GREASEIN2,GREASEIN3,GREASEIN4,GREASEIN5,GREASEIN6,GREASEIN7,GREASEIN8,GREASEIN9,GREASEIN10,GREASEIN11,GREASEIN12,GREASEIN13,GREASEIN14,GREASEIN15,GREASEIN16,GREASEOUT1,GREASEOUT2,GREASEOUT3,GREASEOUT4,GREASEOUT5,GREASEOUT6,GREASEOUT7,GREASEOUT8,GREASEOUT9,GREASEOUT10,GREASEOUT11,GREASEOUT12,GREASEOUT13,GREASEOUT14,GREASEOUT15,GREASEOUT16,GREASENUMV,GREASEPUMPON,RECYCVALVEIND,RECYCVALVETIMEOUT,PINCHPRESSSPEED,RTTYPE,AVGDIND,NHDTIND,RESETTYPE,ARCHIMETERCOMUSB,ARCHIMETERCOMWIFI,ARCHIMETERTIMEOUT,RCTYPE,RCSELAI,ROLLCHSEQ,ROLLNUM]
     - preal: [...]
     - ptype: [...]
 - io:
-    - di: [NAME, BOOL_DEFAULT_VALUE, x, SIM, BOOL_SIM_VALUE, ADDRESS, CAMPO_1, CAMPO_2, x, UM, MEMTYPE, MEMIND, TIMEOUT, IN, x, x, x, x, x, EXPRTYPE, EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR, EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR, EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR, EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR, EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR, EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR]
-        (EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR) si attivano se EXPRTYPE != -1 se no non ci sono proprio
-    - ai: [NAME, BOOL_DEFAULT_VALUE, x, SIM, BOOL_SIM_VALUE, ADDRESS, CAMPO_1, CAMPO_2, NBYTES, UM, MEMTYPE, MEMIND, TIMEOUT, IN, DINTDEFAULTVALUE, DINTSIMVALUE, DEADBAND, x, TOTDELTAMAX, COEFFMULT, x]
-    - ao: [NAME, BOOL_DEFAULT_VALUE, PROG, SIM, BOOL_SIM_VALUE, ADDRESS, CAMPO_1, CAMPO_2, NBYTES, UM, MEMTYPE, MEMIND, IN, AODUAL, DINTDEFAULTVALUE, DINTSIMVALUE, x, x, x, AOPRIORITY, x]
-    - do: [NAME, BOOL_DEFAULT_VALUE, x, SIM, BOOL_SIM_VALUE, ADDRESS, CAMPO_1, CAMPO_2, x, UM, MEMTYPE, MEMIND, TIMEOUT, IN, x, x, x, x, x, x,x]
-    - ri: [...]
+    - di: [NAME,BOOL_DEFAULT_VALUE,x,SIM,BOOL_SIM_VALUE,ADDRESS,CAMPO_1,CAMPO_2,x,UM,MEMTYPE,MEMIND,TIMEOUT,IN,x,x,x,x,x,EXPRTYPE,EXPR_OPERAND,EXPR_ADDRESS,EXPR_OPERATOR,EXPR_OPERAND,EXPR_ADDRESS,EXPR_OPERATOR,EXPR_OPERAND,EXPR_ADDRESS,EXPR_OPERATOR,EXPR_OPERAND,EXPR_ADDRESS,EXPR_OPERATOR,EXPR_OPERAND,EXPR_ADDRESS,EXPR_OPERATOR,EXPR_OPERAND,EXPR_ADDRESS,EXPR_OPERATOR]
+        (EXPR_OPERAND,EXPR_ADDRESS,EXPR_OPERATOR) si attivano se EXPRTYPE != -1 se no non ci sono proprio
+    - ai: [NAME,BOOL_DEFAULT_VALUE,x,SIM,BOOL_SIM_VALUE,ADDRESS,CAMPO_1,CAMPO_2,NBYTES,UM,MEMTYPE,MEMIND,TIMEOUT,IN,DINTDEFAULTVALUE,DINTSIMVALUE,DEADBAND,x,TOTDELTAMAX,COEFFMULT,x]
+    - ao: [NAME,BOOL_DEFAULT_VALUE,PROG,SIM,BOOL_SIM_VALUE,ADDRESS,CAMPO_1,CAMPO_2,NBYTES,UM,MEMTYPE,MEMIND,IN,AODUAL,DINTDEFAULTVALUE,DINTSIMVALUE,x,x,x,AOPRIORITY,x]
+    - do: [NAME,BOOL_DEFAULT_VALUE,x,SIM,BOOL_SIM_VALUE,ADDRESS,CAMPO_1,CAMPO_2,x,UM,MEMTYPE,MEMIND,TIMEOUT,IN,x,x,x,x,x,x,x]
+    - ri: [BQ10 Top Support Safety,0,0,0,0,3,-1,-1,-1,-1,-1,-1,-1,-1,0,0,0,0,0,1,0,10,9,3,41,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,3000,0,0,0,0,0,0]
+    - ri: [NAME,]
     - ao: [NAME,x,x,x,x,x,CAMPO_1,x,x,x,x,x,AODUAL,IN,x,x,x,x,x,x,x]
 - obj:
     - axis: [NAME]
         bool: [x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x]
         int: ["x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","SUP","INF","x","x","x","x","x","x","x","x","x","x","ALTFBDIG","HH","H","L","LL","SAFETYUP1","SAFETYUP2","SAFETYUP3","SAFETYUP4","SAFETYUP5","SAFETYUP6","H0","L0","x","x","x","x","x","x","x","x","SAFETYDOWN1","SAFETYDOWN2","SAFETYDOWN3","SAFETYDOWN4","SAFETYDOWN5","SAFETYDOWN6","x","x","x","DECOUPLE1AUTO","DECOUPLE2MAN","DECOUPLE3MAN","DECOUPLE4MAN","DECOUPLE5MAN","DECOUPLE6MAN","PS1","x","x","PS2","PS3","x","x","x","x","x","FREE70","FREE71","x","x","x","x","x","x","x","BPDISABLE1","BPDISABLE2","BPDISABLE3","BPDISABLE4","BPDISABLE5","BPDISABLE6","BPDISABLE7","BPDISABLE8","BPDISABLE9","BPDISABLE10","BPDISABLE11","BPDISABLE12","OPTPARAM1","OPTPARAM2","OPTPARAM3"]
-        type: [x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x]
-    - input: [HOLDTORUNENAB,x,INPUT_TYPE,INPUT_MESURETYPE, ANA, DIGUP1, DIGDOWN1, K, DIGUP2, DIGDOWN2, K2, ACT, ENAB1, ENAB2, ENAB3, SUP, SEQ, VMIN, VMAX, VMIN2, VMAX2]
-    - fb: [FB_TYPE, FB_MESURETYPE, RESETIND, ININD, FB_ERR_DEPRECATED, INFUNDERFLOW, SUPOVERFLOW, DEADBAND, RATIO, x, x]
-    - output: [OUTPUT_TYPE, ANA1, ANA2, DIG1, DIG2, CC, RPM, TIMEOUTBRKADV,ADVDEFSIDE,FREE,ACT,ENAB1,ENAB2,ENAB3, SCALEMIN1, SCALEMAX1, SCALEMIN2, SCALEMAX2, SCALEMIN1H, SCALEMAX1H, SCALEMIN2H, SCALEMAX2H, VALMIN1, VALMAX1, VALMIN2, VALMAX2, VIN0, VOUT0, VIN1, VOUT1, VIN2, VOUT2, VIN3, VOUT3, VIN4, VOUT4, VIN5, VOUT5, V2IN0, V2OUT0, V2IN1, V2OUT1, V2IN2, V2OUT2, V2IN3, V2OUT3, V2IN4, V2OUT4, V2IN5, V2OUT5] 
+        type: [x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x]
+    - input: [HOLDTORUNENAB,x,INPUT_TYPE,INPUT_MESURETYPE,ANA,DIGUP1,DIGDOWN1,K,DIGUP2,DIGDOWN2,K2,ACT,ENAB1,ENAB2,ENAB3,SUP,SEQ,VMIN,VMAX,VMIN2,VMAX2]
+    - fb: [FB_TYPE,FB_MESURETYPE,RESETIND,ININD,FB_ERR_DEPRECATED,INFUNDERFLOW,SUPOVERFLOW,DEADBAND,RATIO,x,x]
+    - output: [OUTPUT_TYPE,ANA1,ANA2,DIG1,DIG2,CC,RPM,TIMEOUTBRKADV,ADVDEFSIDE,FREE,ACT,ENAB1,ENAB2,ENAB3,SCALEMIN1,SCALEMAX1,SCALEMIN2,SCALEMAX2,SCALEMIN1H,SCALEMAX1H,SCALEMIN2H,SCALEMAX2H,VALMIN1,VALMAX1,VALMIN2,VALMAX2,VIN0,VOUT0,VIN1,VOUT1,VIN2,VOUT2,VIN3,VOUT3,VIN4,VOUT4,VIN5,VOUT5,V2IN0,V2OUT0,V2IN1,V2OUT1,V2IN2,V2OUT2,V2IN3,V2OUT3,V2IN4,V2OUT4,V2IN5,V2OUT5] 
         se OUTPUT_TYPE = ADV
         ANA1 = ADVIND
         ANA2 = ADVSTART
@@ -86,8 +87,8 @@ per config 0.25.40
         se OUTPUT_TYPE = SELSLOW
         ANA1 = DIG1ADD
         ANA2 = DIG2ADD
-    - mot: [CONFIG, SELECTABLE, SEQ, OPT, DEFAULT, LSSTOP,LS2START, TR, CMD, STAT, TIMEOUT, CMD1, CMD2, CMD3, TIMEOUT2, MOT_TYPE, TIMEOUTBTN, TR2, STARTING]
-    - alarm: [NAME,CONFIG,INVOUT,MODE,IN,OUT,COD,ENAB,DISAB,REQACK,ACK,TIMEOUT, FREE]
+    - mot: [CONFIG,SELECTABLE,SEQ,OPT,DEFAULT,LSSTOP,LS2START,TR,CMD,STAT,TIMEOUT,CMD1,CMD2,CMD3,TIMEOUT2,MOT_TYPE,TIMEOUTBTN,TR2,STARTING]
+    - alarm: [NAME,CONFIG,INVOUT,MODE,IN,OUT,COD,ENAB,DISAB,REQACK,ACK,TIMEOUT,FREE]
     - maint [...] TODO: ci sono in e out da cercare poi
 """
 
@@ -264,15 +265,16 @@ INPUT_MESURETYPE = UM.copy()
 
 OUTPUT_TYPE = {
     -1: '',
-    0: 'SEL',
-    1: 'DIR',
-    2: 'DIRINV',
-    3: 'SELSLOW',
-    4: 'ADV',
-    5: 'PSLCAN',
-    6: 'SELFL',
-    7: 'SEL2PV',
-    8: 'ATV340',
+    0: '',
+    1: 'SEL',
+    2: 'DIR',
+    3: 'DIRINV',
+    4: 'SELSLOW',
+    5: 'ADV',
+    6: 'PSLCAN',
+    7: 'SELFL',
+    8: 'SEL2PV',
+    9: 'ATV340',
 }
 
 MOT_TYPE = {
@@ -331,24 +333,36 @@ AO_PRIORITY = {
 # --- Indici attesi nella struttura obj>input ---
 IDX_EXPRTYPE = 20
 IDX_DI_IN = 13
+
 IDX_AO_ADDRESS = 5
 IDX_AO_IN = 12
 IDX_AO_DUAL = 13
+
 IDX_DO_IN = 13
+
 IDX_FB_TYPE = 0
 IDX_FB_RESETIND = 2
 IDX_FB_ININD = 3
 IDX_FB_ERR_DEPRECATED = 4
+
 DI_NUM_EXPR_GROUPS = 8
 DI_EXPR_GROUP_SIZE = 3  # (EXPR_OPERAND, EXPR_ADDRESS, EXPR_OPERATOR)
+
 IDX_INPUT_DIGUP1 = 5
-IDX_INPUT_DIGDOWN1 = 6
+IDX_INPUT_DIGDOWN1 = IDX_OUTPUT_RPM = 6
+IDX_OUTPUT_TIMEOUTBRKADV = IDX_OUTPUT_STATUS1PSLCAN = 7  # per PSLCAN → STATUS1PSLCAN
 IDX_INPUT_DIGUP2 = 8
-IDX_INPUT_DIGDOWN2 = 9
+IDX_INPUT_DIGDOWN2 = IDX_OUTPUT_FREE = IDX_OUTPUT_STATUS2PSLCAN = 9
 IDX_INPUT_ACT = 11
 IDX_INPUT_ENAB1 = 12
 IDX_INPUT_ENAB2 = 13
 IDX_INPUT_ENAB3 = 14
+IDX_INPUT_ANA = 4
+IDX_INPUT_SUP = 15
+
+IDX_OUTPUT_DIG1 = 3
+IDX_OUTPUT_DIG2 = 4
+IDX_OUTPUT_CC = 5
 IDX_OUTPUT_TYPE = 0
 IDX_OUTPUT_ANA1 = 1
 IDX_OUTPUT_ANA2 = 2
@@ -356,12 +370,14 @@ IDX_OUTPUT_ACT = 10
 IDX_OUTPUT_ENAB1 = 11
 IDX_OUTPUT_ENAB2 = 12
 IDX_OUTPUT_ENAB3 = 13
+
 IDX_MOT_LSSTOP = 5
 IDX_MOT_LS2START = 6
 IDX_MOT_TR = 7
 IDX_MOT_STAT = 9
 IDX_MOT_TR2 = 17
 IDX_MOT_STARTING = 18
+
 IDX_ALARM_IN = 4
 IDX_ALARM_ENAB = 7
 IDX_ALARM_DISAB = 8
@@ -417,6 +433,7 @@ IDX_AXIS_INT: Dict[str, int] = {
     "PS2": 66,
     "PS3": 67,
 }
+IDX_RCSELAI = 77
 
 # --- Variabili di sistema: TYPE (IDX_SYSTEM) ---
 SYSTEM_TYPE = {
@@ -470,6 +487,13 @@ AXIS_GROUP_STEP = 64  # numero max assi per gruppo
 ALARM_GROUPS_ORDER = ["VAL", "ENAB", "DISAB", "REQ", "ACK", "IN"]
 ALARM_GROUP_BASE = {name: (16384 + i * 256) for i, name in enumerate(ALARM_GROUPS_ORDER)}
 ALARM_GROUP_STEP = 256
+
+
+def key_for_value(d, value):
+    for k, v in d.items():
+        if v == value:
+            return k
+    raise KeyError(f"Value {value!r} not found")
 
 
 # ---- Funzioni AXIS ----
@@ -797,12 +821,12 @@ def find_section(root: Any, keys: List[str]) -> Optional[List[list]]:
     return found or None
 
 
-def get_commessa_from_param(data: Any) -> Optional[str]:
+def get_sn_from_param(data: Any) -> Optional[str]:
     """
-    Ritorna la stringa della commessa da param.pint[0], se presente.
+    Ritorna la stringa della sn da param.pint[0], se presente.
     Supporta sia:
-      - param: { pint: [COMMESSA, ...] }
-      - param: [ { pint: [COMMESSA, ...] }, ... ]
+      - param: { pint: [...] }
+      - param: [ { pint: [...] }, ... ]
     """
     if not isinstance(data, dict):
         return None
@@ -968,7 +992,7 @@ def run_di_search(data: Any, target_number: int) -> None:
 def run_do_serach(data: Any, target_number: int) -> None:
     """Esegue la ricerca di un DO dato l'indice di -out."""
     # --- dove viene usato ---
-    # Campi IN nei -io.do TODO:provare
+    # Campi IN nei -io.do
     do_list = (data.get('io') or {}).get('do')
     if do_list:
         matches = search_do_in_matches(do_list, target_number)
@@ -978,7 +1002,7 @@ def run_do_serach(data: Any, target_number: int) -> None:
             else:
                 print(f"IO>DO>{do_idx} - IN match")
 
-    # 2) Campi DIG*/CC/DIG1ADD/DIG2ADD/ADVSTART/ADVENABLE/ADVBRAKE nei -obj.output TODO: scrivere dove cerca e fare funzione
+    # 2) Campi DIG*/CC/DIG1ADD/DIG2ADD/ADVSTART/ADVENABLE/ADVBRAKE nei -obj.output
     output_list = (data.get('obj') or {}).get('output')
     if output_list:
         matches = search_output_do_field_matches(output_list, target_number)
@@ -1037,11 +1061,27 @@ def run_ai_search(data: Any, target_number: int) -> None:
     if fb_list:
         inind_matches = search_fb_inind_ai_matches(fb_list, target_number)
         for fb_idx, fb_type in inind_matches:
-            # stessa forma delle altre stampe fb; aggiungo il tipo se disponibile
             if fb_type:
                 print(f"FEEDBACK>{fb_idx} - ININD match (-fb) - type: {fb_type}")
             else:
                 print(f"FEEDBACK>{fb_idx} - ININD match (-fb)")
+
+    # Campi ANA/SUP dei -obj.input
+    input_list = (data.get('obj') or {}).get('input')
+    if input_list:
+        for inp_idx, fields in search_input_ai_field_matches(input_list, target_number):
+            print(f"INPUT>{inp_idx} - match (-input) - fields: {', '.join(fields)}")
+
+    # Campi STATUS*PSLCAN dei -obj.output
+    output_list = (data.get('obj') or {}).get('output')
+    if output_list:
+        for out_idx, fields in search_output_ai_field_matches(output_list, target_number):
+            print(f"OUTPUT>{out_idx} - match (-output) - fields: {', '.join(fields)}")
+
+    # Campo RCSELAI nei -pint
+    param = data.get('param')
+    if param and search_param_pint_rcselai(param, target_number):
+        print("PARAM>pint - RCSELAI match config>params>radiocontrol>in")
 
 
 def get_axis_int_di(data: Any, axis_index: int, label: str) -> Optional[int]:
@@ -1376,11 +1416,11 @@ def search_output_do_field_matches(output_list: List[list], target_number: int) 
             if len(out_fields) > IDX_OUTPUT_ANA2 and _match_at(IDX_OUTPUT_ANA2):
                 matched.append("DIG2ADD")
 
-        # Rimappature per ADV (OUTPUT_TYPE = 4):
+        # Rimappature per ADV:
         #   ANA2 -> ADVSTART
         #   DIG1 -> ADVENABLE (già controllato come DIG1; rinominiamo semanticamente)
         #   DIG2 -> ADVBRAKE  (già controllato come DIG2; rinominiamo semanticamente)
-        if out_type == 4:
+        if out_type == key_for_value(OUTPUT_TYPE, "ADV"):
             if len(out_fields) > IDX_OUTPUT_ANA2 and _match_at(IDX_OUTPUT_ANA2):
                 matched.append("ADVSTART")
             # Se DIG1/2 hanno fatto match sopra, aggiungiamo anche i nomi semantici
@@ -1393,6 +1433,94 @@ def search_output_do_field_matches(output_list: List[list], target_number: int) 
             results.append((out_index, matched))
 
     return results
+
+
+def search_input_ai_field_matches(input_list: List[list], target_number: int) -> List[Tuple[int, List[str]]]:
+    """
+    Cerca in obj>input i campi ANA e SUP che referenziano l'AI `target_number`.
+    Ritorna: [(indice_input, [nomi_campi_match])]
+    """
+    results: List[Tuple[int, List[str]]] = []
+    for inp_idx, inp_fields in enumerate(input_list or []):
+        if not isinstance(inp_fields, list):
+            continue
+        matched: List[str] = []
+        if len(inp_fields) > IDX_INPUT_ANA:
+            try:
+                if int(inp_fields[IDX_INPUT_ANA]) == target_number:
+                    matched.append("ANA")
+            except Exception:
+                pass
+        if len(inp_fields) > IDX_INPUT_SUP:
+            try:
+                if int(inp_fields[IDX_INPUT_SUP]) == target_number:
+                    matched.append("SUP")
+            except Exception:
+                pass
+        if matched:
+            results.append((inp_idx, matched))
+    return results
+
+
+def search_output_ai_field_matches(output_list: List[list], target_number: int) -> List[Tuple[int, List[str]]]:
+    """
+    Cerca in obj>output i campi STATUS*PSLCAN che referenziano l'AI `target_number`,
+    ma solo se OUTPUT_TYPE è PSLCAN.
+    """
+    results: List[Tuple[int, List[str]]] = []
+
+    for out_idx, out_fields in enumerate(output_list or []):
+        if not isinstance(out_fields, list):
+            continue
+
+        matched: List[str] = []
+
+        # leggi OUTPUT_TYPE
+        out_type = -1
+        if len(out_fields) > IDX_OUTPUT_TYPE:
+            try:
+                out_type = int(out_fields[IDX_OUTPUT_TYPE])
+            except Exception:
+                out_type = -1
+
+        # STATUS*PSLCAN: solo se tipo == 6 (PSLCAN)
+        if out_type == 6:
+            for label, idx in [
+                ("STATUS1PSLCAN", IDX_OUTPUT_STATUS1PSLCAN),
+                ("STATUS2PSLCAN", IDX_OUTPUT_STATUS2PSLCAN),
+            ]:
+                if len(out_fields) > idx:
+                    try:
+                        if int(out_fields[idx]) == target_number:
+                            matched.append(label)
+                    except Exception:
+                        pass
+
+        if matched:
+            results.append((out_idx, matched))
+
+    return results
+
+
+def search_param_pint_rcselai(param_node: Any, target_number: int) -> bool:
+    """
+    Cerca in param>pint il campo RCSELAI uguale a target_number.
+    Restituisce True se trovato, altrimenti False.
+    """
+    rows = find_section(param_node, ['pint'])
+    if not rows:
+        return False
+
+    # secondo la tua struttura RCSELAI è al penultimo indice di pint
+    for row in rows:
+        if not isinstance(row, list):
+            continue
+        try:
+            if int(row[IDX_RCSELAI]) == target_number:
+                return True
+        except Exception:
+            continue
+    return False
 
 
 def search_mot_di_field_matches(mot_list: List[list], target_number: int) -> List[Tuple[int, List[str]]]:
@@ -2095,9 +2223,9 @@ def main():
         _pause_if_frozen()
         return
 
-    commessa = get_commessa_from_param(data)
-    if commessa:
-        print(f"Caricato config della commessa: {commessa}")
+    sn = get_sn_from_param(data)
+    if sn:
+        print(f"Caricato config della commessa: {sn}")
 
     # 2) Loop interattivo: ripeti la domanda dopo ogni ricerca
     while True:

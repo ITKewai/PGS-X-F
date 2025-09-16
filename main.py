@@ -1056,7 +1056,6 @@ def run_ai_search(data: Any, target_number: int) -> None:
     if fb_list:
         inind_matches = search_fb_inind_ai_matches(fb_list, target_number)
         for fb_idx, fb_type in inind_matches:
-            # stessa forma delle altre stampe fb; aggiungo il tipo se disponibile
             if fb_type:
                 print(f"FEEDBACK>{fb_idx} - ININD match (-fb) - type: {fb_type}")
             else:

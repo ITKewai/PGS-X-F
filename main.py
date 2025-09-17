@@ -61,8 +61,7 @@ per config 0.25.40
     - ai: [NAME,BOOL_DEFAULT_VALUE,x,SIM,BOOL_SIM_VALUE,ADDRESS,CAMPO_1,CAMPO_2,NBYTES,UM,MEMTYPE,MEMIND,TIMEOUT,IN,DINTDEFAULTVALUE,DINTSIMVALUE,DEADBAND,x,TOTDELTAMAX,COEFFMULT,x]
     - ao: [NAME,BOOL_DEFAULT_VALUE,PROG,SIM,BOOL_SIM_VALUE,ADDRESS,CAMPO_1,CAMPO_2,NBYTES,UM,MEMTYPE,MEMIND,IN,AODUAL,DINTDEFAULTVALUE,DINTSIMVALUE,x,x,x,AOPRIORITY,x]
     - do: [NAME,BOOL_DEFAULT_VALUE,x,SIM,BOOL_SIM_VALUE,ADDRESS,CAMPO_1,CAMPO_2,x,UM,MEMTYPE,MEMIND,TIMEOUT,IN,x,x,x,x,x,x,x]
-    - ri: [BQ10 Top Support Safety,0,0,0,0,3,-1,-1,-1,-1,-1,-1,-1,-1,0,0,0,0,0,1,0,10,9,3,41,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,3000,0,0,0,0,0,0]
-    - ri: [NAME,]
+    - ri: [NAME,x,x,x,x,ADDRESS,x,CAMPO_2,ENABLED,x,x,x,RESET,IN,x,x,x,x,x,x,x]
     - ao: [NAME,x,x,x,x,x,CAMPO_1,x,x,x,x,x,AODUAL,IN,x,x,x,x,x,x,x]
 - obj:
     - axis: [NAME]
@@ -330,6 +329,7 @@ AO_PRIORITY = {
     0: 'MIN'
 }
 
+
 # --- Indici attesi nella struttura obj>input ---
 IDX_EXPRTYPE = 20
 IDX_DI_IN = 13
@@ -434,6 +434,13 @@ IDX_AXIS_INT: Dict[str, int] = {
     "PS3": 67,
 }
 IDX_RCSELAI = 77
+
+IDX_RI_CAMPO2 = 7
+IDX_RI_ENABLED = 8
+IDX_RI_RESET = 12
+IDX_RI_IN = 13
+IDX_RI_ADDRESS = 5  # campo ADDRESS
+IDX_RI_IO_INT_ADDR2 = 10
 
 # --- Variabili di sistema: TYPE (IDX_SYSTEM) ---
 SYSTEM_TYPE = {
@@ -988,6 +995,16 @@ def run_di_search(data: Any, target_number: int) -> None:
             else:
                 print(f"ALARMS/MAINT>ALARM>{alarm_idx} - match (-alarm) - fields: {', '.join(fields)}")
 
+    # Campo CAMPO_2/IN/RESET/ENABLED nei -ri se tipo = "IO_DI"
+    ri_list = (data.get('io') or {}).get('ri')
+    if ri_list:
+        ri_matches = search_ri_di_field_matches(ri_list, target_number)
+        for ri_idx, fields, name in ri_matches:
+            if name:
+                print(f"IO>RI>{ri_idx} - match (-ri) - fields: {', '.join(fields)} - name: {name}")
+            else:
+                print(f"IO>RI>{ri_idx} - match (-ri) - fields: {', '.join(fields)}")
+
 
 def run_do_serach(data: Any, target_number: int) -> None:
     """Esegue la ricerca di un DO dato l'indice di -out."""
@@ -1043,6 +1060,16 @@ def run_do_serach(data: Any, target_number: int) -> None:
         else:
             print(f"*OUT>{pid}[{idx}] - match (-out)")
 
+    # Campo IO_INT_ADDR2 nei -ri se tipo = "IO_DO"
+    ri_list = (data.get('io') or {}).get('ri')
+    if ri_list:
+        ri_matches = search_ri_do_field_matches(ri_list, target_number)
+        for ri_idx, fields, name in ri_matches:
+            if name:
+                print(f"IO>RI>{ri_idx} - match (-ri DO) - fields: {', '.join(fields)} - name: {name}")
+            else:
+                print(f"IO>RI>{ri_idx} - match (-ri DO) - fields: {', '.join(fields)}")
+
 
 def run_ai_search(data: Any, target_number: int) -> None:
     # Campi IN dei -io.ao
@@ -1082,6 +1109,16 @@ def run_ai_search(data: Any, target_number: int) -> None:
     param = data.get('param')
     if param and search_param_pint_rcselai(param, target_number):
         print("PARAM>pint - RCSELAI match config>params>radiocontrol>in")
+
+    # Campo IO_INT_ADDR2 nei -ri se tipo = "IO_AI"
+    ri_list = (data.get('io') or {}).get('ri')
+    if ri_list:
+        ri_matches = search_ri_ai_field_matches(ri_list, target_number)
+        for ri_idx, fields, name in ri_matches:
+            if name:
+                print(f"IO>RI>{ri_idx} - match (-ri AI) - fields: {', '.join(fields)} - name: {name}")
+            else:
+                print(f"IO>RI>{ri_idx} - match (-ri AI) - fields: {', '.join(fields)}")
 
 
 def get_axis_int_di(data: Any, axis_index: int, label: str) -> Optional[int]:
@@ -1671,6 +1708,135 @@ def search_axis_int_di_field_matches(axis_int_lists: List[List[Any]], target_num
     return results
 
 
+def search_ri_di_field_matches(ri_list: List[list], target_number: int) -> List[Tuple[int, List[str], Optional[str]]]:
+    """
+    Cerca nei -io.ri i campi CAMPO_2, ENABLED, RESET e IN che referenziano il DI `target_number`.
+    IN viene considerato solo se ADDRESS = 0 (IO_DI).
+    Ritorna: [(indice_ri, [nomi_campi_match], nome_ri_opzionale)]
+    """
+    results: List[Tuple[int, List[str], Optional[str]]] = []
+
+    for ri_idx, ri_fields in enumerate(ri_list or []):
+        if not isinstance(ri_fields, list):
+            continue
+
+        matched: List[str] = []
+
+        # --- CAMPO_2, ENABLED, RESET: sempre ---
+        for label, idx in [
+            ("CAMPO_2", IDX_RI_CAMPO2),
+            ("ENABLED", IDX_RI_ENABLED),
+            ("RESET", IDX_RI_RESET),
+        ]:
+            if len(ri_fields) > idx:
+                try:
+                    if int(ri_fields[idx]) == target_number:
+                        matched.append(label)
+                except Exception:
+                    pass
+
+        # --- IN: solo se ADDRESS = 0 ---
+        addr_val = None
+        if len(ri_fields) > IDX_RI_ADDRESS:
+            try:
+                addr_val = int(ri_fields[IDX_RI_ADDRESS])
+            except Exception:
+                addr_val = None
+
+        if addr_val == 0 and len(ri_fields) > IDX_RI_IN:
+            try:
+                if int(ri_fields[IDX_RI_IN]) == target_number:
+                    matched.append("IN")
+            except Exception:
+                pass
+
+        if matched:
+            name: Optional[str] = None
+            if ri_fields and isinstance(ri_fields[0], str):
+                name = ri_fields[0]
+            results.append((ri_idx, matched, name))
+
+    return results
+
+
+def search_ri_ai_field_matches(ri_list: List[list], target_number: int) -> List[Tuple[int, List[str], Optional[str]]]:
+    """
+    Cerca nei -io.ri il campo IO_INT_ADDR2 che referenzia l'AI `target_number`,
+    solo se ADDRESS = 2 (IO_AI).
+    Ritorna: [(indice_ri, [nomi_campi_match], nome_ri_opzionale)]
+    """
+    results: List[Tuple[int, List[str], Optional[str]]] = []
+
+    for ri_idx, ri_fields in enumerate(ri_list or []):
+        if not isinstance(ri_fields, list):
+            continue
+
+        # check ADDRESS
+        addr_val = None
+        if len(ri_fields) > IDX_RI_ADDRESS:
+            try:
+                addr_val = int(ri_fields[IDX_RI_ADDRESS])
+            except Exception:
+                addr_val = None
+
+        if addr_val != 2:  # solo IO_AI
+            continue
+
+        matched: List[str] = []
+        if len(ri_fields) > IDX_RI_IO_INT_ADDR2:
+            try:
+                if int(ri_fields[IDX_RI_IO_INT_ADDR2]) == target_number:
+                    matched.append("IO_INT_ADDR2")
+            except Exception:
+                pass
+
+        if matched:
+            name: Optional[str] = None
+            if ri_fields and isinstance(ri_fields[0], str):
+                name = ri_fields[0]
+            results.append((ri_idx, matched, name))
+
+    return results
+
+
+def search_ri_do_field_matches(ri_list: List[list], target_number: int) -> List[Tuple[int, List[str], Optional[str]]]:
+    """
+    Cerca nei -io.ri il campo IO_INT_ADDR2 che referenzia il DO `target_number`,
+    solo se ADDRESS = 1 (IO_DO).
+    Ritorna: [(indice_ri, [nomi_campi_match], nome_ri_opzionale)]
+    """
+    results: List[Tuple[int, List[str], Optional[str]]] = []
+
+    for ri_idx, ri_fields in enumerate(ri_list or []):
+        if not isinstance(ri_fields, list):
+            continue
+
+        # check ADDRESS
+        addr_val = None
+        if len(ri_fields) > IDX_RI_ADDRESS:
+            try:
+                addr_val = int(ri_fields[IDX_RI_ADDRESS])
+            except Exception:
+                addr_val = None
+
+        if addr_val != 1:  # solo IO_DO
+            continue
+
+        matched: List[str] = []
+        if len(ri_fields) > IDX_RI_IO_INT_ADDR2:
+            try:
+                if int(ri_fields[IDX_RI_IO_INT_ADDR2]) == target_number:
+                    matched.append("IO_INT_ADDR2")
+            except Exception:
+                pass
+
+        if matched:
+            name: Optional[str] = None
+            if ri_fields and isinstance(ri_fields[0], str):
+                name = ri_fields[0]
+            results.append((ri_idx, matched, name))
+
+    return results
 # ---- Ricerca nei campi -in ---------------------------------------------------
 
 def _find_in_arrays(root: Any) -> List[List[Any]]:
@@ -2417,8 +2583,9 @@ def main():
             run_ai_search(data, target_number)
         elif tipo == 3:
             run_do_serach(data, target_number)
-        else:
-            print("Ricerca per DO/AO (DI target) non ancora implementata qui.")
+        elif tipo == 4:
+            # run_ao_search(data, target_number)
+            ...
 
 
 def print_in_columns(entries: List[str], cols: int = 3) -> None:

@@ -8,6 +8,7 @@ import yaml  # PyYAML
 import requests
 from urllib3.exceptions import InsecureRequestWarning
 import warnings as _warnings
+from tia_constants import *
 
 __version__ = "1.0.0"
 __author__ = "ITKewai"
@@ -1121,6 +1122,14 @@ def run_ai_search(data: Any, target_number: int) -> None:
                 print(f"IO>RI>{ri_idx} - match (-ri AI) - fields: {', '.join(fields)}")
 
 
+def run_ao_search(data: Any, target_number: int) -> None:
+    ...
+    # Campo AODUAL dei -io.ao
+    # Campi ANA*/CTRL*PSLCAN dei -obj.output
+    # Campo RCSELAI nei -pint
+    # Campo IO_INT_ADDR2 nei -ri se tipo = "IO_AO"
+
+
 def get_axis_int_di(data: Any, axis_index: int, label: str) -> Optional[int]:
     """Ritorna il DI configurato nell'array AXIS.INT per l'asse e la label dati."""
     axis_nodes = ((data.get('obj') or {}).get('axis') or [])
@@ -1174,8 +1183,7 @@ def search_di_in_matches(di_list: List[list], target_number: int) -> List[int]:
     return results
 
 
-def search_ai_in_ao_matches(ao_list: List[list], target_number: int, only_bus: bool = True) -> List[
-    Tuple[int, str, Optional[str]]]:
+def search_ai_in_ao_matches(ao_list: List[list], target_number: int, only_bus: bool = True) -> List[Tuple[int, str, Optional[str]]]:
     """
     Cerca tutti gli AO che referenziano l'AI `target_number` in IN o AODUAL.
     Se only_bus=True, considera solo AO con ADDRESS PNET(0) o CAN(1).
@@ -1838,6 +1846,7 @@ def search_ri_do_field_matches(ri_list: List[list], target_number: int) -> List[
 
     return results
 # ---- Ricerca nei campi -in ---------------------------------------------------
+
 
 def _find_in_arrays(root: Any) -> List[List[Any]]:
     """Raccoglie tutte le liste associate alla chiave 'in' in obj."""
@@ -2584,7 +2593,7 @@ def main():
         elif tipo == 3:
             run_do_serach(data, target_number)
         elif tipo == 4:
-            # run_ao_search(data, target_number)
+            run_ao_search(data, target_number)
             ...
 
 

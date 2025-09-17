@@ -1123,11 +1123,33 @@ def run_ai_search(data: Any, target_number: int) -> None:
 
 
 def run_ao_search(data: Any, target_number: int) -> None:
-    ...
-    # Campo AODUAL dei -io.ao
-    # Campi ANA*/CTRL*PSLCAN dei -obj.output
-    # Campo RCSELAI nei -pint
-    # Campo IO_INT_ADDR2 nei -ri se tipo = "IO_AO"
+    """Esegue la ricerca di un AO dato l'indice di -out."""
+
+    # 1) Campi IN/AODUAL nei -io.ao
+    ao_list = (data.get('io') or {}).get('ao', [])
+    if ao_list:
+        matches = search_ai_in_ao_matches(ao_list, target_number, only_bus=False)
+        for ao_idx, where, name in matches:
+            if name:
+                print(f"IO>AO>{ao_idx} - {where} match (-ao) - AO name: {name}")
+            else:
+                print(f"IO>AO>{ao_idx} - {where} match (-ao)")
+
+    # 2) Campi nei -obj.output (ANA1, ANA2, CTRL*PSLCAN)
+    output_list = (data.get('obj') or {}).get('output')
+    if output_list:
+        for out_idx, fields in search_output_ao_field_matches(output_list, target_number):
+            print(f"OUTPUT>{out_idx} - match (-output) - fields: {', '.join(fields)}")
+
+    # 4) Campo IO_INT_ADDR2 nei -ri se tipo = "IO_AO"
+    ri_list = (data.get('io') or {}).get('ri')
+    if ri_list:
+        ri_matches = search_ri_ao_field_matches(ri_list, target_number)
+        for ri_idx, fields, name in ri_matches:
+            if name:
+                print(f"IO>RI>{ri_idx} - match (-ri AO) - fields: {', '.join(fields)} - name: {name}")
+            else:
+                print(f"IO>RI>{ri_idx} - match (-ri AO) - fields: {', '.join(fields)}")
 
 
 def get_axis_int_di(data: Any, axis_index: int, label: str) -> Optional[int]:
@@ -1544,6 +1566,94 @@ def search_output_ai_field_matches(output_list: List[list], target_number: int) 
         if matched:
             results.append((out_idx, matched))
 
+    return results
+
+
+def search_output_ao_field_matches(output_list: List[list], target_number: int) -> List[Tuple[int, List[str]]]:
+    """
+    Cerca in obj>output i campi che referenziano AO.
+    - Default: ANA1, ANA2
+    - ADV (OUTPUT_TYPE = 5): nessun campo AO
+    - PSLCAN (OUTPUT_TYPE = 6): CTRL1PSLCAN, CTRL2PSLCAN
+    """
+    results: List[Tuple[int, List[str]]] = []
+
+    for out_idx, out_fields in enumerate(output_list or []):
+        if not isinstance(out_fields, list):
+            continue
+
+        matched: List[str] = []
+
+        # OUTPUT_TYPE
+        out_type = -1
+        if len(out_fields) > IDX_OUTPUT_TYPE:
+            try:
+                out_type = int(out_fields[IDX_OUTPUT_TYPE])
+            except Exception:
+                out_type = -1
+
+        # --- Default: ANA1/ANA2 ---
+        if out_type not in (5, 6):  # non ADV, non PSLCAN
+            for label, idx in [("ANA1", IDX_OUTPUT_ANA1), ("ANA2", IDX_OUTPUT_ANA2)]:
+                if len(out_fields) > idx:
+                    try:
+                        if int(out_fields[idx]) == target_number:
+                            matched.append(label)
+                    except Exception:
+                        pass
+
+        # --- ADV: nessun AO ---
+        elif out_type == 5:
+            pass
+
+        # --- PSLCAN: CTRL1PSLCAN, CTRL2PSLCAN ---
+        elif out_type == 6:
+            for label, idx in [("CTRL1PSLCAN", IDX_OUTPUT_RPM), ("CTRL2PSLCAN", IDX_OUTPUT_CC)]:
+                if len(out_fields) > idx:
+                    try:
+                        if int(out_fields[idx]) == target_number:
+                            matched.append(label)
+                    except Exception:
+                        pass
+
+        if matched:
+            results.append((out_idx, matched))
+
+    return results
+
+
+def search_ri_ao_field_matches(ri_list: List[list], target_number: int) -> List[Tuple[int, List[str], Optional[str]]]:
+    """
+    Cerca nei -io.ri il campo IO_INT_ADDR2 che referenzia l'AO `target_number`,
+    solo se ADDRESS = 3 (IO_AO).
+    """
+    results: List[Tuple[int, List[str], Optional[str]]] = []
+    for ri_idx, ri_fields in enumerate(ri_list or []):
+        if not isinstance(ri_fields, list):
+            continue
+
+        addr_val = None
+        if len(ri_fields) > IDX_RI_ADDRESS:
+            try:
+                addr_val = int(ri_fields[IDX_RI_ADDRESS])
+            except Exception:
+                addr_val = None
+        if addr_val != 3:  # solo IO_AO
+            continue
+
+        matched: List[str] = []
+        if len(ri_fields) > IDX_RI_IO_INT_ADDR2:
+            try:
+                if int(ri_fields[IDX_RI_IO_INT_ADDR2]) == target_number:
+                    matched.append("IO_INT_ADDR2")
+            except Exception:
+                pass
+
+        if matched:
+            name: Optional[str] = None
+            if ri_fields and isinstance(ri_fields[0], str):
+                name = ri_fields[0]
+            results.append((ri_idx, matched, name))
     return results
 
 

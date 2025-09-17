@@ -186,23 +186,23 @@ NOTE: dentro gli -ao se tipo = PNET o CAN, trovo in IN e AO_DUAL gli -ai
 
 # --- Mappe fornite ---
 ADDRESS = {
-    -1: '',
-    0: 'PNET',
-    1: 'CAN',
-    2: 'SW',
-    3: 'CALC',
-    4: 'TOT',
-    5: 'TOTAUTO',
-    6: 'TOTMAN',
-    7: 'DAILYTOT',
-    8: 'DAILYTOTAUTO',
-    9: 'DAILYTOTMAN',
-    10: 'TIME',
-    11: 'TIMEAUTO',
-    12: 'TIMEMAN',
-    13: 'DAILYTIME',
-    14: 'DAILYTIMEAUTO',
-    15: 'DAILYTIMEMAN',
+    Const_IO.IO_TYPE_NONE: "",
+    Const_IO.IO_TYPE_PNET: "PNET",
+    Const_IO.IO_TYPE_CAN: "CAN",
+    Const_IO.IO_TYPE_SW: "SW",
+    Const_IO.IO_TYPE_CALC: "CALC",
+    Const_IO.IO_TYPE_FUNC_TOT: "TOT",
+    Const_IO.IO_TYPE_FUNC_TOTAUTO: "TOTAUTO",
+    Const_IO.IO_TYPE_FUNC_TOTMAN: "TOTMAN",
+    Const_IO.IO_TYPE_FUNC_DTOT: "DAILYTOT",
+    Const_IO.IO_TYPE_FUNC_DTOTAUTO: "DAILYTOTAUTO",
+    Const_IO.IO_TYPE_FUNC_DTOTMAN: "DAILYTOTMAN",
+    Const_IO.IO_TYPE_FUNC_TIME: "TIME",
+    Const_IO.IO_TYPE_FUNC_TIMEAUTO: "TIMEAUTO",
+    Const_IO.IO_TYPE_FUNC_TIMEMAN: "TIMEMAN",
+    Const_IO.IO_TYPE_FUNC_DTIME: "DAILYTIME",
+    Const_IO.IO_TYPE_FUNC_DTIMEAUTO: "DAILYTIMEAUTO",
+    Const_IO.IO_TYPE_FUNC_DTIMEMAN: "DAILYTIMEMAN",
 }
 
 UM = {
@@ -248,11 +248,11 @@ FB_MESURETYPE = UM.copy()
 # SOLO SE ADDRESS >= 4
 CAMPO_1 = {
     -1: '',
-    0: 'DI',
-    1: 'AI',
-    2: 'DO',
-    3: 'AO',
-    4: 'RI',
+    Const_IO.IO_DI: 'DI',
+    Const_IO.IO_AI: 'AI',
+    Const_IO.IO_DO: 'DO',
+    Const_IO.IO_AO: 'AO',
+    Const_IO.IO_RI: 'RI',
 }
 
 EXPRTYPE = {

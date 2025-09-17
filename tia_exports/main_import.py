@@ -5,11 +5,19 @@ import pandas as pd
 
 BASE_DIR = os.path.dirname(__file__)
 EXPORTS_DIR = os.path.join(BASE_DIR, "")
-OUTPUT_FILE = os.path.join(BASE_DIR, "tia_constants.py")
+OUTPUT_FILE = os.path.join(BASE_DIR, "/tia_constants.py")
+
+
+def get_prefix(name: str) -> str:
+    """Ritorna il prefisso fino al secondo '_' oppure tutto il nome se non c'è."""
+    parts = name.split("_")
+    return "_".join(parts[:2]) if len(parts) > 1 else name
 
 
 def main():
     with open(OUTPUT_FILE, "w", encoding="utf-8") as out:
+        out.write("# Auto-generato da tia_vars_export.py\n\n")
+
         for filename in os.listdir(EXPORTS_DIR):
             if filename.endswith(".xlsx"):
                 filepath = os.path.join(EXPORTS_DIR, filename)
@@ -17,12 +25,23 @@ def main():
                     # Carica il foglio "Constants"
                     df = pd.read_excel(filepath, sheet_name="Constants")
 
-                    # Ordina per colonna "Value" (se esiste)
-                    if "Value" in df.columns:
-                        df = df.sort_values(by="Value", ascending=True, na_position="last")
+                    if "Name" not in df.columns or "Value" not in df.columns:
+                        print(f"⚠️ File {filename} non ha colonne Name/Value valide, salto.")
+                        continue
+
+                    # Aggiungi il prefisso per raggruppamento
+                    df["Prefix"] = df["Name"].apply(lambda x: get_prefix(str(x)))
+
+                    # Ordina per Prefisso, poi Value, poi Name
+                    df = df.sort_values(
+                        by=["Prefix", "Value", "Name"],
+                        ascending=[True, True, True],
+                        na_position="last"
+                    )
 
                     # Nome classe = nome file senza estensione
                     class_name = os.path.splitext(filename)[0]
+                    out.write(f"# Estratto da: {filename}\n")
                     out.write(f"class {class_name}:\n")
 
                     found_any = False
@@ -37,7 +56,7 @@ def main():
                     out.write("\n\n")
 
                 except Exception as e:
-                    print(f"Errore leggendo {filename}: {e}")
+                    print(f"❌ Errore leggendo {filename}: {e}")
 
     print(f"✅ File generato: {OUTPUT_FILE}")
 

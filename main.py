@@ -482,19 +482,60 @@ MAINT_MAX_INDEX = 31
 
 # --- AXIS: gruppi bit con base + indice asse (0->axis[0], 1->axis[1], ...) ---
 # Ogni gruppo è distanziato di 64. Dentro al gruppo: base + axis_index
-AXIS_GROUPS_ORDER = [
-    "MOVING", "UP", "DOWN", "MAX", "MIN", "SUPLS", "INFLS",
-    "HH", "H", "L", "LL", "H0", "L0", "SAF", "ALTFB", "BAD",
-    "TILT", "P1UP", "P1DOWN", "P2UP", "P2DOWN", "SLOW", "FAST"
-]
-AXIS_GROUP_BASE = {name: (2048 + i * 64) for i, name in enumerate(AXIS_GROUPS_ORDER)}
+# AXIS_GROUPS_ORDER = [
+#     "MOVING", "UP", "DOWN", "MAX", "MIN", "SUPLS", "INFLS",
+#     "HH", "H", "L", "LL", "H0", "L0", "SAF", "ALTFB", "BAD",
+#     "TILT", "P1UP", "P1DOWN", "P2UP", "P2DOWN", "SLOW", "FAST"
+# ]
+# AXIS_GROUP_BASE = {name: (2048 + i * 64) for i, name in enumerate(AXIS_GROUPS_ORDER)}
 AXIS_GROUP_STEP = 64  # numero max assi per gruppo
+BASE_AXIS = 2048
+
+
+def _build_axis_groups():
+    pairs = []
+    for name in dir(Const_IO):
+        if name.startswith("IO_SYSAXIS_"):
+            val = getattr(Const_IO, name)
+            if isinstance(val, int) and val >= 0:  # salta IO_SYSAXIS_NONE = -1
+                # label = parte finale del nome, es. IO_SYSAXIS_MOVING -> MOVING
+                label = name.replace("IO_SYSAXIS_", "")
+                pairs.append((label, val))
+
+    # ordina per Value crescente (0..22)
+    pairs.sort(key=lambda lv: lv[1])
+
+    order = [label for label, _ in pairs]
+    base = {label: BASE_AXIS + i * AXIS_GROUP_STEP for i, label in enumerate(order)}
+    return order, base
+
+
+AXIS_GROUPS_ORDER, AXIS_GROUP_BASE = _build_axis_groups()
 
 # --- ALARM: campi con base + indice allarme (0..191) ---
 # Ogni gruppo è distanziato di 256. Dentro al gruppo: base + alarm_index
-ALARM_GROUPS_ORDER = ["VAL", "ENAB", "DISAB", "REQ", "ACK", "IN"]
-ALARM_GROUP_BASE = {name: (16384 + i * 256) for i, name in enumerate(ALARM_GROUPS_ORDER)}
 ALARM_GROUP_STEP = 256
+BASE_ALARM = 16384
+
+
+def _build_alarm_groups():
+    pairs = []
+    for name in dir(Const_IO):
+        if name.startswith("IO_SYSALARM_"):
+            val = getattr(Const_IO, name)
+            if isinstance(val, int) and val >= 0:  # salta IO_SYSALARM_NONE = -1
+                label = name.replace("IO_SYSALARM_", "")
+                pairs.append((label, val))
+
+    # Ordina per Value (0..5)
+    pairs.sort(key=lambda lv: lv[1])
+
+    order = [label for label, _ in pairs]
+    base = {label: BASE_ALARM + i * ALARM_GROUP_STEP for i, label in enumerate(order)}
+    return order, base
+
+
+ALARM_GROUPS_ORDER, ALARM_GROUP_BASE = _build_alarm_groups()
 
 
 def key_for_value(d, value):

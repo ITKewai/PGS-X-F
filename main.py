@@ -2654,6 +2654,7 @@ def main():
     # 2) Loop interattivo: ripeti la domanda dopo ogni ricerca
     while True:
         print("\n" + "-" * 60)
+        tipo_opt = (1, 2, 3, 4, 5, 7)
         tipo_raw = input("Che tipo stai cercando? (1=DI, 2=AI, 3=DO, 4=AO, 5=SYSTEM, 7=FREE, Invio per uscire): ").strip().lower()
         if tipo_raw in ("", "q", "quit", "exit", "esci"):
             print("Uscita.")
@@ -2663,10 +2664,10 @@ def main():
         try:
             tipo = int(tipo_raw)
         except ValueError:
-            print("Tipo non valido. Inserisci 1, 2, 3, 4 o 5.")
+            print("Tipo non valido. Inserisci 1, 2, 3, 4, 5 o 7.")
             continue
 
-        if tipo not in (1, 2, 3, 4, 5, 7):
+        if tipo not in tipo_opt:
             print("Tipo non valido. Usa 1=DI, 2=AI, 3=DO, 4=AO, 5=SYSTEM, 7=FREE.")
             continue
 
@@ -2837,26 +2838,29 @@ def main():
         # ==================== /FREE ======================
 
         # Per DI/AI/DO/AO (1..4) chiedo il numero da cercare
-        target_str = input("Inserisci il numero da cercare (Invio per tornare al menu): ").strip()
-        if not target_str:
-            continue
-        try:
-            target_number = int(target_str)
-        except ValueError:
-            print("Numero non valido.")
-            continue
+        if tipo in (1, 2, 3, 4):
+            while True:
+                target_str = input("Inserisci il numero da cercare (Invio per tornare al menu): ").strip()
+                if target_str == "":
+                    # esco dalla categoria e torno al menu principale (scelta tipo)
+                    break
+                try:
+                    target_number = int(target_str)
+                except ValueError:
+                    print("Numero non valido. Riprova (Invio per tornare al menu).")
+                    continue
 
-        print("-" * 60)
-
-        if tipo == 1:
-            run_di_search(data, target_number)
-        elif tipo == 2:
-            run_ai_search(data, target_number)
-        elif tipo == 3:
-            run_do_serach(data, target_number)
-        elif tipo == 4:
-            run_ao_search(data, target_number)
-            ...
+                print("-" * 60)
+                if tipo == 1:
+                    run_di_search(data, target_number)
+                elif tipo == 2:
+                    run_ai_search(data, target_number)
+                elif tipo == 3:
+                    run_do_serach(data, target_number)
+                elif tipo == 4:
+                    run_ao_search(data, target_number)
+            # finito il sottoloop, riparte il while principale
+            continue
 
 
 def print_in_columns(entries: List[str], cols: int = 3) -> None:

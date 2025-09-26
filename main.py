@@ -1193,6 +1193,104 @@ def run_ao_search(data: Any, target_number: int) -> None:
                 print(f"IO>RI>{ri_idx} - match (-ri AO) - fields: {', '.join(fields)}")
 
 
+def run_free_scan_di(data: Any) -> None:
+    """Trova DI con nome vuoto o che contiene 'FREE' e, per ciascuno, esegue run_di_search sull'indice DI."""
+    di_list = ((data.get('io') or {}).get('di')) or []
+    if not di_list:
+        print("Sezione 'di' non trovata.")
+        return
+
+    found: List[Tuple[int, str]] = []
+    for di_idx, di_fields in enumerate(di_list):
+        if not isinstance(di_fields, list) or not di_fields:
+            continue
+        raw_name = di_fields[0]
+        name = (str(raw_name) if raw_name is not None else "").strip()
+        if name == "" or ("FREE" in name.upper()):
+            found.append((di_idx, name))
+
+    if not found:
+        print("Nessun DI con nome vuoto o contenente 'FREE' trovato.")
+        return
+    # INFO DEBUG
+    # print(f"Trovati {len(found)} DI potenzialmente liberi:")
+    # for di_idx, name in found:
+        # shown = name if name != "" else '""'
+        # print(f"  - DI[{di_idx}] nome={shown}")
+
+    for di_idx, name in found:
+        run_di_search(data, di_idx)
+
+
+def run_free_scan_do(data: Any) -> None:
+    do_list = ((data.get('io') or {}).get('do')) or []
+    if not do_list:
+        print("Sezione 'do' non trovata.")
+        return
+
+    found: List[Tuple[int, str]] = []
+    for do_idx, do_fields in enumerate(do_list):
+        if not isinstance(do_fields, list) or not do_fields:
+            continue
+        raw_name = do_fields[0]
+        name = (str(raw_name) if raw_name is not None else "").strip()
+        if name == "" or ("FREE" in name.upper()):
+            found.append((do_idx, name))
+
+    if not found:
+        print("Nessun DO con nome vuoto o contenente 'FREE' trovato.")
+        return
+
+    for do_idx, _ in found:
+        run_do_serach(data, do_idx)
+
+
+def run_free_scan_ai(data: Any) -> None:
+    ai_list = ((data.get('io') or {}).get('ai')) or []
+    if not ai_list:
+        print("Sezione 'ai' non trovata.")
+        return
+
+    found: List[Tuple[int, str]] = []
+    for ai_idx, ai_fields in enumerate(ai_list):
+        if not isinstance(ai_fields, list) or not ai_fields:
+            continue
+        raw_name = ai_fields[0]
+        name = (str(raw_name) if raw_name is not None else "").strip()
+        if name == "" or ("FREE" in name.upper()):
+            found.append((ai_idx, name))
+
+    if not found:
+        print("Nessun AI con nome vuoto o contenente 'FREE' trovato.")
+        return
+
+    for ai_idx, _ in found:
+        run_ai_search(data, ai_idx)
+
+
+def run_free_scan_ao(data: Any) -> None:
+    ao_list = ((data.get('io') or {}).get('ao')) or []
+    if not ao_list:
+        print("Sezione 'ao' non trovata.")
+        return
+
+    found: List[Tuple[int, str]] = []
+    for ao_idx, ao_fields in enumerate(ao_list):
+        if not isinstance(ao_fields, list) or not ao_fields:
+            continue
+        raw_name = ao_fields[0]
+        name = (str(raw_name) if raw_name is not None else "").strip()
+        if name == "" or ("FREE" in name.upper()):
+            found.append((ao_idx, name))
+
+    if not found:
+        print("Nessun AO con nome vuoto o contenente 'FREE' trovato.")
+        return
+
+    for ao_idx, _ in found:
+        run_ao_search(data, ao_idx)
+
+
 def get_axis_int_di(data: Any, axis_index: int, label: str) -> Optional[int]:
     """Ritorna il DI configurato nell'array AXIS.INT per l'asse e la label dati."""
     axis_nodes = ((data.get('obj') or {}).get('axis') or [])
@@ -2556,7 +2654,7 @@ def main():
     # 2) Loop interattivo: ripeti la domanda dopo ogni ricerca
     while True:
         print("\n" + "-" * 60)
-        tipo_raw = input("Che tipo stai cercando? (1=DI, 2=AI, 3=DO, 4=AO, 5=SYSTEM, Invio per uscire): ").strip().lower()
+        tipo_raw = input("Che tipo stai cercando? (1=DI, 2=AI, 3=DO, 4=AO, 5=SYSTEM, 7=FREE, Invio per uscire): ").strip().lower()
         if tipo_raw in ("", "q", "quit", "exit", "esci"):
             print("Uscita.")
             _pause_if_frozen()
@@ -2568,8 +2666,8 @@ def main():
             print("Tipo non valido. Inserisci 1, 2, 3, 4 o 5.")
             continue
 
-        if tipo not in (1, 2, 3, 4, 5):
-            print("Tipo non valido. Usa 1=DI, 2=AI, 3=DO, 4=AO, 5=SYSTEM.")
+        if tipo not in (1, 2, 3, 4, 5, 7):
+            print("Tipo non valido. Usa 1=DI, 2=AI, 3=DO, 4=AO, 5=SYSTEM, 7=FREE.")
             continue
 
         print("-" * 60)
@@ -2724,6 +2822,19 @@ def main():
             run_di_search(data, number)
             continue
         # ==================== /SYSTEM ====================
+
+        # ====================== FREE (scan automatico) ======================
+        if tipo == 7:
+            print("DI:")
+            run_free_scan_di(data)
+            print("DO:")
+            run_free_scan_do(data)
+            print("AI")
+            run_free_scan_ai(data)
+            print("AO")
+            run_free_scan_ao(data)
+            continue
+        # ==================== /FREE ======================
 
         # Per DI/AI/DO/AO (1..4) chiedo il numero da cercare
         target_str = input("Inserisci il numero da cercare (Invio per tornare al menu): ").strip()

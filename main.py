@@ -19,6 +19,7 @@ __copyright__ = f"Autore: {__author__} © 2025 {__company__}"
 # TODO: download config con salvataggio versione data
 # TODO: ricerca dei DO, ricerca dei AI, ricerca dei AO
 # TODO: ricerca dei DI che si chiamano FREE o senza nome per vedere se sono usati da qualche parte
+# TODO: FARE RISCARICA CONFIG
 
 """
 STRUTTURE:
@@ -436,6 +437,7 @@ IDX_AXIS_INT: Dict[str, int] = {
 }
 IDX_RCSELAI = 77
 
+IDX_RI_CAMPO1 = 6
 IDX_RI_CAMPO2 = 7
 IDX_RI_ENABLED = 8
 IDX_RI_RESET = 12
@@ -1964,8 +1966,6 @@ def search_axis_int_di_field_matches(axis_int_lists: List[List[Any]], target_num
             results.append((axis_idx, matched))
     return results
 
-MI CARICA AI ANCHE SE SONO RI NEL CAMPO
-TODO: FARE RISCARICA CONFIG
 def search_ri_di_field_matches(ri_list: List[list], target_number: int) -> List[Tuple[int, List[str], Optional[str]]]:
     """
     Cerca nei -io.ri i campi CAMPO_2, ENABLED, RESET e IN che referenziano il DI `target_number`.
@@ -1986,10 +1986,21 @@ def search_ri_di_field_matches(ri_list: List[list], target_number: int) -> List[
             ("ENABLED", IDX_RI_ENABLED),
             ("RESET", IDX_RI_RESET),
         ]:
-            if len(ri_fields) > idx:
+            if len(ri_fields) > idx: # controllo per evitare indexerror
                 try:
                     if int(ri_fields[idx]) == target_number:
-                        matched.append(label)
+                        if label == "CAMPO_2":
+                            # prendi anche CAMPO_1 per vedere se è DI
+                            if len(ri_fields) > IDX_RI_CAMPO1:
+                                try:
+                                    campo1_val = int(ri_fields[IDX_RI_CAMPO1])
+                                except Exception:
+                                    campo1_val = None
+                                # controlla che CAMPO_1 == DI
+                                if campo1_val == Const_IO.IO_DI:
+                                    matched.append(label)
+                        else:
+                            matched.append(label)
                 except Exception:
                     pass
 

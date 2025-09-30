@@ -2666,8 +2666,8 @@ def main():
     # 2) Loop interattivo: ripeti la domanda dopo ogni ricerca
     while True:
         print("\n" + "-" * 60)
-        tipo_opt = (1, 2, 3, 4, 5, 7)
-        tipo_raw = input("Che tipo stai cercando? (1=DI, 2=AI, 3=DO, 4=AO, 5=SYSTEM, 7=FREE, Invio per uscire): ").strip().lower()
+        tipo_opt = (0, 1, 2, 3, 4, 5, 7)
+        tipo_raw = input("Che tipo stai cercando? (1=DI, 2=AI, 3=DO, 4=AO, 5=SYSTEM, 7=FREE, 0=REFRESH, Invio per uscire): ").strip().lower()
         if tipo_raw in ("", "q", "quit", "exit", "esci"):
             print("Uscita.")
             _pause_if_frozen()
@@ -2686,6 +2686,23 @@ def main():
         print("-" * 60)
 
         # ====================== SYSTEM (nessuna richiesta numero qui) ======================
+
+        if choice == "0":
+            if last_url:
+                print("Riscario config da internet...")
+                try:
+                    r = requests.get(last_url, verify=False, timeout=10)
+                    r.raise_for_status()
+                    path = get_run_dir() / "config.yaml"
+                    path.write_text(r.text, encoding="utf-8")
+                    data = load_yaml(str(path))
+                    print("Config riscaricato con successo.")
+                except Exception as e:
+                    print(f"Errore durante il refresh: {e}")
+            else:
+                print("Nessun URL precedente: devi prima scegliere l'opzione 2 per scaricare.")
+            continue
+            
         if tipo == 5:
             # --- SYSTEM lookup: scegli TYPE -> INDEX -> FIELD, calcola numero e cerca nei DI ---
             print("Scegli il TYPE di sistema (nome o numero):")

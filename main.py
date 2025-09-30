@@ -1964,7 +1964,8 @@ def search_axis_int_di_field_matches(axis_int_lists: List[List[Any]], target_num
             results.append((axis_idx, matched))
     return results
 
-
+MI CARICA AI ANCHE SE SONO RI NEL CAMPO
+TODO: FARE RISCARICA CONFIG
 def search_ri_di_field_matches(ri_list: List[list], target_number: int) -> List[Tuple[int, List[str], Optional[str]]]:
     """
     Cerca nei -io.ri i campi CAMPO_2, ENABLED, RESET e IN che referenziano il DI `target_number`.

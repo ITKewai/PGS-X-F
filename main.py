@@ -187,23 +187,23 @@ NOTE: dentro gli -ao se tipo = PNET o CAN, trovo in IN e AO_DUAL gli -ai
 last_url = ''
 # --- Mappe fornite ---
 ADDRESS = {
-    Const_IO.IO_TYPE_NONE: "",
-    Const_IO.IO_TYPE_PNET: "PNET",
-    Const_IO.IO_TYPE_CAN: "CAN",
-    Const_IO.IO_TYPE_SW: "SW",
-    Const_IO.IO_TYPE_CALC: "CALC",
-    Const_IO.IO_TYPE_FUNC_TOT: "TOT",
-    Const_IO.IO_TYPE_FUNC_TOTAUTO: "TOTAUTO",
-    Const_IO.IO_TYPE_FUNC_TOTMAN: "TOTMAN",
-    Const_IO.IO_TYPE_FUNC_DTOT: "DAILYTOT",
-    Const_IO.IO_TYPE_FUNC_DTOTAUTO: "DAILYTOTAUTO",
-    Const_IO.IO_TYPE_FUNC_DTOTMAN: "DAILYTOTMAN",
-    Const_IO.IO_TYPE_FUNC_TIME: "TIME",
-    Const_IO.IO_TYPE_FUNC_TIMEAUTO: "TIMEAUTO",
-    Const_IO.IO_TYPE_FUNC_TIMEMAN: "TIMEMAN",
-    Const_IO.IO_TYPE_FUNC_DTIME: "DAILYTIME",
-    Const_IO.IO_TYPE_FUNC_DTIMEAUTO: "DAILYTIMEAUTO",
-    Const_IO.IO_TYPE_FUNC_DTIMEMAN: "DAILYTIMEMAN",
+    Costanti.IO_TYPE_NONE: "",
+    Costanti.IO_TYPE_PNET: "PNET",
+    Costanti.IO_TYPE_CAN: "CAN",
+    Costanti.IO_TYPE_SW: "SW",
+    Costanti.IO_TYPE_CALC: "CALC",
+    Costanti.IO_TYPE_FUNC_TOT: "TOT",
+    Costanti.IO_TYPE_FUNC_TOTAUTO: "TOTAUTO",
+    Costanti.IO_TYPE_FUNC_TOTMAN: "TOTMAN",
+    Costanti.IO_TYPE_FUNC_DTOT: "DAILYTOT",
+    Costanti.IO_TYPE_FUNC_DTOTAUTO: "DAILYTOTAUTO",
+    Costanti.IO_TYPE_FUNC_DTOTMAN: "DAILYTOTMAN",
+    Costanti.IO_TYPE_FUNC_TIME: "TIME",
+    Costanti.IO_TYPE_FUNC_TIMEAUTO: "TIMEAUTO",
+    Costanti.IO_TYPE_FUNC_TIMEMAN: "TIMEMAN",
+    Costanti.IO_TYPE_FUNC_DTIME: "DAILYTIME",
+    Costanti.IO_TYPE_FUNC_DTIMEAUTO: "DAILYTIMEAUTO",
+    Costanti.IO_TYPE_FUNC_DTIMEMAN: "DAILYTIMEMAN",
 }
 
 UM = {
@@ -249,11 +249,11 @@ FB_MESURETYPE = UM.copy()
 # SOLO SE ADDRESS >= 4
 CAMPO_1 = {
     -1: '',
-    Const_IO.IO_DI: 'DI',
-    Const_IO.IO_AI: 'AI',
-    Const_IO.IO_DO: 'DO',
-    Const_IO.IO_AO: 'AO',
-    Const_IO.IO_RI: 'RI',
+    Costanti.IO_DI: 'DI',
+    Costanti.IO_AI: 'AI',
+    Costanti.IO_DO: 'DO',
+    Costanti.IO_AO: 'AO',
+    Costanti.IO_RI: 'RI',
 }
 
 EXPRTYPE = {
@@ -496,9 +496,9 @@ BASE_AXIS = 2048
 
 def _build_axis_groups():
     pairs = []
-    for name in dir(Const_IO):
+    for name in dir(Costanti):
         if name.startswith("IO_SYSAXIS_"):
-            val = getattr(Const_IO, name)
+            val = getattr(Costanti, name)
             if isinstance(val, int) and val >= 0:  # salta IO_SYSAXIS_NONE = -1
                 # label = parte finale del nome, es. IO_SYSAXIS_MOVING -> MOVING
                 label = name.replace("IO_SYSAXIS_", "")
@@ -522,9 +522,9 @@ BASE_ALARM = 16384
 
 def _build_alarm_groups():
     pairs = []
-    for name in dir(Const_IO):
+    for name in dir(Costanti):
         if name.startswith("IO_SYSALARM_"):
-            val = getattr(Const_IO, name)
+            val = getattr(Costanti, name)
             if isinstance(val, int) and val >= 0:  # salta IO_SYSALARM_NONE = -1
                 label = name.replace("IO_SYSALARM_", "")
                 pairs.append((label, val))
@@ -1997,7 +1997,7 @@ def search_ri_di_field_matches(ri_list: List[list], target_number: int) -> List[
                                 except Exception:
                                     campo1_val = None
                                 # controlla che CAMPO_1 == DI
-                                if campo1_val == Const_IO.IO_DI:
+                                if campo1_val == Costanti.IO_DI:
                                     matched.append(label)
                         else:
                             matched.append(label)

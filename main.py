@@ -2283,8 +2283,31 @@ _OUT_ORIGIN_SETS = {
                             "RCBOTTONUP_DO", "RCBOTTOMDOWN_DO", "RCTOPLEFT_DO", "RCTOPRIGHT_DO", "RCALARM_DO"},
     "config>main>syncio": {"SYNCLOADOUT", "SYNCUNLOADOUT", "SYNCSTARTOUT"},
 }
+
+
 # Mappatura per indice del blocco "- in:" (etichette nominali)
-IN_INDEX_LABELS = ["x"] * int(Costanti.MAX_STATOBOOL)
+def _build_in_index_labels():
+    pairs = []
+    max_idx = int(Costanti.MAX_STATOBOOL)
+
+    for name in dir(Costanti):
+        if name.startswith("BOOL_IND_"):
+            val = getattr(Costanti, name)
+            if isinstance(val, (int, float)) and val >= 0:
+                # scarta se supera il max
+                if max_idx is not None and int(val) > max_idx:
+                    continue
+                label = name.replace("BOOL_IND_", "")
+                pairs.append((label, int(val)))
+
+    # ordina per valore crescente (0,1,2,...)
+    pairs.sort(key=lambda lv: lv[1])
+    return [label for label, _ in pairs]
+
+
+IN_INDEX_LABELS = _build_in_index_labels()
+
+
 IN_INDEX_LABELS[0] = "AUTOSEL"
 IN_INDEX_LABELS[1] = "TEACHSEL"
 IN_INDEX_LABELS[2] = "CYCLESEL"

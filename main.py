@@ -184,7 +184,7 @@ AXISREAL:
 '''
 NOTE: dentro gli -ao se tipo = PNET o CAN, trovo in IN e AO_DUAL gli -ai
 '''
-
+last_url = ''
 # --- Mappe fornite ---
 ADDRESS = {
     Const_IO.IO_TYPE_NONE: "",
@@ -2687,7 +2687,7 @@ def main():
 
         # ====================== SYSTEM (nessuna richiesta numero qui) ======================
 
-        if choice == "0":
+        if tipo == "0":
             if last_url:
                 print("Riscario config da internet...")
                 try:

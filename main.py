@@ -2381,7 +2381,7 @@ IN_INDEX_OVERRIDES = {
 
 def _build_in_index_labels():
     pairs = []
-    max_idx = getattr(Costanti, "MAX_STATOBOOL", None)
+    max_idx = Costanti.MAX_STATOBOOL
 
     for name in dir(Costanti):
         if name.startswith("BOOL_IND_"):
@@ -2401,6 +2401,26 @@ def _build_in_index_labels():
 
 IN_INDEX_LABELS = _build_in_index_labels()
 
+#TODO: gli BOOL_IND comprende anche gli indici out
+
+def _build_in_index_labels():
+    pairs = []
+    max_idx = Costanti.MAX_STATOBOOL
+
+    for name in dir(Costanti):
+        if name.startswith("BOOL_IND_"):
+            val = getattr(Costanti, name)
+            if isinstance(val, (int, float)) and val >= 0:
+                if max_idx is not None and int(val) > max_idx:
+                    continue
+                base = name
+                override = IN_INDEX_OVERRIDES.get(base, base.replace("BOOL_IND_", ""))
+                if override is None:
+                    continue  # saltato
+                pairs.append((override, int(val)))
+
+    pairs.sort(key=lambda lv: lv[1])
+    return [label for label, _ in pairs]
 
 OUT_INDEX_LABELS = ["x"] * 136
 OUT_INDEX_LABELS[49] = "MACSTARTLIGHT_DO"

@@ -18,6 +18,7 @@ def get_prefix(name: str) -> str:
 
 
 def main():
+    #TODO: aggiungere commenti
     print(EXPORTS_DIR, ' > ',OUTPUT_FILE)
     with open(OUTPUT_FILE, "w", encoding="utf-8") as out:
         out.write("# Auto-generato da tia_vars_export.py\n\n")
@@ -54,12 +55,13 @@ def main():
                         name = row.get("Name")
                         value = row.get("Value")
                         prefix = row.get("Prefix")
+                        comment = f'  # {row.get("Comment")}' if type(row.get("Comment")) is str else ''
 
                         if pd.notna(name) and pd.notna(value):
                             # Se cambia il prefisso -> riga vuota per separare i gruppi
                             if last_prefix is not None and prefix != last_prefix:
                                 out.write("\n")
-                            out.write(f"    {name} = {repr(value)}\n")
+                            out.write(f"    {name} = {repr(value)}{comment}\n")
                             last_prefix = prefix
                             found_any = True
 

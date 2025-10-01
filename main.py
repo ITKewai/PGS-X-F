@@ -2281,7 +2281,7 @@ _OUT_ORIGIN_SETS = {
     "config>checkmeasurement": {"EYEBENDON_DO"},
     "config>radiocontrol": {"RCUM_DO", "RCLEFTUP_DO", "RCLEFTDOWN_DO", "RCRIGHTUP_DO", "RCRIGHTDOWN_DO",
                             "RCBOTTONUP_DO", "RCBOTTOMDOWN_DO", "RCTOPLEFT_DO", "RCTOPRIGHT_DO", "RCALARM_DO"},
-    "config>main>syncio": {"SYNCLOADIN", "SYNCUNLOADIN", "SYNCSTARTIN"},
+    "config>main>syncio": {"SYNCLOADOUT", "SYNCUNLOADOUT", "SYNCSTARTOUT"},
 }
 # Mappatura per indice del blocco "- in:" (etichette nominali)
 IN_INDEX_LABELS = ["x"] * int(Costanti.MAX_STATOBOOL)

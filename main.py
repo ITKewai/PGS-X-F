@@ -2966,3 +2966,9 @@ if __name__ == "__main__":
         print("\n[Errore inatteso]:", e)
         _pause_if_frozen()
         sys.exit(1)
+
+
+# TODO: se non riesco a scaricare il file non devo chiudere il programma
+
+# TODO: ricerca  
+# TODO:

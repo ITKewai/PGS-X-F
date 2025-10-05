@@ -438,12 +438,13 @@ IDX_AXIS_INT: Dict[str, int] = {
 }
 IDX_RCSELAI = 77
 
+IDX_RI_NAME = 0
 IDX_RI_CAMPO1 = 6
 IDX_RI_CAMPO2 = 7
 IDX_RI_ENABLED = 8
 IDX_RI_RESET = 12
 IDX_RI_IN = 13
-IDX_RI_ADDRESS = 5  # campo ADDRESS
+IDX_RI_ADDRESS = 5
 IDX_RI_IO_INT_ADDR2 = 10
 
 # --- Variabili di sistema: TYPE (IDX_SYSTEM) ---
@@ -1981,9 +1982,10 @@ def search_ri_di_field_matches(ri_list: List[list], target_number: int) -> List[
             continue
 
         matched: List[str] = []
-
+        _ = ri_fields
         # --- CAMPO_2, ENABLED, RESET: sempre ---
         for label, idx in [
+            ("ADDRESS", IDX_RI_ADDRESS),
             ("CAMPO_2", IDX_RI_CAMPO2),
             ("ENABLED", IDX_RI_ENABLED),
             ("RESET", IDX_RI_RESET),

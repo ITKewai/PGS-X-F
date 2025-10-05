@@ -1,0 +1,144 @@
+﻿DATA_BLOCK "DATA_HMIPOWERTAGS"
+{ DB_Accessible_From_OPC_UA := 'FALSE' ;
+ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+NON_RETAIN
+   VAR 
+      Axis_BwVMaxCurr : Array[0.."MAX_ASSE"] of Real;
+      Axis_FwVMaxCurr : Array[0.."MAX_ASSE"] of Real;
+      Axis_SInfCurr : Array[0.."MAX_ASSE"] of Real;
+      Axis_SSupCurr : Array[0.."MAX_ASSE"] of Real;
+      Axis_SMinCurr : Array[0.."MAX_ASSE"] of Real;
+      Axis_SMaxCurr : Array[0.."MAX_ASSE"] of Real;
+      Axis_CurrDelta { ExternalWritable := 'False'} : Array[0.."MAX_ASSE"] of Real;   // SINCRONIZZAZIONE PLC-HMI DATI CALCOLATI
+      Axis_CurrSpeed { ExternalWritable := 'False'} : Array[0.."MAX_ASSE"] of Real;
+      Axis_FPStatus : Array[0.."MAX_ASSE"] of Int;
+      Axis_FPDown : Array[0.."MAX_ASSE"] of Bool;
+      Axis_FPUp : Array[0.."MAX_ASSE"] of Bool;
+      Axis_FPMoving : Array[0.."MAX_ASSE"] of Bool;
+      Axis_ValOutput : Array[0.."MAX_ASSE"] of Real;
+      Feedback_RatioCurr : Array[0.."MAX_FEEDBACK"] of Real;
+      Feedback_ValIn : Array[0.."MAX_FEEDBACK"] of DInt;
+      Feedback_Val : Array[0.."MAX_FEEDBACK"] of Real;
+      Input_Val : Array[0.."MAX_INPUT"] of Real;
+      Output_Val : Array[0.."MAX_OUTPUT"] of Real;
+      Output_Val1 : Array[0.."MAX_OUTPUT"] of DInt;
+      Output_Val2 : Array[0.."MAX_OUTPUT"] of DInt;
+      TabStat_Enab : Array[0.."MAX_TABSTATASSE"] of Bool;
+      TabStat_MinVal : Array[0.."MAX_TABSTATASSE"] of Real;
+      TabStat_MaxVal : Array[0.."MAX_TABSTATASSE"] of Real;
+      TabStat_AsseInd : Array[0.."MAX_TABSTATASSE"] of Int;
+      TabStat_FlagDelta : Array[0.."MAX_TABSTATASSE"] of Bool;
+      Asse_IndTabStat : Array[0.."MAX_ASSE"] of Int;
+      TabStat_CurrPos : Array[0.."MAX_TABSTATASSE"] of Real;
+      TabStat_CurrDelta : Array[0.."MAX_TABSTATASSE"] of Real;
+      TabStat_Asse { ExternalAccessible := 'False'; ExternalVisible := 'False'; ExternalWritable := 'False'} : Array[0.."MAX_TABSTATASSE"] of WString;
+      TabStat_FPMoving : Array[0.."MAX_TABSTATASSE"] of Bool;
+      TabStat_FPStatus : Array[0.."MAX_TABSTATASSE"] of Int;
+      TabStat_AxesNames : WString;
+      StatusBool : Array[0.."MAX_STATOBOOL"] of Bool;
+      Alignment_ParamInt : Array[0.."MAX_ALIGNINTPARAM"] of Int;
+      Alignment_ParamReal : Array[0.."MAX_ALIGNREALPARAM"] of Real;
+      DOut_Val { ExternalWritable := 'False'} : Array[0.."MAX_DO"] of Bool;
+      AOut_Val { ExternalWritable := 'False'} : Array[0.."MAX_AO"] of DInt;
+      Inverter_BoolVal : Array[0.."MAX_INVERTERBOOL"] of Bool;
+      Inverter_IntVal : Array[0.."MAX_INVERTERINT"] of Int;
+      DIn_Val : Array[0.."MAX_DI"] of Bool;
+   END_VAR
+
+
+BEGIN
+   StatusBool[0] := FALSE;
+   StatusBool[1] := FALSE;
+   StatusBool[2] := FALSE;
+   StatusBool[3] := FALSE;
+   StatusBool[4] := FALSE;
+   StatusBool[5] := FALSE;
+   StatusBool[6] := FALSE;
+   StatusBool[7] := FALSE;
+   StatusBool[8] := FALSE;
+   StatusBool[9] := FALSE;
+   StatusBool[10] := FALSE;
+   StatusBool[11] := FALSE;
+   StatusBool[12] := FALSE;
+   StatusBool[13] := FALSE;
+   StatusBool[14] := FALSE;
+   StatusBool[15] := FALSE;
+   StatusBool[16] := FALSE;
+   StatusBool[17] := FALSE;
+   StatusBool[18] := FALSE;
+   StatusBool[19] := FALSE;
+   StatusBool[20] := FALSE;
+   StatusBool[21] := FALSE;
+   StatusBool[22] := FALSE;
+   StatusBool[23] := FALSE;
+   StatusBool[24] := FALSE;
+   StatusBool[25] := FALSE;
+   StatusBool[26] := FALSE;
+   StatusBool[27] := FALSE;
+   StatusBool[28] := FALSE;
+   StatusBool[29] := FALSE;
+   StatusBool[30] := FALSE;
+   StatusBool[31] := FALSE;
+   StatusBool[32] := FALSE;
+   StatusBool[33] := FALSE;
+   StatusBool[34] := FALSE;
+   StatusBool[35] := FALSE;
+   StatusBool[36] := FALSE;
+   StatusBool[37] := FALSE;
+   StatusBool[38] := FALSE;
+   StatusBool[39] := FALSE;
+   StatusBool[40] := FALSE;
+   StatusBool[41] := FALSE;
+   StatusBool[42] := FALSE;
+   StatusBool[43] := FALSE;
+   StatusBool[44] := FALSE;
+   StatusBool[45] := FALSE;
+   StatusBool[46] := FALSE;
+   StatusBool[47] := FALSE;
+   StatusBool[48] := FALSE;
+   StatusBool[49] := FALSE;
+   StatusBool[50] := FALSE;
+   StatusBool[51] := FALSE;
+   StatusBool[52] := FALSE;
+   StatusBool[53] := FALSE;
+   StatusBool[54] := FALSE;
+   StatusBool[55] := FALSE;
+   StatusBool[56] := FALSE;
+   StatusBool[57] := FALSE;
+   StatusBool[58] := FALSE;
+   StatusBool[59] := FALSE;
+   StatusBool[60] := FALSE;
+   StatusBool[61] := FALSE;
+   StatusBool[62] := FALSE;
+   StatusBool[63] := FALSE;
+   StatusBool[64] := FALSE;
+   StatusBool[65] := FALSE;
+   StatusBool[66] := FALSE;
+   StatusBool[67] := FALSE;
+   StatusBool[68] := FALSE;
+   StatusBool[69] := FALSE;
+   StatusBool[70] := FALSE;
+   StatusBool[71] := FALSE;
+   StatusBool[72] := FALSE;
+   StatusBool[73] := FALSE;
+   StatusBool[74] := FALSE;
+   StatusBool[75] := FALSE;
+   StatusBool[76] := FALSE;
+   StatusBool[77] := FALSE;
+   StatusBool[78] := FALSE;
+   StatusBool[79] := FALSE;
+   StatusBool[80] := FALSE;
+   StatusBool[81] := FALSE;
+   StatusBool[82] := FALSE;
+   StatusBool[83] := FALSE;
+   StatusBool[84] := FALSE;
+   StatusBool[85] := FALSE;
+   StatusBool[86] := FALSE;
+   StatusBool[87] := FALSE;
+   StatusBool[88] := FALSE;
+   StatusBool[89] := FALSE;
+   StatusBool[90] := FALSE;
+
+END_DATA_BLOCK
+

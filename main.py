@@ -2624,51 +2624,62 @@ def download_file(url: str, dest_path: Path) -> None:
 def choose_and_prepare_config() -> Path:
     base_dir = get_run_dir()  # <- usa la cartella dell'eseguibile se frozen
 
-    print("Selezione sorgente file 'config.yaml'")
-    print("  [1] Usa file locale (stessa cartella dell'eseguibile)")
-    print("  [2] Scarica da internet e salva accanto all'eseguibile (connessione NON protetta)")
-    choice = input("Scelta: ").strip()
+    while True:  # 🔁 loop finché non riesce
+        print("Selezione sorgente file 'config.yaml'")
+        print("  [1] Usa file locale (stessa cartella dell'eseguibile)")
+        print("  [2] Scarica da internet e salva accanto all'eseguibile (connessione NON protetta)")
+        choice = input("Scelta: ").strip()
 
-    try:
-        choice = int(choice)
-    except ValueError:
-        print("Opzione non valida")
-        sys.exit(1)
-
-    if choice == 2:
-        base = input("Inserisci indirizzo/IP (es: 10.3.73.177 oppure https://10.3.73.177): ").strip()
-        if not base:
-            print("Indirizzo non valido.")
-            sys.exit(1)
-        url = _build_download_url(base)
-        dest = base_dir / "config.yaml"  # <<-- salva accanto all'eseguibile
         try:
-            download_file(url, dest)
-        except PermissionError:
-            # fallback se la cartella dell'eseguibile non è scrivibile (es. Program Files)
-            fallback = Path.home() / "Documents" / "search_config" / "config.yaml"
-            fallback.parent.mkdir(parents=True, exist_ok=True)
-            print(f"Permesso negato su {dest}. Salvo in {fallback}")
-            download_file(url, fallback)
-            return fallback
-        except Exception as e:
-            print(f"Errore nel download: {e}")
-            sys.exit(1)
-        return dest
-    elif choice == 1:
-        path = base_dir / "config.yaml"  # <<-- cerca accanto all'eseguibile
-        if not path.exists():
-            # opzionale: prova anche nella working dir se diverso
-            wd_path = Path.cwd() / "config.yaml"
-            if wd_path.exists():
-                print(f"File non trovato in {path}, uso {wd_path}")
-                return wd_path
-            print(f"File locale non trovato: {path}")
-            sys.exit(1)
-        return path
-    else:
-        print("Opzione non valida")
-        sys.exit(1)
+            choice = int(choice)
+        except ValueError:
+            print("Opzione non valida\n")
+            continue  # torna all'inizio del loop
+
+        if choice == 2:
+            base = input("Inserisci indirizzo/IP (es: 10.3.73.177 oppure https://10.3.73.177): ").strip()
+            if not base:
+                print("Indirizzo non valido.\n")
+                continue
+
+            url = _build_download_url(base)
+            dest = base_dir / "config.yaml"  # <<-- salva accanto all'eseguibile
+
+            try:
+                download_file(url, dest)
+                return dest  # ✅ scaricato con successo
+
+            except PermissionError:
+                # fallback se la cartella dell'eseguibile non è scrivibile (es. Program Files)
+                fallback = Path.home() / "Documents" / "search_config" / "config.yaml"
+                fallback.parent.mkdir(parents=True, exist_ok=True)
+                print(f"Permesso negato su {dest}. Salvo in {fallback}")
+                try:
+                    download_file(url, fallback)
+                    return fallback  # ✅ scaricato con successo nel fallback
+                except Exception as e:
+                    print(f"Errore nel download (fallback): {e}\n")
+                    continue  # ❌ torna da capo
+
+            except Exception as e:
+                print(f"Errore nel download: {e}\n")
+                continue  # ❌ torna da capo
+
+        elif choice == 1:
+            path = base_dir / "config.yaml"  # <<-- cerca accanto all'eseguibile
+            if not path.exists():
+                # opzionale: prova anche nella working dir se diverso
+                wd_path = Path.cwd() / "config.yaml"
+                if wd_path.exists():
+                    print(f"File non trovato in {path}, uso {wd_path}")
+                    return wd_path
+                print(f"File locale non trovato: {path}\n")
+                continue  # ❌ torna da capo
+            return path  # ✅ trovato localmente
+
+        else:
+            print("Opzione non valida\n")
+            continue  # ❌ torna da capo
 
 
 def _pause_if_frozen():
@@ -2720,7 +2731,7 @@ def main():
 
         if tipo == "0":
             if last_url:
-                print("Riscario config da internet...")
+                print("Riscarico config da internet...")
                 try:
                     r = requests.get(last_url, verify=False, timeout=10)
                     r.raise_for_status()

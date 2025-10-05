@@ -1973,6 +1973,7 @@ def search_ri_di_field_matches(ri_list: List[list], target_number: int) -> List[
     """
     Cerca nei -io.ri i campi CAMPO_2, ENABLED, RESET e IN che referenziano il DI `target_number`.
     IN viene considerato solo se ADDRESS = 0 (IO_DI).
+    Il match viene aggiunto ai risultati solo se CAMPO_1 = 0 e ADDRESS > 3.
     Ritorna: [(indice_ri, [nomi_campi_match], nome_ri_opzionale)]
     """
     results: List[Tuple[int, List[str], Optional[str]]] = []
@@ -1982,25 +1983,23 @@ def search_ri_di_field_matches(ri_list: List[list], target_number: int) -> List[
             continue
 
         matched: List[str] = []
-        _ = ri_fields
-        # --- CAMPO_2, ENABLED, RESET: sempre ---
+
+        # --- CAMPO_2, ENABLED, RESET, ADDRESS ---
         for label, idx in [
-            ("ADDRESS", IDX_RI_ADDRESS),
             ("CAMPO_2", IDX_RI_CAMPO2),
             ("ENABLED", IDX_RI_ENABLED),
             ("RESET", IDX_RI_RESET),
         ]:
-            if len(ri_fields) > idx: # controllo per evitare indexerror
+            if len(ri_fields) > idx:
                 try:
                     if int(ri_fields[idx]) == target_number:
-                        if label == "CAMPO_2":
-                            # prendi anche CAMPO_1 per vedere se è DI
+                        if label == "ADDRESS":
+                            # prendi CAMPO_1 per vedere se è DI (Const_IO.IO_DI)
                             if len(ri_fields) > IDX_RI_CAMPO1:
                                 try:
                                     campo1_val = int(ri_fields[IDX_RI_CAMPO1])
                                 except Exception:
                                     campo1_val = None
-                                # controlla che CAMPO_1 == DI
                                 if campo1_val == Const_IO.IO_DI:
                                     matched.append(label)
                         else:
@@ -2023,11 +2022,29 @@ def search_ri_di_field_matches(ri_list: List[list], target_number: int) -> List[
             except Exception:
                 pass
 
-        if matched:
+        # ✅ --- FILTRO aggiuntivo: CAMPO_1 = 0 e ADDRESS > 3 ---
+        campo1_val = None
+        if len(ri_fields) > IDX_RI_CAMPO1:
+            try:
+                campo1_val = int(ri_fields[IDX_RI_CAMPO1])
+            except Exception:
+                campo1_val = None
+
+        if len(ri_fields) > IDX_RI_ADDRESS:
+            try:
+                addr_val_check = int(ri_fields[IDX_RI_ADDRESS])
+            except Exception:
+                addr_val_check = None
+        else:
+            addr_val_check = None
+
+        # se CAMPO_1 != 0 o ADDRESS <= 3 → scarta i match
+        if matched and (campo1_val == 0 and addr_val_check is not None and addr_val_check > 3):
             name: Optional[str] = None
             if ri_fields and isinstance(ri_fields[0], str):
                 name = ri_fields[0]
             results.append((ri_idx, matched, name))
+        # else: se non soddisfa la condizione, non aggiunge niente
 
     return results
 

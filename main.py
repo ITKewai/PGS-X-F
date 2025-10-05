@@ -10,7 +10,8 @@ from urllib3.exceptions import InsecureRequestWarning
 import warnings as _warnings
 from tia_constants import *
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
+__pgs_version__ = "0.25.42.0"
 __author__ = "ITKewai"
 __company__ = ""
 __product__ = "PSG-X-FindIndex"
@@ -187,23 +188,23 @@ NOTE: dentro gli -ao se tipo = PNET o CAN, trovo in IN e AO_DUAL gli -ai
 last_url = ''
 # --- Mappe fornite ---
 ADDRESS = {
-    Costanti.IO_TYPE_NONE: "",
-    Costanti.IO_TYPE_PNET: "PNET",
-    Costanti.IO_TYPE_CAN: "CAN",
-    Costanti.IO_TYPE_SW: "SW",
-    Costanti.IO_TYPE_CALC: "CALC",
-    Costanti.IO_TYPE_FUNC_TOT: "TOT",
-    Costanti.IO_TYPE_FUNC_TOTAUTO: "TOTAUTO",
-    Costanti.IO_TYPE_FUNC_TOTMAN: "TOTMAN",
-    Costanti.IO_TYPE_FUNC_DTOT: "DAILYTOT",
-    Costanti.IO_TYPE_FUNC_DTOTAUTO: "DAILYTOTAUTO",
-    Costanti.IO_TYPE_FUNC_DTOTMAN: "DAILYTOTMAN",
-    Costanti.IO_TYPE_FUNC_TIME: "TIME",
-    Costanti.IO_TYPE_FUNC_TIMEAUTO: "TIMEAUTO",
-    Costanti.IO_TYPE_FUNC_TIMEMAN: "TIMEMAN",
-    Costanti.IO_TYPE_FUNC_DTIME: "DAILYTIME",
-    Costanti.IO_TYPE_FUNC_DTIMEAUTO: "DAILYTIMEAUTO",
-    Costanti.IO_TYPE_FUNC_DTIMEMAN: "DAILYTIMEMAN",
+    Const_IO.IO_TYPE_NONE: "",
+    Const_IO.IO_TYPE_PNET: "PNET",
+    Const_IO.IO_TYPE_CAN: "CAN",
+    Const_IO.IO_TYPE_SW: "SW",
+    Const_IO.IO_TYPE_CALC: "CALC",
+    Const_IO.IO_TYPE_FUNC_TOT: "TOT",
+    Const_IO.IO_TYPE_FUNC_TOTAUTO: "TOTAUTO",
+    Const_IO.IO_TYPE_FUNC_TOTMAN: "TOTMAN",
+    Const_IO.IO_TYPE_FUNC_DTOT: "DAILYTOT",
+    Const_IO.IO_TYPE_FUNC_DTOTAUTO: "DAILYTOTAUTO",
+    Const_IO.IO_TYPE_FUNC_DTOTMAN: "DAILYTOTMAN",
+    Const_IO.IO_TYPE_FUNC_TIME: "TIME",
+    Const_IO.IO_TYPE_FUNC_TIMEAUTO: "TIMEAUTO",
+    Const_IO.IO_TYPE_FUNC_TIMEMAN: "TIMEMAN",
+    Const_IO.IO_TYPE_FUNC_DTIME: "DAILYTIME",
+    Const_IO.IO_TYPE_FUNC_DTIMEAUTO: "DAILYTIMEAUTO",
+    Const_IO.IO_TYPE_FUNC_DTIMEMAN: "DAILYTIMEMAN",
 }
 
 UM = {
@@ -249,11 +250,11 @@ FB_MESURETYPE = UM.copy()
 # SOLO SE ADDRESS >= 4
 CAMPO_1 = {
     -1: '',
-    Costanti.IO_DI: 'DI',
-    Costanti.IO_AI: 'AI',
-    Costanti.IO_DO: 'DO',
-    Costanti.IO_AO: 'AO',
-    Costanti.IO_RI: 'RI',
+    Const_IO.IO_DI: 'DI',
+    Const_IO.IO_AI: 'AI',
+    Const_IO.IO_DO: 'DO',
+    Const_IO.IO_AO: 'AO',
+    Const_IO.IO_RI: 'RI',
 }
 
 EXPRTYPE = {
@@ -496,9 +497,9 @@ BASE_AXIS = 2048
 
 def _build_axis_groups():
     pairs = []
-    for name in dir(Costanti):
+    for name in dir(Const_IO):
         if name.startswith("IO_SYSAXIS_"):
-            val = getattr(Costanti, name)
+            val = getattr(Const_IO, name)
             if isinstance(val, int) and val >= 0:  # salta IO_SYSAXIS_NONE = -1
                 # label = parte finale del nome, es. IO_SYSAXIS_MOVING -> MOVING
                 label = name.replace("IO_SYSAXIS_", "")
@@ -522,9 +523,9 @@ BASE_ALARM = 16384
 
 def _build_alarm_groups():
     pairs = []
-    for name in dir(Costanti):
+    for name in dir(Const_IO):
         if name.startswith("IO_SYSALARM_"):
-            val = getattr(Costanti, name)
+            val = getattr(Const_IO, name)
             if isinstance(val, int) and val >= 0:  # salta IO_SYSALARM_NONE = -1
                 label = name.replace("IO_SYSALARM_", "")
                 pairs.append((label, val))
@@ -1997,7 +1998,7 @@ def search_ri_di_field_matches(ri_list: List[list], target_number: int) -> List[
                                 except Exception:
                                     campo1_val = None
                                 # controlla che CAMPO_1 == DI
-                                if campo1_val == Costanti.IO_DI:
+                                if campo1_val == Const_IO.IO_DI:
                                     matched.append(label)
                         else:
                             matched.append(label)
@@ -2283,144 +2284,96 @@ _OUT_ORIGIN_SETS = {
                             "RCBOTTONUP_DO", "RCBOTTOMDOWN_DO", "RCTOPLEFT_DO", "RCTOPRIGHT_DO", "RCALARM_DO"},
     "config>main>syncio": {"SYNCLOADOUT", "SYNCUNLOADOUT", "SYNCSTARTOUT"},
 }
-
-
 # Mappatura per indice del blocco "- in:" (etichette nominali)
-IN_INDEX_OVERRIDES = {
-    "BOOL_IND_AUTOMODESEL": "AUTOSEL",
-    "BOOL_IND_TEACHMODESEL": "TEACHSEL",
-    "BOOL_IND_CYCLEMODESEL": "CYCLESEL",
-    "BOOL_IND_STARTRESET": "STARTRESET",
-    "BOOL_IND_REMOTEMODESEL": "REMOTESEL",
-    "BOOL_IND_EMGCYPB": "EMGCYPB",
-    "BOOL_IND_CONSOLE2MODESEL": "CONSOLE2SEL",
-    "BOOL_IND_CHROLLMODESEL": "CHROLLSEL",
-    "BOOL_IND_DEBALNOTPRESS": "DEBALNOTPRESS",
-    "BOOL_IND_CONSOLE1MODESEL": "CONSOLE1SEL",
-    "BOOL_IND_SINGMOVSEL": "SINGLEMOVSEL",
-    "BOOL_IND_STARTIN": "STARTIN",
-    "BOOL_IND_STOPIN": "STOPIN",
-    "BOOL_IND_STARTEDIN": "MACSTARTEDIN",
-    "BOOL_IND_HOLDTORUN": "HOLDTORUN",
-    "BOOL_IND_RTCOUPLED": "RTCOUPLED",
-    "BOOL_IND_LEFTSEL": "RCLEFTSEL",
-    "BOOL_IND_PINCHPRESS": "PINCHPRESS",
-    "BOOL_IND_RIGHTSEL": "RCRIGHTSEL",
-    "BOOL_IND_STARTSENSOR": "STARTSENSORIN",
-    "BOOL_IND_MAINTRESET": "MAINTRESET",
-    "BOOL_IND_MANMODESEL": "MANSEL",
-    "BOOL_IND_TESTMODESEL": "TESTSEL",
-    "BOOL_IND_SEMIAUTOMODESEL": "SEMIAUTOSEL",
-    "BOOL_IND_HOLDTORUN2": "HOLDTORUN2",
-    "BOOL_IND_DISABLEBP1": "BPDISABLE1",
-    "BOOL_IND_DISABLEBP2": "BPDISABLE2",
-    "BOOL_IND_DISABLEBP3": "BPDISABLE3",
-    "BOOL_IND_DISABLEBP4": "BPDISABLE4",
-    "BOOL_IND_DISABLEBP5": "BPDISABLE5",
-    "BOOL_IND_DISABLEBP6": "BPDISABLE6",
-    "BOOL_IND_DISABLEBP7": "BPDISABLE7",
-    "BOOL_IND_DISABLEBP8": "BPDISABLE8",
-    "BOOL_IND_DISABLEBP9": "BPDISABLE9",
-    "BOOL_IND_DISABLEBP10": "BPDISABLE10",
-    "BOOL_IND_DISABLEBP11": "BPDISABLE11",
-    "BOOL_IND_DISABLEBP12": "BPDISABLE12",
-    "BOOL_IND_AUTOMODE": "AUTOMODE",
-    "BOOL_IND_AUTOCYCLEMODE": "AUTOCYCLEMODE",
-    "BOOL_IND_AUTOSTEPMODE": "AUTOSTEPMODE",
-    "BOOL_IND_SEMIAUTOMODE": "SEMIAUTOMODE",
-    "BOOL_IND_TEACHMODE": "TEACHMODE",
-    "BOOL_IND_MANMODE": "MANMODE",
-    "BOOL_IND_CONSOLE1MODE": "CONSOLE1MODE",
-    "BOOL_IND_CONSOLE2MODE": "CONSOLE2MODE",
-    "BOOL_IND_REMOTEMODE": "REMOTEMODE",
-    "BOOL_IND_CHROLLMODE": "CHROLLMODE",
-    "BOOL_IND_SINGMOVMODE": "SINGLEMOVMODE",
-    "BOOL_IND_MACHINESTARTED": "MACHINESTARTED",
-    "BOOL_IND_GREASEPUMPON": "PUMPONCALC",
-    "BOOL_IND_GREASEALARM": "GREASEALARMCALC",
-    "BOOL_IND_GREASEPUMPALARM": "PUMPALARMCALC",
-    "BOOL_IND_ALARMON": "ALARMON",
-    "BOOL_IND_ALARMSTOP": "ALARMSTOP",
-    "BOOL_IND_MAINTON": "MAINTON",
-    "BOOL_IND_RTFWDISABLED": "RTFWDISABLED",
-    "BOOL_IND_LEFTMEM": "RCLEFTMEM",
-    "BOOL_IND_RIGHTMEM": "RCRIGHTMEM",
-    "BOOL_IND_MICROMODESEL": "MICROSEL",
-    "BOOL_IND_QUALITYEND": "QUALITYEND",
-    "BOOL_IND_AUTOSTARTINGBLINK": "AUTOSTARTBLINK",
-    "BOOL_IND_QUALITYGOOD": "QUALITYGOOD",
-    "BOOL_IND_PARTEND": "PARTEND",
-    "BOOL_IND_PARTBEGIN": "PARTBEGIN",
-    "BOOL_IND_TILTDISABLED": "TILTDISABLED",
-    "BOOL_IND_RCV0": "RCV0",
-    "BOOL_IND_RCV1": "RCV1",
-    "BOOL_IND_RCV2": "RCV2",
-    "BOOL_IND_RCV3": "RCV3",
-    "BOOL_IND_RCV4": "RCV4",
-    "BOOL_IND_EMGCYRESETBTN": "EMGCYRESETBTN",
-    "BOOL_IND_INVERTERRESET": "INVERTERRESET",
-    "BOOL_IND_INVERTERALARM": "INVERTERALARM",
-    "BOOL_IND_AUTOSTARTING": "AUTOSTARTING",
-    "BOOL_IND_HOLDTORUNRC": "HOLDTORUNRC",
-    "BOOL_IND_PRELOADUP": "PRELOADUP",
-    "BOOL_IND_PRELOADPINCHDISABLED": "PRELOADPINCHDISAB",
-    "BOOL_IND_UNBALLEFT": "UNBALLEFT",
-    "BOOL_IND_UNBALRIGHT": "UNBALRIGHT",
-    "BOOL_IND_INVERTEROVERLOAD": "INVERTEROVERLOAD",
-    "BOOL_IND_LEFTSUPPINTERLOCK": "LEFTSUPPINTERL",
-    "BOOL_IND_GREASELEVEL": "GREASELEVEL",
-    "BOOL_IND_GREASETR": "GREASETR",
-    "BOOL_IND_STARTSENSOR2": "STARTSENSOR2IN",
-    "BOOL_IND_HOLDTORUNRC2": "HOLDTORUNRC2",
-    "BOOL_IND_TILTBAL": "ROLLTILTBALANCED",
-    "BOOL_IND_RIGHTSUPPINTERLOCK": "RIGHTSUPPINTERL",
-    "BOOL_IND_SYNCLOADIN": "SYNCLOADIN",
-    "BOOL_IND_SYNCSTARTIN": "SYNCSTARTIN",
-}
-
-
-def _build_in_index_labels():
-    pairs = []
-    max_idx = Costanti.MAX_STATOBOOL
-
-    for name in dir(Costanti):
-        if name.startswith("BOOL_IND_"):
-            val = getattr(Costanti, name)
-            if isinstance(val, (int, float)) and val >= 0:
-                if max_idx is not None and int(val) > max_idx:
-                    continue
-                base = name
-                override = IN_INDEX_OVERRIDES.get(base, base.replace("BOOL_IND_", ""))
-                if override is None:
-                    continue  # saltato
-                pairs.append((override, int(val)))
-
-    pairs.sort(key=lambda lv: lv[1])
-    return [label for label, _ in pairs]
-
-
-IN_INDEX_LABELS = _build_in_index_labels()
-
-#TODO: gli BOOL_IND comprende anche gli indici out
-
-def _build_in_index_labels():
-    pairs = []
-    max_idx = Costanti.MAX_STATOBOOL
-
-    for name in dir(Costanti):
-        if name.startswith("BOOL_IND_"):
-            val = getattr(Costanti, name)
-            if isinstance(val, (int, float)) and val >= 0:
-                if max_idx is not None and int(val) > max_idx:
-                    continue
-                base = name
-                override = IN_INDEX_OVERRIDES.get(base, base.replace("BOOL_IND_", ""))
-                if override is None:
-                    continue  # saltato
-                pairs.append((override, int(val)))
-
-    pairs.sort(key=lambda lv: lv[1])
-    return [label for label, _ in pairs]
+IN_INDEX_LABELS = ["x"] * 136
+IN_INDEX_LABELS[0] = "AUTOSEL"
+IN_INDEX_LABELS[1] = "TEACHSEL"
+IN_INDEX_LABELS[2] = "CYCLESEL"
+IN_INDEX_LABELS[3] = "STARTRESET"
+IN_INDEX_LABELS[4] = "REMOTESEL"
+IN_INDEX_LABELS[5] = "EMGCYPB"
+IN_INDEX_LABELS[6] = "CONSOLE2SEL"
+IN_INDEX_LABELS[7] = "CHROLLSEL"
+IN_INDEX_LABELS[9] = "DEBALNOTPRESS"
+IN_INDEX_LABELS[10] = "CONSOLE1SEL"
+IN_INDEX_LABELS[11] = "SINGLEMOVSEL"
+IN_INDEX_LABELS[12] = "STARTIN"
+IN_INDEX_LABELS[13] = "STOPIN"
+IN_INDEX_LABELS[14] = "MACSTARTEDIN"
+IN_INDEX_LABELS[15] = "HOLDTORUN"
+IN_INDEX_LABELS[16] = "RTCOUPLED"
+IN_INDEX_LABELS[17] = "RCLEFTSEL"
+IN_INDEX_LABELS[18] = "PINCHPRESS"
+IN_INDEX_LABELS[19] = "RCRIGHTSEL"
+IN_INDEX_LABELS[20] = "STARTSENSORIN"
+IN_INDEX_LABELS[21] = "MAINTRESET"
+IN_INDEX_LABELS[22] = "MANSEL"
+IN_INDEX_LABELS[23] = "TESTSEL"
+IN_INDEX_LABELS[24] = "SEMIAUTOSEL"
+IN_INDEX_LABELS[25] = "HOLDTORUN2"
+IN_INDEX_LABELS[26] = "BPDISABLE1"
+IN_INDEX_LABELS[27] = "BPDISABLE2"
+IN_INDEX_LABELS[28] = "BPDISABLE3"
+IN_INDEX_LABELS[29] = "BPDISABLE4"
+IN_INDEX_LABELS[30] = "BPDISABLE5"
+IN_INDEX_LABELS[31] = "BPDISABLE6"
+IN_INDEX_LABELS[32] = "BPDISABLE7"
+IN_INDEX_LABELS[33] = "BPDISABLE8"
+IN_INDEX_LABELS[34] = "BPDISABLE9"
+IN_INDEX_LABELS[35] = "BPDISABLE10"
+IN_INDEX_LABELS[36] = "BPDISABLE11"
+IN_INDEX_LABELS[37] = "BPDISABLE12"
+IN_INDEX_LABELS[38] = "AUTOMODE"
+IN_INDEX_LABELS[39] = "AUTOCYCLEMODE"
+IN_INDEX_LABELS[40] = "AUTOSTEPMODE"
+IN_INDEX_LABELS[41] = "SEMIAUTOMODE"
+IN_INDEX_LABELS[42] = "TEACHMODE"
+IN_INDEX_LABELS[43] = "MANMODE"
+IN_INDEX_LABELS[44] = "CONSOLE1MODE"
+IN_INDEX_LABELS[45] = "CONSOLE2MODE"
+IN_INDEX_LABELS[46] = "REMOTEMODE"
+IN_INDEX_LABELS[47] = "CHROLLMODE"
+IN_INDEX_LABELS[48] = "SINGLEMOVMODE"
+IN_INDEX_LABELS[49] = "MACHINESTARTED"
+IN_INDEX_LABELS[51] = "PUMPONCALC"
+IN_INDEX_LABELS[52] = "GREASEALARMCALC"
+IN_INDEX_LABELS[53] = "PUMPALARMCALC"
+IN_INDEX_LABELS[56] = "ALARMON"
+IN_INDEX_LABELS[58] = "ALARMSTOP"
+IN_INDEX_LABELS[59] = "MAINTON"
+IN_INDEX_LABELS[60] = "RTFWDISABLED"
+IN_INDEX_LABELS[61] = "RCLEFTMEM"
+IN_INDEX_LABELS[63] = "RCRIGHTMEM"
+IN_INDEX_LABELS[64] = "HOLDTORUNERROR"
+IN_INDEX_LABELS[68] = "MICROSEL"
+IN_INDEX_LABELS[70] = "QUALITYEND"
+IN_INDEX_LABELS[71] = "AUTOSTARTBLINK"
+IN_INDEX_LABELS[72] = "QUALITYGOOD"
+IN_INDEX_LABELS[73] = "PARTEND"
+IN_INDEX_LABELS[75] = "PARTBEGIN"
+IN_INDEX_LABELS[77] = "TILTDISABLED"
+IN_INDEX_LABELS[86] = "RCV0"
+IN_INDEX_LABELS[87] = "RCV1"
+IN_INDEX_LABELS[88] = "RCV2"
+IN_INDEX_LABELS[89] = "RCV3"
+IN_INDEX_LABELS[90] = "RCV4"
+IN_INDEX_LABELS[99] = "EMGCYRESETBTN"
+IN_INDEX_LABELS[102] = "INVERTERRESET"
+IN_INDEX_LABELS[103] = "INVERTERALARM"
+IN_INDEX_LABELS[104] = "AUTOSTARTING"
+IN_INDEX_LABELS[107] = "HOLDTORUNRC"
+IN_INDEX_LABELS[108] = "PRELOADUP"
+IN_INDEX_LABELS[109] = "PRELOADPINCHDISAB"
+IN_INDEX_LABELS[114] = "UNBALLEFT"
+IN_INDEX_LABELS[115] = "UNBALRIGHT"
+IN_INDEX_LABELS[116] = "INVERTEROVERLOAD"
+IN_INDEX_LABELS[117] = "LEFTSUPPINTERL"
+IN_INDEX_LABELS[118] = "GREASELEVEL"
+IN_INDEX_LABELS[119] = "GREASETR"
+IN_INDEX_LABELS[120] = "STARTSENSOR2IN"
+IN_INDEX_LABELS[121] = "HOLDTORUNRC2"
+IN_INDEX_LABELS[122] = "ROLLTILTBALANCED"
+IN_INDEX_LABELS[126] = "RIGHTSUPPINTERL"
 
 OUT_INDEX_LABELS = ["x"] * 136
 OUT_INDEX_LABELS[49] = "MACSTARTLIGHT_DO"

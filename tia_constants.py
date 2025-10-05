@@ -1,4 +1,4 @@
-# Auto-generato da tia_vars_export.py
+# Auto-generato da main_import.py
 
 # Estratto da: Const_Alarm.xlsx
 class Const_Alarm:
@@ -1716,8 +1716,7 @@ class Costanti:
 
     BOOL_FEEDSIDE = 7.0
 
-    BOOL_FREE_70 = 70.0
-    BOOL_FREE_71 = 71.0
+    BOOL_FREE_50 = 50.0  # era BOOL_ARCHIMETER
 
     BOOL_HMITYPE = 8.0  # True -> WCNC4 Roundo - False-> PGS-X Faccin
 
@@ -1856,17 +1855,9 @@ class Costanti:
     BOOL_IND_SDOBUSY = 130.0  # era BOOL_IND_EMGCYLOCKHWMSG
     BOOL_IND_SDOOK = 131.0
     BOOL_IND_RIGHTSUPPINTERLOCK = 132.0
-    BOOL_IND_APPLYROT = 133.0
-    BOOL_IND_REPEATEND = 134.0
-    BOOL_IND_SYNCLOADIN = 135.0
-    BOOL_IND_SYNCLOADOUT = 136.0
-    BOOL_IND_SYNCUNLOADIN = 137.0
-    BOOL_IND_SYNCUNLOADOUT = 138.0
-    BOOL_IND_SYNCSTARTIN = 139.0
-    BOOL_IND_SYNCSTARTOUT = 140.0
-    BOOL_IND_FREE_141 = 141.0
-    BOOL_IND_FREE_142 = 142.0
-    BOOL_IND_FREE_143 = 143.0
+    BOOL_IND_FREE_133 = 133.0
+    BOOL_IND_FREE_134 = 134.0
+    BOOL_IND_FREE_135 = 135.0
 
     BOOL_INTERPCALCTYPE = 37.0  # era BOOL_SIMCALC
 
@@ -1912,8 +1903,6 @@ class Costanti:
 
     BOOL_ROUNDOLOGO = 5.0  # era BOOL_SHOWROLLSSPEED - era BOOL_STARTSENSOR
 
-    BOOL_SAFETYBPDISABLE = 50.0  # era BOOL_ARCHIMETER
-
     BOOL_SHAPEREBEND2 = 48.0
 
     BOOL_SHOWDELTA = 31.0
@@ -1922,21 +1911,7 @@ class Costanti:
 
     BOOL_SINGLEPV = 56.0
 
-    BOOL_SMARTCLIENT = 63.0
-
     BOOL_STEP = 1.0
-
-    BOOL_SYNCLOAD = 64.0
-
-    BOOL_SYNCLOADDI = 66.0
-
-    BOOL_SYNCSTART = 68.0
-
-    BOOL_SYNCSTARTDI = 69.0
-
-    BOOL_SYNCUNLOAD = 65.0
-
-    BOOL_SYNCUNLOADDI = 67.0
 
     BOOL_SYNDIAG = 59.0
 
@@ -2245,18 +2220,6 @@ class Costanti:
     COD_STARTPOS = 3150.0
 
     COD_STOP = 5.0
-
-    COD_SYNCLOADRECV = 3171.0
-
-    COD_SYNCLOADSEND = 3170.0
-
-    COD_SYNCSTARTRECV = 3175.0
-
-    COD_SYNCSTARTSEND = 3174.0
-
-    COD_SYNCUNLOADRECV = 3173.0
-
-    COD_SYNCUNLOADSEND = 3172.0
 
     COD_WAITAI = 3111.0
 
@@ -3013,9 +2976,6 @@ class Costanti:
     IO_SYSAXIS_SLOW = 21.0
     IO_SYSAXIS_FAST = 22.0
 
-    IO_SYSBOOL_STATUS = 0.0
-    IO_SYSBOOL_PARAM = 1.0
-
     IO_SYSFB_NONE = -1.0
     IO_SYSFB_ERR = 0.0
     IO_SYSFB_RESET = 1.0
@@ -3068,7 +3028,6 @@ class Costanti:
     IO_SYSTYPE_TOOLSET = 7.0
     IO_SYSTYPE_ALARM = 8.0
     IO_SYSTYPE_MAINT = 9.0
-    IO_SYSTYPE_BOOLSYSTEM = 10.0
 
     IO_TYPE_NONE = -1.0
     IO_TYPE_PNET = 0.0
@@ -3340,7 +3299,7 @@ class Costanti:
 
     MAX_OUTPUTREAL = 27.0
 
-    MAX_PARAMBOOL = 71.0  # da 63 a 71 in v.0.25.42.1; da 59 a 63 in v.0.25.28
+    MAX_PARAMBOOL = 63.0  # da 59 a 63 in v.0.25.28
 
     MAX_PARAMINT = 79.0  # era 72 nella v.0.18
 
@@ -3377,7 +3336,7 @@ class Costanti:
 
     MAX_STAT = 249.0  # era 99
 
-    MAX_STATOBOOL = 143.0  # era 135 in v.0.25.42, era 127 in v.0.18
+    MAX_STATOBOOL = 135.0  # era 127 in v.0.18
 
     MAX_STATOOUTDINT = 1.0
 

@@ -59,13 +59,13 @@ per config 0.25.40
     - preal: [...]
     - ptype: [...]
 - io:
-    - di: [NAME,BOOL_DEFAULT_VALUE,x,SIM,BOOL_SIM_VALUE,ADDRESS,CAMPO_1,CAMPO_2,x,UM,MEMTYPE,MEMIND,TIMEOUT,IN,x,x,x,x,x,EXPRTYPE,EXPR_OPERAND,EXPR_ADDRESS,EXPR_OPERATOR,EXPR_OPERAND,EXPR_ADDRESS,EXPR_OPERATOR,EXPR_OPERAND,EXPR_ADDRESS,EXPR_OPERATOR,EXPR_OPERAND,EXPR_ADDRESS,EXPR_OPERATOR,EXPR_OPERAND,EXPR_ADDRESS,EXPR_OPERATOR,EXPR_OPERAND,EXPR_ADDRESS,EXPR_OPERATOR]
+    - di: [NAME,BOOL_DEFAULT_VALUE,x,SIM,BOOL_SIM_VALUE,ADDRESS,IO_CAMPO_1,CAMPO_2,x,UM,MEMTYPE,MEMIND,TIMEOUT,IN,x,x,x,x,x,EXPRTYPE,EXPR_OPERAND,EXPR_ADDRESS,EXPR_OPERATOR,EXPR_OPERAND,EXPR_ADDRESS,EXPR_OPERATOR,EXPR_OPERAND,EXPR_ADDRESS,EXPR_OPERATOR,EXPR_OPERAND,EXPR_ADDRESS,EXPR_OPERATOR,EXPR_OPERAND,EXPR_ADDRESS,EXPR_OPERATOR,EXPR_OPERAND,EXPR_ADDRESS,EXPR_OPERATOR]
         (EXPR_OPERAND,EXPR_ADDRESS,EXPR_OPERATOR) si attivano se EXPRTYPE != -1 se no non ci sono proprio
-    - ai: [NAME,BOOL_DEFAULT_VALUE,x,SIM,BOOL_SIM_VALUE,ADDRESS,CAMPO_1,CAMPO_2,NBYTES,UM,MEMTYPE,MEMIND,TIMEOUT,IN,DINTDEFAULTVALUE,DINTSIMVALUE,DEADBAND,x,TOTDELTAMAX,COEFFMULT,x]
-    - ao: [NAME,BOOL_DEFAULT_VALUE,PROG,SIM,BOOL_SIM_VALUE,ADDRESS,CAMPO_1,CAMPO_2,NBYTES,UM,MEMTYPE,MEMIND,IN,AODUAL,DINTDEFAULTVALUE,DINTSIMVALUE,x,x,x,AOPRIORITY,x]
-    - do: [NAME,BOOL_DEFAULT_VALUE,x,SIM,BOOL_SIM_VALUE,ADDRESS,CAMPO_1,CAMPO_2,x,UM,MEMTYPE,MEMIND,TIMEOUT,IN,x,x,x,x,x,x,x]
+    - ai: [NAME,BOOL_DEFAULT_VALUE,x,SIM,BOOL_SIM_VALUE,ADDRESS,IO_CAMPO_1,CAMPO_2,NBYTES,UM,MEMTYPE,MEMIND,TIMEOUT,IN,DINTDEFAULTVALUE,DINTSIMVALUE,DEADBAND,x,TOTDELTAMAX,COEFFMULT,x]
+    - ao: [NAME,BOOL_DEFAULT_VALUE,PROG,SIM,BOOL_SIM_VALUE,ADDRESS,IO_CAMPO_1,CAMPO_2,NBYTES,UM,MEMTYPE,MEMIND,IN,AODUAL,DINTDEFAULTVALUE,DINTSIMVALUE,x,x,x,AOPRIORITY,x]
+    - do: [NAME,BOOL_DEFAULT_VALUE,x,SIM,BOOL_SIM_VALUE,ADDRESS,IO_CAMPO_1,CAMPO_2,x,UM,MEMTYPE,MEMIND,TIMEOUT,IN,x,x,x,x,x,x,x]
     - ri: [NAME,x,x,x,x,ADDRESS,x,CAMPO_2,ENABLED,x,x,x,RESET,IN,x,x,x,x,x,x,x]
-    - ao: [NAME,x,x,x,x,x,CAMPO_1,x,x,x,x,x,AODUAL,IN,x,x,x,x,x,x,x]
+    - ao: [NAME,x,x,x,x,x,IO_CAMPO_1,x,x,x,x,x,AODUAL,IN,x,x,x,x,x,x,x]
 - obj:
     - axis: [NAME]
         bool: [x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x]
@@ -247,8 +247,8 @@ FB_TYPE = {
 
 FB_MESURETYPE = UM.copy()
 
-# SOLO SE ADDRESS >= 4
-CAMPO_1 = {
+
+IO_CAMPO_1 = {
     -1: '',
     Const_IO.IO_DI: 'DI',
     Const_IO.IO_AI: 'AI',
@@ -1973,7 +1973,7 @@ def search_ri_di_field_matches(ri_list: List[list], target_number: int) -> List[
     """
     Cerca nei -io.ri i campi CAMPO_2, ENABLED, RESET e IN che referenziano il DI `target_number`.
     IN viene considerato solo se ADDRESS = 0 (IO_DI).
-    Il match viene aggiunto ai risultati solo se CAMPO_1 = 0 e ADDRESS > 3.
+    Il match viene aggiunto ai risultati solo se IO_CAMPO_1 = 0 e ADDRESS > 3.
     Ritorna: [(indice_ri, [nomi_campi_match], nome_ri_opzionale)]
     """
     results: List[Tuple[int, List[str], Optional[str]]] = []
@@ -1994,7 +1994,7 @@ def search_ri_di_field_matches(ri_list: List[list], target_number: int) -> List[
                 try:
                     if int(ri_fields[idx]) == target_number:
                         if label == "ADDRESS":
-                            # prendi CAMPO_1 per vedere se è DI (Const_IO.IO_DI)
+                            # prendi IO_CAMPO_1 per vedere se è DI (Const_IO.IO_DI)
                             if len(ri_fields) > IDX_RI_CAMPO1:
                                 try:
                                     campo1_val = int(ri_fields[IDX_RI_CAMPO1])
@@ -2022,7 +2022,7 @@ def search_ri_di_field_matches(ri_list: List[list], target_number: int) -> List[
             except Exception:
                 pass
 
-        # ✅ --- FILTRO aggiuntivo: CAMPO_1 = 0 e ADDRESS > 3 ---
+        # ✅ --- FILTRO aggiuntivo: IO_CAMPO_1 = 0 e ADDRESS > 3 ---
         campo1_val = None
         if len(ri_fields) > IDX_RI_CAMPO1:
             try:
@@ -2038,8 +2038,8 @@ def search_ri_di_field_matches(ri_list: List[list], target_number: int) -> List[
         else:
             addr_val_check = None
 
-        # se CAMPO_1 != 0 o ADDRESS <= 3 → scarta i match
-        if matched and (campo1_val == 0 and addr_val_check is not None and addr_val_check > 3):
+        # se IO_CAMPO_1 != 0 o ADDRESS <= 3 → scarta i match
+        if matched and (campo1_val == IO_CAMPO_1 and addr_val_check is not None and addr_val_check > 3):
             name: Optional[str] = None
             if ri_fields and isinstance(ri_fields[0], str):
                 name = ri_fields[0]

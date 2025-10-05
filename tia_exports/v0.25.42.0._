@@ -1,4 +1,0 @@
-"DATA_CONFIG".PLCVersion1 := 0;     // main
-"DATA_CONFIG".PLCVersion2 := 25;    // config.yaml
-"DATA_CONFIG".PLCVersion3 := 42;    // update
-"DATA_CONFIG".PLCVersion4 := 0;

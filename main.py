@@ -18,9 +18,6 @@ __product__ = "PSG-X-FindIndex"
 __copyright__ = f"Autore: {__author__} © 2025 {__company__}"
 
 # TODO: download config con salvataggio versione data
-# TODO: ricerca dei DO, ricerca dei AI, ricerca dei AO
-# TODO: ricerca dei DI che si chiamano FREE o senza nome per vedere se sono usati da qualche parte
-# TODO: FARE RISCARICA CONFIG
 
 """
 STRUTTURE:
@@ -91,7 +88,7 @@ per config 0.25.40
         ANA2 = DIG2ADD
     - mot: [CONFIG,SELECTABLE,SEQ,OPT,DEFAULT,LSSTOP,LS2START,TR,CMD,STAT,TIMEOUT,CMD1,CMD2,CMD3,TIMEOUT2,MOT_TYPE,TIMEOUTBTN,TR2,STARTING]
     - alarm: [NAME,CONFIG,INVOUT,MODE,IN,OUT,COD,ENAB,DISAB,REQACK,ACK,TIMEOUT,FREE]
-    - maint [...] TODO: ci sono in e out da cercare poi
+    - maint [...]
 """
 
 """

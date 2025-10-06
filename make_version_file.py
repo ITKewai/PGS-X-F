@@ -4,13 +4,14 @@ import main  # importa __version__, __company__, __product__, __copyright__
 
 # costruisco tuple (major, minor, patch, build)
 ver_tuple = tuple(map(int, main.__version__.split(".")))
+pgs_ver_tuple = tuple(map(int, main.__pgs_version__.split(".")))
 while len(ver_tuple) < 4:  # PyInstaller vuole sempre 4 campi
     ver_tuple += (0,)
 
 content = f"""VSVersionInfo(
   ffi=FixedFileInfo(
     filevers={ver_tuple},
-    prodvers={ver_tuple},
+    prodvers={pgs_ver_tuple},
     mask=0x3f,
     flags=0x0,
     OS=0x40004,

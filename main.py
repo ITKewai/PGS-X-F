@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import sys
+from utils.version import __version__, __pgs_version__, __author__, __company__, __product__, __copyright__, get_version_info
 from utils.yaml.data.io import *
 from utils.yaml.data.params import *
 from utils.yaml.download import *
@@ -16,6 +17,7 @@ def _pause_if_frozen():
 
 
 def main():
+    print(get_version_info())
     # 1) Carico una volta il config
     cfg_path = choose_and_prepare_config()
 

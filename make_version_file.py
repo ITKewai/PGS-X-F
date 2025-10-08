@@ -1,10 +1,10 @@
 # make_version_file.py
 from pathlib import Path
-import main  # importa __version__, __company__, __product__, __copyright__
+from main import __version__, __pgs_version__, __author__, __company__, __product__, __copyright__
 
 # costruisco tuple (major, minor, patch, build)
-ver_tuple = tuple(map(int, main.__version__.split(".")))
-pgs_ver_tuple = tuple(map(int, main.__pgs_version__.split(".")))
+ver_tuple = tuple(map(int, __version__.split(".")))
+pgs_ver_tuple = tuple(map(int, __pgs_version__.split(".")))
 while len(ver_tuple) < 4:  # PyInstaller vuole sempre 4 campi
     ver_tuple += (0,)
 
@@ -24,14 +24,14 @@ content = f"""VSVersionInfo(
       StringTable(
         '040904B0',
         [
-          StringStruct('CompanyName', '{main.__company__}'),
-          StringStruct('FileDescription', '{main.__product__}'),
-          StringStruct('FileVersion', '{main.__version__}'),
-          StringStruct('InternalName', '{main.__product__}'),
-          StringStruct('OriginalFilename', '{main.__product__}.exe'),
-          StringStruct('ProductName', '{main.__product__}'),
-          StringStruct('ProductVersion', '{main.__version__}'),
-          StringStruct('LegalCopyright', '{main.__copyright__}')
+          StringStruct('CompanyName', '{__company__}'),
+          StringStruct('FileDescription', '{__product__}'),
+          StringStruct('FileVersion', '{__version__}'),
+          StringStruct('InternalName', '{__product__}'),
+          StringStruct('OriginalFilename', '{__product__}.exe'),
+          StringStruct('ProductName', '{__product__}'),
+          StringStruct('ProductVersion', '{__version__}'),
+          StringStruct('LegalCopyright', '{__copyright__}')
         ]
       )
     ]),
@@ -40,5 +40,5 @@ content = f"""VSVersionInfo(
 )"""
 
 Path("version_info.txt").write_text(content, encoding="utf-8")
-print("Creato version_info.txt con version =", main.__version__)
+print("Creato version_info.txt con version =", __version__)
 

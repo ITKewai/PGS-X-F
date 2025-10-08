@@ -12,7 +12,7 @@ import yaml
 import warnings as _warnings
 from urllib3.exceptions import InsecureRequestWarning
 
-from utils.path import get_config_path
+from utils.paths import get_config_path
 
 _warnings.simplefilter("ignore", InsecureRequestWarning)
 

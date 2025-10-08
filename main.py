@@ -1,26 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import re
 import sys
-import io
-from typing import Any, List, Tuple, Optional, Dict
-from pathlib import Path
-import yaml  # PyYAML
-import requests
-from urllib3.exceptions import InsecureRequestWarning
-import warnings as _warnings
-
-from utils.yaml.data.axis import get_axis_int_di
-from utils.yaml.data.costants import *
-from utils.yaml.data.humanize import *
-from utils.yaml.data.feedback import *
 from utils.yaml.data.io import *
 from utils.yaml.data.params import *
 from utils.yaml.download import *
 from utils.yaml.load import *
-
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
-sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 
 def _pause_if_frozen():

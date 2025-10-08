@@ -8,13 +8,14 @@ Compatibile con i percorsi e le logiche di PSG-X-FindIndex.
 from __future__ import annotations
 from pathlib import Path
 import requests
-import yaml
 import warnings as _warnings
 from urllib3.exceptions import InsecureRequestWarning
 
 from utils.paths import get_config_path
 
 _warnings.simplefilter("ignore", InsecureRequestWarning)
+
+last_url = ''
 
 
 def _build_download_url(addr: str) -> str:
@@ -64,17 +65,33 @@ def download_file(url: str, dest_path: Path) -> None:
     print(f"✅ File salvato in: {dest_path}")
 
 
+def _download_to_config(url: str) -> Path:
+    """
+    Scarica su <cwd>/config.yaml, setta last_url e ritorna il Path.
+    """
+    global last_url
+    cfg_path = get_config_path("config.yaml", prefer_cwd=True)
+    download_file(url, cfg_path)
+    last_url = url
+    return cfg_path
+
+
 def choose_and_prepare_config() -> Path:
     """
     Chiede all'utente se usare il config locale o scaricarlo.
     Ritorna il percorso finale del file pronto.
     """
+    global last_url
+
     cfg_path = get_config_path("config.yaml", prefer_cwd=True)
 
     while True:
         print("\nSelezione sorgente file 'config.yaml'")
         print("  [1] Usa file locale (cartella corrente)")
-        print("  [2] Scarica da rete (connessione non protetta)")
+        print("  [2] Scarica file da rete")
+        if last_url:
+            print("  [3] Aggiorna file da rete (ultimo URL)")
+
         choice = input("Scelta: ").strip()
 
         if choice == "2":
@@ -84,12 +101,10 @@ def choose_and_prepare_config() -> Path:
                 continue
 
             url = _build_download_url(base)
-            dest = cfg_path
             try:
-                download_file(url, dest)
-                return dest
-            except Exception as e:
-                print(f"Errore nel download: {e}\n")
+                return _download_to_config(url)
+            except Exception:
+                print("❌ Errore nel download")
                 continue
 
         elif choice == "1":
@@ -98,26 +113,27 @@ def choose_and_prepare_config() -> Path:
             print(f"❌ File locale non trovato o corrotto: {cfg_path}\n")
             continue
 
+        elif choice == "3" and last_url:
+            res = fetch_again()
+            if res is not None:
+                return res
         else:
             print("Opzione non valida\n")
 
 
-def fetch_again(again=False):
+def fetch_again(again: bool = False) -> Path | None:
+    """
+    REFRESH: riscarica il config dallo stesso URL usato l'ultima volta.
+    Ritorna il Path del config aggiornato, oppure None se non disponibile/errore.
+    """
+    global last_url
+    if not last_url:
+        print("⚠️ Nessun URL precedente: usa l'opzione [2] almeno una volta.")
+        return None
 
-    # TODO: reintegrare il REFRESH
-    ...
-    # if tipo == "0":
-    #     if last_url:
-    #         print("Riscarico config da internet...")
-    #         try:
-    #             r = requests.get(last_url, verify=False, timeout=10)
-    #             r.raise_for_status()
-    #             path = get_run_dir() / "config.yaml"
-    #             path.write_text(r.text, encoding="utf-8")
-    #             data = load_yaml(str(path))
-    #             print("Config riscaricato con successo.")
-    #         except Exception as e:
-    #             print(f"Errore durante il refresh: {e}")
-    #     else:
-    #         print("Nessun URL precedente: devi prima scegliere l'opzione 2 per scaricare.")
-    #     continue
+    try:
+        print(f"🔁 Refresh da: {last_url}")
+        return _download_to_config(last_url)
+    except Exception as e:
+        print(f"❌ Errore durante il refresh")
+        return None

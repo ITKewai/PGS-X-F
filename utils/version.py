@@ -4,7 +4,7 @@
 Modulo che contiene le informazioni di versione e metadati del progetto PSG-X-FindIndex.
 """
 
-__version__ = "1.0.3a"
+__version__ = "1.0.3b"
 __pgs_version__ = "0.25.42.0"
 __author__ = "ITKewai"
 __company__ = ""

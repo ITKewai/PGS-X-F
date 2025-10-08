@@ -50,12 +50,28 @@ def main():
     # 2) Loop interattivo: ripeti la domanda dopo ogni ricerca
     while True:
         print("\n" + "-" * 60)
-        tipo_opt = (0, 1, 2, 3, 4, 5, 7)
-        tipo_raw = input("Che tipo stai cercando? (1=DI, 2=AI, 3=DO, 4=AO, 5=SYSTEM, 7=FREE, 0=REFRESH, Invio per uscire): ").strip().lower()
-        if tipo_raw in ("", "q", "quit", "exit", "esci"):
-            print("Uscita.")
-            _pause_if_frozen()
-            return
+        tipo_opt = (1, 2, 3, 4, 5, 7)
+        tipo_raw = input("Che tipo stai cercando? (1=DI, 2=AI, 3=DO, 4=AO, 5=SYSTEM, 7=FREE, Invio per uscire): ").strip().lower()
+        # Invio -> torna al menu precedente (scelta config) e ricarica il YAML
+        if tipo_raw == "":
+            print("\n⤴️  Torno alla scelta del config...")
+            cfg_path = choose_and_prepare_config()
+            try:
+                data = load_yaml(str(cfg_path))
+            except Exception as e:
+                print(f"Errore nel parsing YAML: {e}")
+                _pause_if_frozen()
+                return
+            sn = get_sn_from_param(data)
+            if sn:
+                print(f"Caricato config della commessa: {sn}")
+            # torna al menu dei tipi
+            continue
+        # forse lo riabiliterò
+        # if tipo_raw in ("q", "quit", "exit", "esci"):
+        #     print("Uscita.")
+        #     _pause_if_frozen()
+        #     return
 
         try:
             tipo = int(tipo_raw)
@@ -70,10 +86,6 @@ def main():
         print("-" * 60)
 
         # ====================== SYSTEM (nessuna richiesta numero qui) ======================
-
-        if tipo == "0":
-            fetch_again()
-            
         if tipo == 5:
             # --- SYSTEM lookup: scegli TYPE -> INDEX -> FIELD, calcola numero e cerca nei DI ---
             print("Scegli il TYPE di sistema (nome o numero):")
@@ -287,7 +299,3 @@ if __name__ == "__main__":
         sys.exit(1)
 
 
-# TODO: se non riesco a scaricare il file non devo chiudere il programma
-
-# TODO: ricerca  
-# TODO:

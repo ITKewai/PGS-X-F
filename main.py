@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import re
 import sys
+import io
 from typing import Any, List, Tuple, Optional, Dict
 from pathlib import Path
 import yaml  # PyYAML
@@ -18,10 +19,8 @@ from utils.yaml.data.params import *
 from utils.yaml.download import *
 from utils.yaml.load import *
 
-# from utils.version import __version__, __pgs_version__, __author__, __company__, __product__, __copyright__
-
-# TODO: download config con salvataggio versione data
-# TODO: tasterino numerico tipo touch per fare interazioni
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 
 def _pause_if_frozen():

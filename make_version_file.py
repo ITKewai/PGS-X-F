@@ -1,7 +1,11 @@
 # make_version_file.py
 from pathlib import Path
 import main  # importa __version__, __company__, __product__, __copyright__
+import sys
+import io
 
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 # costruisco tuple (major, minor, patch, build)
 ver_tuple = tuple(map(int, main.__version__.split(".")))
 pgs_ver_tuple = tuple(map(int, main.__pgs_version__.split(".")))

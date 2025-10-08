@@ -14,11 +14,7 @@ __copyright__ = f"Autore: {__author__} © 2025 {__company__}"
 
 def get_version_info() -> str:
     """Ritorna una stringa formattata con le info di versione."""
-    return (
-        f"{__product__} v{__version__}\n"
-        f"PGS config: {__pgs_version__}\n"
-        f"{__copyright__}"
-    )
+    return f"{__product__} v{__version__} [PSG {__pgs_version__}]"
 
 
 def short() -> str:

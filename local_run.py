@@ -26,4 +26,5 @@ if os.path.exists("make_version_file.py"):
 # 4. Build with PyInstaller
 run("pyinstaller main.spec")
 run(" del .\\version_info.txt")
+run(" del build")
 print("\n✅ Build completata! Controlla la cartella dist/")

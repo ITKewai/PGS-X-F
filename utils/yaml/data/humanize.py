@@ -1,6 +1,6 @@
 import re
 from typing import Any, List, Tuple, Optional, Dict
-from tia_constants import Const_StatusBool
+from tia_constants import *
 
 # Mappa (grezza) label -> "origine" per le stampe
 IN_ORIGIN_SETS = {
@@ -183,6 +183,7 @@ OUT_INDEX_LABELS[111] = "PINCHPRESSAR_DO"
 OUT_INDEX_LABELS[112] = "PINCHPRESSAR2_DO"
 OUT_INDEX_LABELS[115] = "PINCHPRESSAR_DO"
 OUT_INDEX_LABELS[116] = "PINCHPRESSAR2_DO"
+
 
 def label_from_in_index(idx: int) -> Optional[str]:
     if 0 <= idx < len(IN_INDEX_LABELS):

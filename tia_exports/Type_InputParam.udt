@@ -1,0 +1,11 @@
+﻿TYPE "Type_InputParam"
+VERSION : 0.1
+   STRUCT
+      boolval : Array[0.."MAX_INPUTBOOL"] of Bool;
+      intval : Array[0.."MAX_INPUTINT"] of Int := [5(-1), 0, 2(-1), 0, 6(-1)];
+      dintvalcfg : Array[0.."MAX_INPUTDINT"] of DInt;
+      dintval : Array[0.."MAX_INPUTDINT"] of DInt := [0, 100, 0, 100];
+   END_STRUCT;
+
+END_TYPE
+

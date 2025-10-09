@@ -1,0 +1,10 @@
+﻿TYPE "Type_OutputParam"
+VERSION : 0.1
+   STRUCT
+      intval : Array[0.."MAX_OUTPUTINT"] of Int := [14(-1)];
+      dintval : Array[0.."MAX_OUTPUTDINT"] of DInt;
+      realval : Array[0.."MAX_OUTPUTREAL"] of Real := [0.0, 100.0, 0.0, 100.0, 2(0.0), 2(20.0), 2(40.0), 2(60.0), 2(80.0), 2(100.0), 2(0.0), 2(20.0), 2(40.0), 2(60.0), 2(80.0), 2(100.0)];
+   END_STRUCT;
+
+END_TYPE
+

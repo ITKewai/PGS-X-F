@@ -1,0 +1,15 @@
+﻿TYPE "Type_AxisParam"
+VERSION : 0.1
+   STRUCT
+      "name" : String["DIM_STRINGID"];
+      boolval : Array[0.."MAX_ASSEBOOL"] of Bool;
+      intval : Array[0.."MAX_ASSEINT"] of Int := [8(-1), 1, 18(-1), 100, 2(0), 15(-1), 2(0), 2000, 6(-1), 2(0), 100, 7(-1), 2(0), 2(-1), 0, 2, 25(-1)];
+      realvalcfg : Array[0.."MAX_ASSEREAL"] of Real;
+      realval : Array[0.."MAX_ASSEREAL"] of Real;
+      fcval : Array[0.."MAX_ASSEREAL"] of Real := [55(1.0)];
+      offsetval : Array[0.."MAX_ASSEREAL"] of Real;
+      typval : Array[0.."MAX_ASSEREAL"] of Int := [55(-1)];
+   END_STRUCT;
+
+END_TYPE
+

@@ -1,0 +1,15 @@
+﻿TYPE "Type_Feedback"
+VERSION : 0.1
+   STRUCT
+      val_in : DInt;
+      val_scaled : Real;
+      error : Int;
+      val_scaled_prev : Real;
+      setval : Bool;
+      newval : Real;
+      indasse : Int := -1;
+      resetval : Bool;
+   END_STRUCT;
+
+END_TYPE
+

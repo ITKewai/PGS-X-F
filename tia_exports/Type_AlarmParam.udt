@@ -1,0 +1,10 @@
+﻿TYPE "Type_AlarmParam"
+VERSION : 0.1
+   STRUCT
+      "name" : String["DIM_STRINGNAME"];
+      boolval : Array[0.."MAX_ALARMBOOL"] of Bool;
+      intval : Array[0.."MAX_ALARMINT"] of Int := [10(-1)];
+   END_STRUCT;
+
+END_TYPE
+

@@ -1,0 +1,11 @@
+﻿TYPE "Type_Input"
+VERSION : 0.1
+   STRUCT
+      val : Real;
+      val_prev : Real;
+      indasse : Int := -1;
+      enab : Bool := true;
+   END_STRUCT;
+
+END_TYPE
+

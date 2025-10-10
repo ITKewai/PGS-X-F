@@ -310,7 +310,7 @@ def run_ai_search(data: Any, target_number: int) -> None:
         for inp_idx, fields in search_input_ai_field_matches(input_list, target_number):
             print(f"INPUT>{inp_idx} - match (-input) - fields: {', '.join(fields)}")
 
-    # Campi STATUS*PSLCAN dei -obj.output
+    # Campi STATUS dei -obj.output
     output_list = (data.get('obj') or {}).get('output')
     if output_list:
         for out_idx, fields in search_output_ai_field_matches(output_list, target_number):
@@ -330,6 +330,8 @@ def run_ai_search(data: Any, target_number: int) -> None:
                 print(f"IO>RI>{ri_idx} - match (-ri AI) - fields: {', '.join(fields)} - name: {name}")
             else:
                 print(f"IO>RI>{ri_idx} - match (-ri AI) - fields: {', '.join(fields)}")
+
+
 def run_free_scan_ai(data: Any) -> None:
     ai_list = ((data.get('io') or {}).get('ai')) or []
     if not ai_list:
@@ -351,6 +353,8 @@ def run_free_scan_ai(data: Any) -> None:
 
     for ai_idx, _ in found:
         run_ai_search(data, ai_idx)
+
+
 def search_ai_in_ao_matches(ao_list: List[list], target_number: int, only_bus: bool = True) -> List[Tuple[int, str, Optional[str]]]:
     """
     Cerca tutti gli AO che referenziano l'AI `target_number` in IN o AODUAL.
@@ -359,8 +363,6 @@ def search_ai_in_ao_matches(ao_list: List[list], target_number: int, only_bus: b
     """
     matches: List[Tuple[int, str, Optional[str]]] = []
     for ao_index, ao_fields in enumerate(ao_list or []):
-        if ao_index == 47:
-            x = 1
         if not isinstance(ao_fields, list):
             continue
 
@@ -389,9 +391,12 @@ def search_ai_in_ao_matches(ao_list: List[list], target_number: int, only_bus: b
                     matches.append((ao_index, label, name))
     return matches
 
+
 """
 Analog Output
 """
+
+
 def run_ao_search(data: Any, target_number: int) -> None:
     """Esegue la ricerca di un AO dato l'indice di -out."""
 
@@ -420,6 +425,8 @@ def run_ao_search(data: Any, target_number: int) -> None:
                 print(f"IO>RI>{ri_idx} - match (-ri AO) - fields: {', '.join(fields)} - name: {name}")
             else:
                 print(f"IO>RI>{ri_idx} - match (-ri AO) - fields: {', '.join(fields)}")
+
+
 def run_free_scan_ao(data: Any) -> None:
     ao_list = ((data.get('io') or {}).get('ao')) or []
     if not ao_list:
@@ -442,9 +449,12 @@ def run_free_scan_ao(data: Any) -> None:
     for ao_idx, _ in found:
         run_ao_search(data, ao_idx)
 
+
 """
 RI
 """
+
+
 def search_ri_ao_field_matches(ri_list: List[list], target_number: int) -> List[Tuple[int, List[str], Optional[str]]]:
     """
     Cerca nei -io.ri il campo IO_INT_ADDR2 che referenzia l'AO `target_number`,
@@ -478,6 +488,8 @@ def search_ri_ao_field_matches(ri_list: List[list], target_number: int) -> List[
                 name = ri_fields[0]
             results.append((ri_idx, matched, name))
     return results
+
+
 def search_ri_di_field_matches(ri_list: List[list], target_number: int) -> List[Tuple[int, List[str], Optional[str]]]:
     """
     Cerca nei -io.ri i campi CAMPO_2, ENABLED, RESET e IN che referenziano il DI `target_number`.
@@ -556,6 +568,8 @@ def search_ri_di_field_matches(ri_list: List[list], target_number: int) -> List[
         # else: se non soddisfa la condizione, non aggiunge niente
 
     return results
+
+
 def search_ri_ai_field_matches(ri_list: List[list], target_number: int) -> List[Tuple[int, List[str], Optional[str]]]:
     """
     Cerca nei -io.ri il campo IO_INT_ADDR2 che referenzia l'AI `target_number`,
@@ -594,6 +608,8 @@ def search_ri_ai_field_matches(ri_list: List[list], target_number: int) -> List[
             results.append((ri_idx, matched, name))
 
     return results
+
+
 def search_ri_do_field_matches(ri_list: List[list], target_number: int) -> List[Tuple[int, List[str], Optional[str]]]:
     """
     Cerca nei -io.ri il campo IO_INT_ADDR2 che referenzia il DO `target_number`,

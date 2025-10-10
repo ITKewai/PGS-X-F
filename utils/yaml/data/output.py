@@ -13,6 +13,7 @@ def search_output_ai_field_matches(output_list: List[list], target_number: int) 
     results: List[Tuple[int, List[str]]] = []
 
     for out_idx, out_fields in enumerate(output_list or []):
+        # print(out_idx, out_fields)
         if not isinstance(out_fields, list):
             continue
 
@@ -29,8 +30,8 @@ def search_output_ai_field_matches(output_list: List[list], target_number: int) 
         # STATUS*PSLCAN: solo se tipo == 6 (PSLCAN)
         if out_type == 6:
             for label, idx in [
-                ("STATUS1PSLCAN", IDX_OUTPUT_STATUS1PSLCAN),
-                ("STATUS2PSLCAN", IDX_OUTPUT_STATUS2PSLCAN),
+                ("STATUS1PSLCAN", IDX_INPUT_STATUS1PSLCAN),
+                ("STATUS2PSLCAN", IDX_INPUT_STATUS2PSLCAN),
             ]:
                 if len(out_fields) > idx:
                     try:
@@ -43,6 +44,8 @@ def search_output_ai_field_matches(output_list: List[list], target_number: int) 
             results.append((out_idx, matched))
 
     return results
+
+
 def search_output_di_field_matches(output_list: List[list], target_number: int) -> List[Tuple[int, List[str]]]:
     """
     Cerca in obj>output SOLO i campi ACT, ENAB1, ENAB2, ENAB3 che referenziano il DI `target_number`.
@@ -152,6 +155,8 @@ def search_output_do_field_matches(output_list: List[list], target_number: int) 
             results.append((out_index, matched))
 
     return results
+
+
 def search_output_ao_field_matches(output_list: List[list], target_number: int) -> List[Tuple[int, List[str]]]:
     """
     Cerca in obj>output i campi che referenziano AO.
@@ -191,10 +196,11 @@ def search_output_ao_field_matches(output_list: List[list], target_number: int) 
 
         # --- PSLCAN: CTRL1PSLCAN, CTRL2PSLCAN ---
         elif out_type == 6:
-            for label, idx in [("CTRL1PSLCAN", IDX_OUTPUT_RPM), ("CTRL2PSLCAN", IDX_OUTPUT_CC)]:
+            for label, idx in [("CTRL1PSLCAN", IDX_OUTPUT_STATUS1PSLCAN), ("CTRL2PSLCAN", IDX_OUTPUT_STATUS2PSLCAN)]:
                 if len(out_fields) > idx:
                     try:
                         if int(out_fields[idx]) == target_number:
+                            print(out_fields)
                             matched.append(label)
                     except Exception:
                         pass

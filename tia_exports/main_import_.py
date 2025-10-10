@@ -26,7 +26,7 @@ def sanitize_class_name(name: str) -> str:
 
 
 def parse_tia_text(text: str):
-    """Estrae [(var_name, var_type)] da STRUCT/VAR in file TIA (.db, .udt)."""
+    """Estrae [(var_name, var_type, comment)] da STRUCT/VAR in file TIA (.db, .udt)."""
     if text and text[0] == '\ufeff':  # BOM
         text = text[1:]
 
@@ -43,13 +43,20 @@ def parse_tia_text(text: str):
     decls = []
     for region in regions:
         region = re.sub(r'\(\*.*?\*\)', '', region, flags=re.DOTALL)  # (* commenti *)
-        region = re.sub(r'//.*?$', '', region, flags=re.MULTILINE)    # // commenti
+        # ⚠️ NON rimuoviamo i commenti // qui, li catturiamo con la regex sotto
 
-        pat = re.compile(r'\s*([A-Za-z_]\w*)\s*(\{[^}]*\})?\s*:\s*([^;]+);', re.MULTILINE)
+        pat = re.compile(
+            r'\s*([A-Za-z_]\w*)'              # nome variabile
+            r'\s*(\{[^}]*\})?\s*:\s*'         # eventuali attributi {...}
+            r'([^;]+);'                       # tipo
+            r'(?:\s*//\s*(.*))?',             # commento opzionale
+            re.MULTILINE
+        )
         for m in pat.finditer(region):
             name = m.group(1)
             typ = re.sub(r'\s+', ' ', m.group(3).strip())
-            decls.append((name, typ))
+            comment = m.group(4).strip() if m.group(4) else ''
+            decls.append((name, typ, comment))
     return decls
 
 
@@ -80,16 +87,25 @@ def process_tia_file(filepath: str, out):
     out.write(f"# Estratto da: {filename}\n")
     out.write(f"class {class_name}:\n")
 
-    if not decls:
+    if decls:
+        out.write('    """\n')
+        out.write(f"    Estratto da: {filename}\n\n")
+        out.write("    Attributes:\n")
+        for var_name, var_type, var_comment in decls:
+            comment_line = f" {var_comment}" if var_comment else ""
+            out.write(f"        {var_name} ({var_type}):{comment_line}\n")
+        out.write('    """\n')
+    else:
         out.write("    pass\n\n")
         return
 
     # --- init ---
     out.write("    def __init__(self):\n")
     out.write("        self._defaults = {}\n")
-    for var_name, var_type in decls:
+    for var_name, var_type, var_comment in decls:
         default_val = tia_type_to_python_default(var_type)
-        out.write(f"        self.{var_name} = {default_val}  # {var_type}\n")
+        comment_str = f"  # {var_type}" + (f" // {var_comment}" if var_comment else "")
+        out.write(f"        self.{var_name} = {default_val}{comment_str}\n")
         out.write(f"        self._defaults['{var_name}'] = {default_val}\n")
     out.write("\n")
 
@@ -114,6 +130,7 @@ def process_tia_file(filepath: str, out):
 # 🔸 Generazione classi da Excel
 # ==============================
 def process_excel(filepath: str, out):
+    return
     filename = os.path.basename(filepath)
     try:
         df = pd.read_excel(filepath, sheet_name="Constants")

@@ -227,9 +227,9 @@ def main():
             run_free_scan_di(data)
             print("DO:")
             run_free_scan_do(data)
-            print("AI")
+            print("AI:")
             run_free_scan_ai(data)
-            print("AO")
+            print("AO:")
             run_free_scan_ao(data)
             continue
         # ==================== /FREE ======================

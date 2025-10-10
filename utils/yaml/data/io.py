@@ -521,7 +521,7 @@ def search_ri_di_field_matches(ri_list: List[list], target_number: int) -> List[
                                     campo1_val = int(ri_fields[IDX_RI_CAMPO1])
                                 except Exception:
                                     campo1_val = None
-                                if campo1_val == Const_IO.IO_DI:
+                                if campo1_val == IO_DI:
                                     matched.append(label)
                         else:
                             matched.append(label)

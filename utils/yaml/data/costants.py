@@ -2,23 +2,23 @@ from typing import Any, List, Tuple, Optional, Dict
 from tia_constants import *
 # --- Mappe fornite ---
 ADDRESS = {
-    Const_IO.IO_TYPE_NONE: "",
-    Const_IO.IO_TYPE_PNET: "PNET",
-    Const_IO.IO_TYPE_CAN: "CAN",
-    Const_IO.IO_TYPE_SW: "SW",
-    Const_IO.IO_TYPE_CALC: "CALC",
-    Const_IO.IO_TYPE_FUNC_TOT: "TOT",
-    Const_IO.IO_TYPE_FUNC_TOTAUTO: "TOTAUTO",
-    Const_IO.IO_TYPE_FUNC_TOTMAN: "TOTMAN",
-    Const_IO.IO_TYPE_FUNC_DTOT: "DAILYTOT",
-    Const_IO.IO_TYPE_FUNC_DTOTAUTO: "DAILYTOTAUTO",
-    Const_IO.IO_TYPE_FUNC_DTOTMAN: "DAILYTOTMAN",
-    Const_IO.IO_TYPE_FUNC_TIME: "TIME",
-    Const_IO.IO_TYPE_FUNC_TIMEAUTO: "TIMEAUTO",
-    Const_IO.IO_TYPE_FUNC_TIMEMAN: "TIMEMAN",
-    Const_IO.IO_TYPE_FUNC_DTIME: "DAILYTIME",
-    Const_IO.IO_TYPE_FUNC_DTIMEAUTO: "DAILYTIMEAUTO",
-    Const_IO.IO_TYPE_FUNC_DTIMEMAN: "DAILYTIMEMAN",
+    IO_TYPE_NONE: "",
+    IO_TYPE_PNET: "PNET",
+    IO_TYPE_CAN: "CAN",
+    IO_TYPE_SW: "SW",
+    IO_TYPE_CALC: "CALC",
+    IO_TYPE_FUNC_TOT: "TOT",
+    IO_TYPE_FUNC_TOTAUTO: "TOTAUTO",
+    IO_TYPE_FUNC_TOTMAN: "TOTMAN",
+    IO_TYPE_FUNC_DTOT: "DAILYTOT",
+    IO_TYPE_FUNC_DTOTAUTO: "DAILYTOTAUTO",
+    IO_TYPE_FUNC_DTOTMAN: "DAILYTOTMAN",
+    IO_TYPE_FUNC_TIME: "TIME",
+    IO_TYPE_FUNC_TIMEAUTO: "TIMEAUTO",
+    IO_TYPE_FUNC_TIMEMAN: "TIMEMAN",
+    IO_TYPE_FUNC_DTIME: "DAILYTIME",
+    IO_TYPE_FUNC_DTIMEAUTO: "DAILYTIMEAUTO",
+    IO_TYPE_FUNC_DTIMEMAN: "DAILYTIMEMAN",
 }
 
 UM = {
@@ -64,11 +64,11 @@ FB_MESURETYPE = UM.copy()
 
 IO_CAMPO_1 = {
     -1: '',
-    Const_IO.IO_DI: 'DI',
-    Const_IO.IO_AI: 'AI',
-    Const_IO.IO_DO: 'DO',
-    Const_IO.IO_AO: 'AO',
-    Const_IO.IO_RI: 'RI',
+    IO_DI: 'DI',
+    IO_AI: 'AI',
+    IO_DO: 'DO',
+    IO_AO: 'AO',
+    IO_RI: 'RI',
 }
 
 EXPRTYPE = {
@@ -312,17 +312,12 @@ BASE_AXIS = 2048
 
 def _build_axis_groups():
     pairs = []
-    for name in dir(Const_IO):
-        if name.startswith("IO_SYSAXIS_"):
-            val = getattr(Const_IO, name)
-            if isinstance(val, int) and val >= 0:  # salta IO_SYSAXIS_NONE = -1
-                # label = parte finale del nome, es. IO_SYSAXIS_MOVING -> MOVING
-                label = name.replace("IO_SYSAXIS_", "")
-                pairs.append((label, val))
+    for name, val in globals().items():
+        if name.startswith("IO_SYSAXIS_") and isinstance(val, int) and val >= 0:
+            label = name.replace("IO_SYSAXIS_", "")
+            pairs.append((label, val))
 
-    # ordina per Value crescente (0..22)
     pairs.sort(key=lambda lv: lv[1])
-
     order = [label for label, _ in pairs]
     base = {label: BASE_AXIS + i * AXIS_GROUP_STEP for i, label in enumerate(order)}
     return order, base
@@ -338,16 +333,12 @@ BASE_ALARM = 16384
 
 def _build_alarm_groups():
     pairs = []
-    for name in dir(Const_IO):
-        if name.startswith("IO_SYSALARM_"):
-            val = getattr(Const_IO, name)
-            if isinstance(val, int) and val >= 0:  # salta IO_SYSALARM_NONE = -1
-                label = name.replace("IO_SYSALARM_", "")
-                pairs.append((label, val))
+    for name, val in globals().items():
+        if name.startswith("IO_SYSALARM_") and isinstance(val, int) and val >= 0:
+            label = name.replace("IO_SYSALARM_", "")
+            pairs.append((label, val))
 
-    # Ordina per Value (0..5)
     pairs.sort(key=lambda lv: lv[1])
-
     order = [label for label, _ in pairs]
     base = {label: BASE_ALARM + i * ALARM_GROUP_STEP for i, label in enumerate(order)}
     return order, base

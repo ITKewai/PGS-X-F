@@ -1,0 +1,555 @@
+﻿TYPE "Type_ToolsetOutputParam"
+VERSION : 0.1
+   STRUCT
+      intval : Array[0.."MAX_TOOLSETOUTPUTINT"] of Int := [2(-1)];
+      dintval : Array[0.."MAX_TOOLSETOUTPUTDINT"] of DInt;
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Type_StatParam"
+VERSION : 0.1
+   STRUCT
+      seqid : Int := -1;
+      statpos : Int := -1;
+      pos : Int := -1;
+      objtype : Int := -1;
+      ival : Int;
+      rval : Real;
+      addr : Int := -1;
+      next : Int := -1;
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Type_Stat"
+VERSION : 0.1
+   STRUCT
+      seqid : Int := -1;
+      pos : Int := -1;
+      cod : Int := -1;
+      firstparam : Int := -1;
+      lastparam : Int := -1;
+      next : Int := -1;
+      disabled : Bool;
+      prim : Int;
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "EnergyMeteMeasurementType"
+VERSION : 0.1
+   STRUCT
+      qualityWord : Word;
+      activePowerPOverall : Real;
+      activeEnergyOutflowOverall : Real;
+      activeEnergyInflowOverall : Real;
+      CurrentL1 : Real;
+      CurrentL2 : Real;
+      CurrentL3 : Real;
+      VoltageL1N : UInt;
+      VoltageL2N : UInt;
+      VOltageL3N : UInt;
+      fillBytes48Byte : Array[43..48] of Byte;
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Type_AxisParam"
+VERSION : 0.1
+   STRUCT
+      "name" : String["DIM_STRINGID"];
+      boolval : Array[0.."MAX_ASSEBOOL"] of Bool;
+      intval : Array[0.."MAX_ASSEINT"] of Int := [8(-1), 1, 18(-1), 100, 2(0), 15(-1), 2(0), 2000, 6(-1), 2(0), 100, 7(-1), 2(0), 2(-1), 0, 2, 25(-1)];
+      realvalcfg : Array[0.."MAX_ASSEREAL"] of Real;
+      realval : Array[0.."MAX_ASSEREAL"] of Real;
+      fcval : Array[0.."MAX_ASSEREAL"] of Real := [55(1.0)];
+      offsetval : Array[0.."MAX_ASSEREAL"] of Real;
+      typval : Array[0.."MAX_ASSEREAL"] of Int := [55(-1)];
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Type_Feedback"
+VERSION : 0.1
+   STRUCT
+      val_in : DInt;
+      val_scaled : Real;
+      error : Int;
+      val_scaled_prev : Real;
+      setval : Bool;
+      newval : Real;
+      indasse : Int := -1;
+      resetval : Bool;
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Type_Input"
+VERSION : 0.1
+   STRUCT
+      val : Real;
+      val_prev : Real;
+      indasse : Int := -1;
+      enab : Bool := true;
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Type_PID"
+VERSION : 0.1
+   STRUCT
+      sp : Real;
+      in : Real;
+      reset : Bool;
+      out1 : Real;
+      out2 : Real;
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Type_PIDParam"
+VERSION : 0.1
+   STRUCT
+      realval : Array[0.."MAX_PIDREAL"] of Real;
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Type_InputParam"
+VERSION : 0.1
+   STRUCT
+      boolval : Array[0.."MAX_INPUTBOOL"] of Bool;
+      intval : Array[0.."MAX_INPUTINT"] of Int := [5(-1), 0, 2(-1), 0, 6(-1)];
+      dintvalcfg : Array[0.."MAX_INPUTDINT"] of DInt;
+      dintval : Array[0.."MAX_INPUTDINT"] of DInt := [0, 100, 0, 100];
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Type_OutputParam"
+VERSION : 0.1
+   STRUCT
+      intval : Array[0.."MAX_OUTPUTINT"] of Int := [14(-1)];
+      dintval : Array[0.."MAX_OUTPUTDINT"] of DInt;
+      realval : Array[0.."MAX_OUTPUTREAL"] of Real := [0.0, 100.0, 0.0, 100.0, 2(0.0), 2(20.0), 2(40.0), 2(60.0), 2(80.0), 2(100.0), 2(0.0), 2(20.0), 2(40.0), 2(60.0), 2(80.0), 2(100.0)];
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Type_FeedbackParam"
+VERSION : 0.1
+   STRUCT
+      intval : Array[0.."MAX_FEEDBACKINT"] of Int := [5(-1)];
+      dintval : Array[0.."MAX_FEEDBACKDINT"] of DInt := [48, 32000];
+      realvalcfg : Array[0.."MAX_FEEDBACKREAL"] of Real;
+      realval : Array[0.."MAX_FEEDBACKREAL"] of Real;
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Type_Seq"
+VERSION : 0.1
+   STRUCT
+      SeqNum : Int;
+      SeqFirst : Int := -1;
+      SeqLast : Int := -1;
+      SeqCurrInd : Int := -1;
+      SeqId : Array[0.."MAX_SEQ"] of Int;
+      SeqTyp : Array[0.."MAX_SEQ"] of Int;
+      SeqFirstStat : Array[0.."MAX_SEQ"] of Int;
+      SeqLastStat : Array[0.."MAX_SEQ"] of Int;
+      SeqNext : Array[0.."MAX_SEQ"] of Int;
+      SeqNumStat : Array[0.."MAX_SEQ"] of Int;
+      StatNum : Int;
+      Stat : Array[0.."MAX_STAT"] of "Type_Stat";
+      StatParamNum : Int;
+      StatParam : Array[0.."MAX_STATPARAM"] of "Type_StatParam";
+      SeqStartCurrId : Int := -1;
+      SeqStartPrevId : Int := -1;
+      StatCurrInd : Int := -1;
+      SeqMode : Bool;
+      SeqModePrev : Bool;
+      SeqTerm : Bool;
+      StatTerm : Bool;
+      StatNew : Bool;
+      StackLevel : Int;
+      StackLevelAuto : Int;
+      StackRet : Array[0.."MAX_SEQSTACK"] of Int;
+      DelayElapsedTime : Int;
+      CurrProgSeq : Int;
+      PrevProgSeq : Int;
+      StatRunning : Int;
+      StatNumAxesStarted : Int;
+      CurrStatCod : Int;
+      PrevStatCod : Int;
+      StatStartInd : Int := -1;
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Type_MaintParam"
+VERSION : 0.1
+   STRUCT
+      "name" : String["DIM_STRINGID"];
+      boolval : Array[0.."MAX_MAINTBOOL"] of Bool;
+      intval : Array[0.."MAX_MAINTINT"] of Int;
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Type_AlarmParam"
+VERSION : 0.1
+   STRUCT
+      "name" : String["DIM_STRINGNAME"];
+      boolval : Array[0.."MAX_ALARMBOOL"] of Bool;
+      intval : Array[0.."MAX_ALARMINT"] of Int := [10(-1)];
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Type_IORef"
+VERSION : 0.1
+   STRUCT
+      FlagTot : Bool;
+      FlagTime : Bool;
+      "Ref" : Array[0.."MAX_IOREF"] of Int := [12(-1)];
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Type_DataLoggerBuffer"
+VERSION : 0.1
+   STRUCT
+      Num : Int;
+      InInd : Int;
+      OutInd : Int;
+      Class : Array[0.."MAX_DATALOGGER_BUFFER"] of Int;
+      Cod : Array[0.."MAX_DATALOGGER_BUFFER"] of Int;
+      Val : Array[0.."MAX_DATALOGGER_BUFFER"] of Int;
+      Cnt : Array[0.."MAX_DATALOGGER_BUFFER"] of Int;
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Type_LongString"
+VERSION : 0.1
+   STRUCT
+      c : Array[0.."DIM_STRINGHEADER"] of Char;
+      ind : Int;
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Type_Motor"
+VERSION : 0.1
+   STRUCT
+      timeout : Int;
+      seq : Bool;
+      opt : Bool;
+      default : Bool;
+      timeout2 : Int;
+      typ : Int;   // tipo motore per nome e icona HMI
+      diff : ULInt;
+      diff2 : ULInt;
+      seqok : Bool;
+      timeoutbtn : Int;
+      timeout3 : Int;
+      timeout4 : Int;
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Control_Record_CPU"
+VERSION : 0.1
+   STRUCT
+      Block_Length : USInt := "DIM_CPUDATA";
+      Block_ID : USInt := 196;
+      "Version" : USInt := 2;   // ET200SP CPU 1510-1PN
+      SubVersion : USInt;   // ET200SP
+      Data : Array[0.."MAX_CPUDATA"] of USInt;
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Control_Record_Console"
+VERSION : 0.1
+   STRUCT
+      Block_Length : USInt := "DIM_CONSOLEDATA";
+      Block_ID : USInt := 196;
+      "Version" : USInt := 2;   // ET200SP
+      SubVersion : USInt;   // ET200SP
+      Data : Array[0.."MAX_CONSOLEDATA"] of USInt;
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Control_Status"
+VERSION : 0.1
+   STRUCT
+      Done : Bool;
+      Busy : Bool;
+      Error : Bool;
+      Status : DWord;
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Write_ADV200"
+VERSION : 0.1
+   STRUCT
+      Write : Struct
+         "Abilitazione Inverter" { S7_SetPoint := 'True'} : Bool := FALSE;
+         "Avvio Inverter" : Bool := FALSE;
+         "Reset Allarme" : Bool := FALSE;
+         SPARE_BOOL_1 : Bool := FALSE;
+         SPARE_BOOL_2 : Bool := FALSE;
+         SPARE_BOOL_3 : Bool := FALSE;
+         SPARE_BOOL_4 : Bool := FALSE;
+         SPARE_BOOL_5 : Bool := FALSE;
+         SPARE_BOOL_6 : Bool := FALSE;
+         SPARE_BOOL_7 : Bool := FALSE;
+         SPARE_BOOL_8 : Bool := FALSE;
+         SPARE_BOOL_9 : Bool := FALSE;
+         SPARE_BOOL_10 : Bool := FALSE;
+         SPARE_BOOL_11 : Bool := FALSE;
+         SPARE_BOOL_12 : Bool := FALSE;
+         SPARE_BOOL_13 : Bool := FALSE;
+         "Riferimento Velocità" : Int := 0;
+         "Limite Coppia" : Int := 150;   // modificato per 6637 - era 125
+         SPARE_11 : Int := 0;
+         SPARE_10 : Int := 0;
+         SPARE_9 : Int := 0;
+         SPARE_8 : Int := 0;
+         SPARE_7 : Int := 0;
+         SPARE_6 : Int := 0;
+         SPARE_5 : Int := 0;
+         SPARE_4 : Int := 0;
+         SPARE_3 : Int := 0;
+         SPARE_2 : Int := 0;
+         SPARE_01 : Int := 0;
+         SPARE_02 : Int := 0;
+         SPARE_03 : Int := 0;
+         SPARE_04 : Int;
+      END_STRUCT;
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Type_Teach"
+VERSION : 0.1
+   STRUCT
+      teach_stat : Array[0.."MAX_TEACHSTAT"] of Bool;
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Type_IOParam"
+VERSION : 0.1
+   STRUCT
+      "name" : String["DIM_STRINGNAME"];
+      iotype : Int := -1;   // 0 = DI, 1 = AI, 2 = DO, 3 = AO, 4 = RI
+      boolval : Array[0.."MAX_IOBOOL"] of Bool;
+      intval : Array[0.."MAX_IOINT"] of Int := [9(-1)];
+      dintval : Array[0.."MAX_IODINT"] of DInt;
+      realvalcfg : Array[0.."MAX_IOREAL"] of Real := [3(0.0), 3(1.0)];
+      realval : Array[0.."MAX_IOREAL"] of Real := [3(0.0), 3(1.0)];
+      exprintval : Array[0.."MAX_EXPRINT"] of Int := [25(-1)];   // typ + (not, opnd, oper) x 8
+      exprrealval : Array[0.."MAX_EXPROPER"] of Real;
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Type_IO"
+VERSION : 0.1
+   STRUCT
+      Ind : Int := -1;
+      Stato : Int;
+      BVal : Bool;
+      IVal : Int;
+      DVal : DInt;
+      RVal : Real;
+      "FC" : Real;
+      Offset : Real;
+      BProgVal : Bool;
+      DProgVal : DInt;
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Read_ADV200"
+VERSION : 0.1
+   STRUCT
+      Read : Struct
+         "Inverter OK" : Bool := TRUE;
+         "Inverter in Modulazione" : Bool := FALSE;
+         "All sovraccarico Inverter" : Bool := FALSE;
+         "All sovraccarico Motore" : Bool := FALSE;
+         "Velocità = 0" : Bool := TRUE;
+         "Velocità = 0 Delay" : Bool := TRUE;
+         SPARE_BIT : Bool := FALSE;
+         SPARE_BIT_1 : Bool := FALSE;
+         SPARE_BIT_2 : Bool := FALSE;
+         SPARE_BIT_3 : Bool := FALSE;
+         SPARE_BIT_4 : Bool := FALSE;
+         SPARE_BIT_5 : Bool := FALSE;
+         SPARE_BIT_6 : Bool := FALSE;
+         SPARE_BIT_7 : Bool := FALSE;
+         SPARE_BIT_8 : Bool := FALSE;
+         SPARE_BIT_9 : Bool := FALSE;
+         Corrente : Int := 0;
+         Tensione : Int := 0;
+         Frequenza : Int := 0;
+         Potenza : Int := 0;
+         "Setpoint Velocità" : Int := 0;
+         "Tensione DC Link" : Int := 542;
+         "Sovraccarico Drive" : Int := 0;
+         "Sovraccarico Motore" : Int := 0;
+         Coppia : Int := 0;
+         TargaPotenza : Int := 0;
+         TargaVelocità : Int := 0;
+         "Coppia %" : Int := 0;
+         "Codice Allarme" : Int := 0;
+         SPARE_5 : Int := 0;
+         SPARE_6 : Int := 0;
+         SPARE_7 : Int := -4239;
+      END_STRUCT;
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Type_ToolsetParam"
+VERSION : 0.1
+   STRUCT
+      "name" : String["DIM_STRINGNAME"];
+      boolval : Array[0.."MAX_TOOLSETBOOL"] of Bool;
+      intval : Array[0.."MAX_TOOLSETINT"] of Int := [4(-1)];
+      realvalcfg : Array[0.."MAX_TOOLSETREAL"] of Real;
+      realval : Array[0.."MAX_TOOLSETREAL"] of Real;
+      fcval : Array[0.."MAX_TOOLSETREAL"] of Real := [10(1.0)];
+      offsetval : Array[0.."MAX_TOOLSETREAL"] of Real;
+      typval : Array[0.."MAX_TOOLSETREAL"] of Int := [10(-1)];
+      output : Array[0.."MAX_TOOLSETOUTPUT"] of "Type_ToolsetOutputParam" := [([2(-1)], [()]), ([2(-1)], [()]), ([2(-1)], [()]), ([2(-1)], [()])];
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Loader_Ctrl"
+VERSION : 0.1
+   STRUCT
+      "Bool" : Bool;
+      Bool_1 : Bool;
+      Bool_2 : Bool;
+      Bool_3 : Bool;
+      Bool_4 : Bool;
+      Bool_5 : Bool;
+      Bool_6 : Bool;
+      Bool_7 : Bool;
+      Bool_8 : Bool;
+      Bool_9 : Bool;
+      Bool_10 : Bool;
+      Bool_11 : Bool;
+      Bool_12 : Bool;
+      Bool_13 : Bool;
+      Bool_14 : Bool;
+      Bool_15 : Bool;
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Loader_Status"
+VERSION : 0.1
+   STRUCT
+      "Bool" : Bool;
+      Bool_1 : Bool;
+      Bool_2 : Bool;
+      Bool_3 : Bool;
+      Bool_4 : Bool;
+      Bool_5 : Bool;
+      Bool_6 : Bool;
+      Bool_7 : Bool;
+      Bool_8 : Bool;
+      Bool_9 : Bool;
+      Bool_10 : Bool;
+      Bool_11 : Bool;
+      Bool_12 : Bool;
+      Bool_13 : Bool;
+      Bool_14 : Bool;
+      Bool_15 : Bool;
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Type_Axis"
+VERSION : 0.1
+   STRUCT
+      prev_pos : Real;
+      prev_vel : Real;
+      curr_velist : Real;
+      prev_velist : Real;
+      velavg_buf : Array[0.."MAX_DT"] of Real;
+      dsavg_buf : Array[0.."MAX_DT"] of Real;
+      dsmsavg_buf : Array[0.."MAX_DT"] of Real;
+      slave : Int;
+      mov_debug : Int;
+      ds : Real;
+      ds_ms : Real;
+      stop : Bool;
+      stopping : Bool;
+      started : Bool;
+      timeout_enabled : Bool;
+      t_start : Time;
+      delta_t_start : Real;
+      t_mov : Time;
+      delta_t_mov : Real;
+      curr_timeout : Int;
+      slewrate_s_up : Real;
+      slewrate_s_down : Real;
+      val_input : Real;
+      val_input_prev : Real;
+      val_output : Real;
+      val_output_prev : Real;
+      pid_timer {InstructionName := 'TON_TIME'; LibVersion := '1.0'} : TON_TIME;
+      stat_sp_pos : Real;
+      stat_sp_vel : Real;
+      stat_sp_delta : Real;
+      stat_sp_enable : Bool;
+      stat_sp_intmode : Int;
+      sp_pos : Real;
+      prev_sp_pos : Real;
+      sp_vel : Real;
+      sp_vel_prev : Real;
+      sp_delta : Real;
+      sp_enable : Bool;
+      interp_vmaster : Real;
+      interp_vslave : Real;
+      interp_dsmaster : Real;
+      interp_dsslave : Real;
+      interp_tmaster : Real;
+      interp_tslave : Real;
+      interp_rmaster : Real;
+      interp_rslave : Real;
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "Type_Output"
+VERSION : 0.1
+   STRUCT
+      val_in : Real;
+      val_norm : Real;
+      val_scaled : Real;
+      out_dig1 : Bool;
+      out_dig2 : Bool;
+      out_analog1 : DInt;
+      out_analog2 : DInt;
+      flagao : Bool;
+      indasse : Int := -1;
+      enab : Bool;
+      preset : Bool;
+      preval : Real;
+      preind2 : Int;
+   END_STRUCT;
+
+END_TYPE
+

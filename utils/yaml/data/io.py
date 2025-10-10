@@ -1,11 +1,7 @@
-from typing import Any, List, Tuple, Optional, Dict
-from utils.yaml.data.costants import *
 from utils.yaml.data.feedback import *
-from utils.yaml.data.input import *
 from utils.yaml.data.output import *
 from utils.yaml.data.motors import *
 from utils.yaml.data.alarm_maintenance import *
-from utils.yaml.data.core import *
 from utils.yaml.data.axis import *
 from utils.yaml.data.params import *
 
@@ -110,6 +106,8 @@ def run_di_search(data: Any, target_number: int) -> None:
                 print(f"IO>RI>{ri_idx} - match (-ri) - fields: {', '.join(fields)} - name: {name}")
             else:
                 print(f"IO>RI>{ri_idx} - match (-ri) - fields: {', '.join(fields)}")
+
+
 def run_free_scan_di(data: Any) -> None:
     """Trova DI con nome vuoto o che contiene 'FREE' e, per ciascuno, esegue run_di_search sull'indice DI."""
     di_list = ((data.get('io') or {}).get('di')) or []
@@ -137,6 +135,8 @@ def run_free_scan_di(data: Any) -> None:
 
     for di_idx, name in found:
         run_di_search(data, di_idx)
+
+
 def search_di_matches(di_list: List[list], target_number: int) -> List[Tuple[int, str, int]]:
     results: List[Tuple[int, str, int]] = []
     for di_index, di_fields in enumerate(di_list):
@@ -155,6 +155,8 @@ def search_di_matches(di_list: List[list], target_number: int) -> List[Tuple[int
             if operand in EXPR_OPERAND_DI and address == target_number:
                 results.append((di_index, exprtype_str, g_idx))
     return results
+
+
 def search_di_in_matches(di_list: List[list], target_number: int) -> List[int]:
     """
     Cerca tutti i DI che hanno il campo IN (indice 13) uguale a target_number.
@@ -175,6 +177,8 @@ def search_di_in_matches(di_list: List[list], target_number: int) -> List[int]:
 """
 Digital Output
 """
+
+
 def run_do_serach(data: Any, target_number: int) -> None:
     """Esegue la ricerca di un DO dato l'indice di -out."""
     # --- dove viene usato ---
@@ -238,6 +242,8 @@ def run_do_serach(data: Any, target_number: int) -> None:
                 print(f"IO>RI>{ri_idx} - match (-ri DO) - fields: {', '.join(fields)} - name: {name}")
             else:
                 print(f"IO>RI>{ri_idx} - match (-ri DO) - fields: {', '.join(fields)}")
+
+
 def run_free_scan_do(data: Any) -> None:
     do_list = ((data.get('io') or {}).get('do')) or []
     if not do_list:
@@ -259,6 +265,8 @@ def run_free_scan_do(data: Any) -> None:
 
     for do_idx, _ in found:
         run_do_serach(data, do_idx)
+
+
 def search_do_in_matches(do_list: List[list], target_number: int) -> List[Tuple[int, Optional[str]]]:
     """
     Cerca tutti i DO che hanno il campo IN (indice 13) uguale a target_number.
@@ -282,6 +290,8 @@ def search_do_in_matches(do_list: List[list], target_number: int) -> List[Tuple[
 """
 Analog Input
 """
+
+
 def run_ai_search(data: Any, target_number: int) -> None:
     # Campi IN dei -io.ao
     ao_list = (data.get('io') or {}).get('ao', [])

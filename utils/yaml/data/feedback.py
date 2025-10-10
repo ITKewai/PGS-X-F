@@ -1,5 +1,4 @@
 
-from typing import Any, List, Tuple, Optional, Dict
 from utils.yaml.data.costants import *
 
 
@@ -26,6 +25,7 @@ def search_fb_resetind_matches(fb_list: List[list], target_number: int) -> List[
                 fb_type_str = FB_TYPE.get(fb_type_val, str(fb_type_val))
             results.append((fb_index, fb_type_str))
     return results
+
 
 def search_fb_inind_ai_matches(fb_list: List[list], target_number: int) -> List[Tuple[int, Optional[str]]]:
     """
@@ -65,6 +65,7 @@ def search_fb_inind_ai_matches(fb_list: List[list], target_number: int) -> List[
             results.append((fb_index, fb_type_str))
 
     return results
+
 
 def search_fb_err_deprecated_matches(fb_list: List[list], target_number: int) -> List[Tuple[int, Optional[str]]]:
     """

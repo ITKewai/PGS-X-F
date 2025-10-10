@@ -1,6 +1,3 @@
-from typing import Any, List, Tuple, Optional, Dict
-from utils.yaml.data.costants import *
-from utils.yaml.data.core import *
 from utils.yaml.data.humanize import *
 from utils.yaml.data.input import *
 
@@ -77,6 +74,8 @@ def search_output_di_field_matches(output_list: List[list], target_number: int) 
             results.append((out_index, matched))
 
     return results
+
+
 def search_output_do_field_matches(output_list: List[list], target_number: int) -> List[Tuple[int, List[str]]]:
     """
     Cerca nei -obj.output i campi che referenziano un DO `target_number`.
@@ -211,6 +210,7 @@ def search_output_ao_field_matches(output_list: List[list], target_number: int) 
     return results
 
 # ---- Ricerca nei campi -out --------------------------------------------------
+
 
 def search_out_field_matches(obj_node: Any, target_number: int) -> List[Tuple[int, int, Optional[str], Optional[str]]]:
     """

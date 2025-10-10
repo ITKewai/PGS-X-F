@@ -1,4 +1,3 @@
-from typing import Any, List, Tuple, Optional, Dict
 from utils.yaml.data.core import *
 from utils.yaml.data.costants import *
 
@@ -35,6 +34,8 @@ def search_input_di_field_matches(input_list: List[list], target_number: int) ->
         if matched:
             results.append((inp_index, matched))
     return results
+
+
 def search_input_ai_field_matches(input_list: List[list], target_number: int) -> List[Tuple[int, List[str]]]:
     """
     Cerca in obj>input i campi ANA e SUP che referenziano l'AI `target_number`.

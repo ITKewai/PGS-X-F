@@ -12,6 +12,8 @@ OUTPUT_FILE = os.path.join(BASE_DIR, "tia_constants.py")
 # ==============================
 # 🔸 Utility
 # ==============================
+RESERVED_NAMES = {"in", "class", "def", "return", "global", "lambda"}
+
 def get_prefix(name: str) -> str:
     parts = name.split("_")
     return "_".join(parts[:2]) if len(parts) > 1 else name
@@ -25,38 +27,6 @@ def sanitize_class_name(name: str) -> str:
     return clean
 
 
-def split_type_blocks(text: str):
-    """
-    Ritorna una lista di (type_name, struct_body, full_block_text) per ogni TYPE ... END_TYPE nel file.
-    - struct_body è il contenuto tra STRUCT ... END_STRUCT; (senza i delimitatori)
-    - Se non trova STRUCT, struct_body è la porzione tra VAR ... END_VAR o stringa vuota
-    """
-    if text and text[:1] == '\ufeff':
-        text = text[1:]
-
-    # Togli commenti TIA in stile (* ... *)
-    no_block_comments = re.sub(r'\(\*.*?\*\)', '', text, flags=re.DOTALL)
-
-    blocks = []
-    # Match TYPE "Name" ... END_TYPE
-    type_pat = re.compile(r'TYPE\s+"?([A-Za-z_]\w*)"?\s*(.*?)\bEND_TYPE\b', re.DOTALL | re.IGNORECASE)
-    for m in type_pat.finditer(no_block_comments):
-        type_name = m.group(1)
-        body = m.group(2)
-
-        # Estrarre STRUCT ... END_STRUCT; se presente
-        struct_m = re.search(r'\bSTRUCT\b(.*?)\bEND_STRUCT\s*;', body, flags=re.DOTALL | re.IGNORECASE)
-        if struct_m:
-            struct_body = struct_m.group(1)
-        else:
-            # alternativa: blocchi VAR ... END_VAR
-            var_m = re.search(r'\bVAR(?:\s+\w+)?\b(.*?)\bEND_VAR\b', body, flags=re.DOTALL | re.IGNORECASE)
-            struct_body = var_m.group(1) if var_m else ""
-
-        blocks.append((type_name, struct_body.strip(), body))
-    return blocks
-
-
 def parse_decls_from_struct(struct_text: str):
     """
     Estrae [(var_name, var_type, comment)] dalla porzione interna di una STRUCT/VAR.
@@ -66,11 +36,10 @@ def parse_decls_from_struct(struct_text: str):
     if not struct_text:
         return decls
 
-    # NON rimuoviamo i commenti //, li catturiamo con la regex
     pat = re.compile(
         r'\s*([A-Za-z_]\w*)'              # nome variabile
-        r'\s*(\{[^}]*\})?\s*:\s*'         # eventuali attributi {...}
-        r'([^;]+);'                       # tipo (fino al ;)
+        r'\s*(\{[^}]*\})?\s*:\s*'         # ignora graffe
+        r'([^;]+);'                       # tipo
         r'(?:\s*//\s*(.*))?',             # commento opzionale
         re.MULTILINE
     )
@@ -83,19 +52,10 @@ def parse_decls_from_struct(struct_text: str):
 
 
 def tia_type_to_python_default(typ: str):
-    """Mappa i tipi TIA → valore di default Python.
-    - Supporta Array[MIN..MAX] of <type>, preservando il casing di MIN/MAX
-    - MIN può essere 0, numero, o identificatore (es. MIN_SMTH)
-    - Genera liste come [default] * ((MAX - MIN) + 1)  oppure semplifica a (MAX + 1) se MIN == 0
-    """
+    """Valore di default per i tipi base e array nei TYPE UDT."""
     original = typ.strip()
     tlower = original.lower()
 
-    # --- Array ---
-    # Esempi matchati:
-    # Array[0.."MAX_OUTPUTDINT"] of DInt
-    # ARRAY [ 0 .. MAX_ABC ] OF REAL
-    # Array["MIN_IDX".."MAX_IDX"] of Bool
     array_re = re.compile(
         r'array\s*\[\s*"?([A-Za-z_]\w*|\d+)"?\s*\.\.\s*"?([A-Za-z_]\w*|\d+)"?\s*\]\s*of\s*(\w+)',
         re.IGNORECASE
@@ -114,106 +74,143 @@ def tia_type_to_python_default(typ: str):
         else:
             base_default = "None"
 
-        # Costruisci espressione di lunghezza
-        if min_raw == "0" or min_raw == "0.0":
-            length_expr = f"({max_raw} + 1)"
-        else:
-            length_expr = f"(({max_raw}) - ({min_raw}) + 1)"
-
+        length_expr = f"({max_raw} + 1)" if min_raw == "0" else f"(({max_raw}) - ({min_raw}) + 1)"
         return f"[{base_default}] * {length_expr}"
 
-    # --- Tipi scalari ---
     if "bool" in tlower:
         return "False"
     if any(x in tlower for x in ("sint","usint","int","dint","lint","ulint","uint","udint","byte","word","dword")):
         return "-1"
     if any(x in tlower for x in ("lreal", "real")):
         return "0.0"
-    return "None"  # fallback
+    return "None"
 
 
 # ==============================
-# 🔸 Generazione classi da TIA (.db / .udt)
+# 🔸 UDT (.udt)
 # ==============================
-def process_tia_file(filepath: str, out):
+def process_udt_file(filepath: str, out):
     filename = os.path.basename(filepath)
     with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
-        content = f.read()
+        text = f.read()
 
-    type_blocks = split_type_blocks(content)
-    if not type_blocks:
-        print(f"⚠️ Nessun TYPE trovato in {filename}.")
-        return
+    # Togli commenti TIA (* ... *)
+    text = re.sub(r'\(\*.*?\*\)', '', text, flags=re.DOTALL)
 
-    out.write(f"# ===== File: {filename} =====\n\n")
+    # TYPE ... END_TYPE
+    type_pat = re.compile(r'TYPE\s+"?([A-Za-z_]\w*)"?\s*(.*?)\bEND_TYPE\b', re.DOTALL | re.IGNORECASE)
+    for type_m in type_pat.finditer(text):
+        type_name = type_m.group(1)
+        body = type_m.group(2)
 
-    for type_name, struct_body, _full in type_blocks:
-        # Solo per sicurezza: nomi python-safe (ma di default manteniamo quello TIA)
-        class_name = sanitize_class_name(type_name)
-
-        decls = parse_decls_from_struct(struct_body)
-
-        out.write(f"# --- TYPE \"{type_name}\" ---\n")
-        out.write(f"class {class_name}:\n")
-
-        if decls:
-            out.write('    """\n')
-            out.write(f"    Estratto da: {filename}\n\n")
-            out.write("    Attributes:\n")
-            for var_name, var_type, var_comment in decls:
-                RESERVED = {"in", "class", "def", "return", "global", "lambda", ...}
-
-                if var_name in RESERVED:
-                    safe_name = var_name + "_"
-                else:
-                    safe_name = var_name
-
-                comment_line = f" {var_comment}" if var_comment else ""
-                out.write(f"        {safe_name} ({var_type}):{comment_line}\n")
-            out.write('    """\n')
-        else:
-            out.write("    pass\n\n")
+        # STRUCT ... END_STRUCT
+        struct_m = re.search(r'\bSTRUCT\b(.*?)\bEND_STRUCT\s*;', body, flags=re.DOTALL | re.IGNORECASE)
+        if not struct_m:
             continue
 
-        # --- init ---
+        decls = parse_decls_from_struct(struct_m.group(1))
+        if not decls:
+            continue
+
+        class_name = sanitize_class_name(type_name)
+        # out.write(f"# --- TYPE \"{type_name}\" ---\n")
+        out.write(f"class {class_name}:\n")
+        out.write('    """\n')
+        out.write(f"    Estratto da: {filename}\n\n")
+        out.write("    Attributes:\n")
+        for var_name, var_type, var_comment in decls:
+            safe_name = var_name + "_" if var_name in RESERVED_NAMES else var_name
+            comment_line = f" {var_comment}" if var_comment else ""
+            out.write(f"        {safe_name} ({var_type}):{comment_line}\n")
+        out.write('    """\n')
+
         out.write("    def __init__(self):\n")
         out.write("        self._defaults = {}\n")
         for var_name, var_type, var_comment in decls:
+            safe_name = var_name + "_" if var_name in RESERVED_NAMES else var_name
             default_val = tia_type_to_python_default(var_type)
-            RESERVED = {"in", "class", "def", "return", "global", "lambda", ...}
-
-            if var_name in RESERVED:
-                safe_name = var_name + "_"
-            else:
-                safe_name = var_name
-
             comment_str = f"  # {var_type}" + (f" // {var_comment}" if var_comment else "")
             out.write(f"        self.{safe_name} = {default_val}{comment_str}\n")
             out.write(f"        self._defaults['{safe_name}'] = {default_val}\n")
-
         out.write("\n")
 
-        # --- to_dict ---
         out.write("    def to_dict(self):\n")
-        out.write("        \"\"\"Ritorna un dizionario con tutti i campi attuali.\"\"\"\n")
         out.write("        return {k: getattr(self, k) for k in self._defaults.keys()}\n\n")
 
-        # --- reset ---
         out.write("    def reset(self):\n")
-        out.write("        \"\"\"Resetta tutti i campi ai valori di default.\"\"\"\n")
         out.write("        for k, v in self._defaults.items():\n")
         out.write("            setattr(self, k, v)\n\n")
 
-        # --- repr ---
         out.write("    def __repr__(self):\n")
         out.write("        fields = ', '.join(f\"{k}={getattr(self, k)}\" for k in self._defaults.keys())\n")
         out.write(f"        return f\"<{class_name} {{fields}}>\"\n\n\n")
 
 
 # ==============================
-# 🔸 Generazione da Excel (opzionale)
+# 🔸 DB (.db)
 # ==============================
+def process_db_file(filepath: str, out):
+    filename = os.path.basename(filepath)
+    class_name = sanitize_class_name(os.path.splitext(filename)[0])
 
+    with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+        content = f.read()
+
+    # Rimuovi i metadati { ... }
+    content = re.sub(r'\{[^{}]*\}', '', content)
+
+    # Estrai blocco VAR...END_VAR
+    var_m = re.search(r'\bVAR\b(.*?)\bEND_VAR\b', content, flags=re.DOTALL | re.IGNORECASE)
+    if not var_m:
+        print(f"⚠️ Nessun blocco VAR trovato in {filename}.")
+        return
+
+    decls = parse_decls_from_struct(var_m.group(1))
+    if not decls:
+        print(f"⚠️ Nessuna variabile parsata in {filename}.")
+        return
+
+    out.write(f"# --- DB {filename} ---\n")
+    out.write(f"class {class_name}:\n")
+    out.write("    def __init__(self):\n")
+    out.write("        self._defaults = {}\n")
+
+    # Regex per array di UDT
+    udt_array_re = re.compile(
+        r'array\s*\[\s*"?([A-Za-z_]\w*|\d+)"?\s*\.\.\s*"?([A-Za-z_]\w*|\d+)"?\s*\]\s*of\s*"?(Type_\w+)"?',
+        re.IGNORECASE
+    )
+
+    for var_name, var_type, var_comment in decls:
+        safe_name = var_name + "_" if var_name in RESERVED_NAMES else var_name
+        comment_str = f"  # {var_type}" + (f" // {var_comment}" if var_comment else "")
+
+        # Array di UDT?
+        udt_match = udt_array_re.match(var_type)
+        if udt_match:
+            min_raw, max_raw, udt_class = udt_match.groups()
+            length_expr = f"({max_raw} + 1)" if min_raw == "0" else f"(({max_raw}) - ({min_raw}) + 1)"
+            out.write(f"        self.{safe_name} = [{udt_class}() for _ in range{length_expr}]{comment_str}\n")
+            out.write(f"        self._defaults['{safe_name}'] = [{udt_class}() for _ in range{length_expr}]\n")
+            continue
+
+        # Array di tipi base
+        if var_type.lower().startswith("array"):
+            default_val = tia_type_to_python_default(var_type)
+            out.write(f"        self.{safe_name} = {default_val}{comment_str}\n")
+            out.write(f"        self._defaults['{safe_name}'] = {default_val}\n")
+            continue
+
+        # Tipo semplice
+        default_val = tia_type_to_python_default(var_type)
+        out.write(f"        self.{safe_name} = {default_val}{comment_str}\n")
+        out.write(f"        self._defaults['{safe_name}'] = {default_val}\n")
+    out.write("\n")
+
+
+# ==============================
+# 🔸 Excel (costanti)
+# ==============================
 def process_excel(filepath: str, out):
     filename = os.path.basename(filepath)
     try:
@@ -225,11 +222,11 @@ def process_excel(filepath: str, out):
         out.write(f"# ===== Costanti da: {filename} =====\n")
         for _, row in df.iterrows():
             name = row.get("Name")
-            value = int(row.get("Value"))
+            value = row.get("Value")
             comment = row.get("Comment")
             if pd.notna(name) and pd.notna(value):
                 cmt = f"  # {comment}" if isinstance(comment, str) else ""
-                out.write(f"{name} = {repr(value)}{cmt}\n")
+                out.write(f"{name} = {int(value)}{cmt}\n")
         out.write("\n\n")
     except Exception as e:
         print(f"❌ Errore leggendo {filename}: {e}")
@@ -241,13 +238,16 @@ def process_excel(filepath: str, out):
 def main():
     print(EXPORTS_DIR, ' > ', OUTPUT_FILE)
     with open(OUTPUT_FILE, "w", encoding="utf-8") as out:
-        out.write("# Auto-generato da main_import_.py\n\n")
+        out.write("# Auto-generato da main_import.py\n\n")
         for filename in os.listdir(EXPORTS_DIR):
             filepath = os.path.join(EXPORTS_DIR, filename)
-            if filename.lower().endswith(".xlsx"):
+            lower = filename.lower()
+            if lower.endswith(".udt"):
+                process_udt_file(filepath, out)
+            elif lower.endswith(".db"):
+                process_db_file(filepath, out)
+            elif lower.endswith(".xlsx"):
                 process_excel(filepath, out)
-            elif filename.lower().endswith(".db") or filename.lower().endswith(".udt"):
-                process_tia_file(filepath, out)
     print(f"✅ File generato: {OUTPUT_FILE}")
 
 

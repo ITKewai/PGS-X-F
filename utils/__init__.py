@@ -7,4 +7,7 @@
 # TODO: caricare tutte le informazioni asse per asse
 # TODO: controllo per vedere se un uscita DO o AO è usata su piu assi
 # TODO: controllo se c è un SYSTEM di usasse usato ma c'è il FLAG su NO
+# TODO: controllo safety interlock sgancio chiusura, non deve esserci Droll L (o la system)
+# TODO: ricarca Freee daindici sbagliati
+@ TODO:  ricerca che negli assi non rimangono indici in opt param
 """

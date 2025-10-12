@@ -161,6 +161,7 @@ class DATA_CONFIG:
         self.UM_FC_Imp = [0.0] * (MAX_UM + 1)  # Array[0.."MAX_UM"] of Real
         self._defaults['UM_FC_Imp'] = [0.0] * (MAX_UM + 1)
 
+
 class Type_ToolsetOutputParam:
     """
     Estratto da: PlcDataType.udt
@@ -3873,5 +3874,5 @@ IO_SYSBOOL_STATUS = 0
 IO_SYSBOOL_PARAM = 1
 RT_C0 = 0  # 0 centratori - solo RT - 6703
 ALIGN_CENTTYPE_NONE = -1  # nessuna centratura
-
+DEBUG_DEBUG_DEBUG = True
 

@@ -1,6 +1,6 @@
 import re
-from typing import Any, List, Tuple, Optional, Dict
-from tia_constants import *
+from typing import Optional
+from utils.exports.tia_constants import *
 
 # Mappa (grezza) label -> "origine" per le stampe
 IN_ORIGIN_SETS = {

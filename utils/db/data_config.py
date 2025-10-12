@@ -757,11 +757,10 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
         # ============================================
         # 🧠 Campi generici configurazione nei -in
         # ============================================
-        target_number = Ind  # 'idx' è l'indice globale IO da cercare
         in_matches = []
 
         for pid, val in enumerate(data_config.InInd):  # pid = posizione InInd, val = Indice IO
-            if val == target_number:
+            if val == Ind:
                 # Recupera la voce mappata, se esiste
                 if pid < len(IN_IND_MAP):
                     entry = IN_IND_MAP[pid]
@@ -785,17 +784,15 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
             label = match["label"]
             display = match["display"]
             origin = match["map_origin"]
-            pid = match["pid"]
             val = match["val"]
-            txt = "-in: " if DEBUG_DEBUG_DEBUG else ""
+            txt = f"-in:{IO_DI} {label} → " if DEBUG_DEBUG_DEBUG else ""
             txt += f'[{val}] "{get_io_name(IO_DI, val)}" → "{display}" ({origin})'
             print(txt)
         return in_matches
 
 
 if __name__ == "__main__":
-    # Test veloce
     populate_from_yaml_file("../../config.yaml")
-    # for i in range(0, MAX_STATOBOOL):
-    run_io_search(IO_DI, 777)
+    for i in range(0, MAX_STATOBOOL):
+        run_io_search(IO_DI, i)
 

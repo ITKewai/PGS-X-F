@@ -785,14 +785,50 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
             display = match["display"]
             origin = match["map_origin"]
             val = match["val"]
-            txt = f"-in:{IO_DI} {label} → " if DEBUG_DEBUG_DEBUG else ""
+            txt = f"-in: {IO_DI} {label} → " if DEBUG_DEBUG_DEBUG else ""
             txt += f'[{val}] "{get_io_name(IO_DI, val)}" → "{display}" ({origin})'
             print(txt)
         return in_matches
+    elif iotype == IO_DO:
+        # ============================================
+        # 🧠 Campi generici configurazione nei -out
+        # ============================================
+        out_matches = []
+
+        for pid, val in enumerate(data_config.OutInd):  # pid = posizione OutInd, val = Indice IO
+            if val == Ind:
+                # Recupera la voce mappata, se esiste
+                if pid < len(OUT_IND_MAP):
+                    entry = OUT_IND_MAP[pid]
+                    label = entry.get("label")
+                    display = entry.get("display", label)
+                    origin = entry.get("origin", "??")
+                else:
+                    label = display = origin = None
+
+                out_matches.append({
+                    "origin": "InInd",
+                    "pid": pid,
+                    "label": label,
+                    "display": display,
+                    "map_origin": origin,
+                    "val": val
+                })
+
+        # Stampa risultati
+        for match in out_matches:
+            label = match["label"]
+            display = match["display"]
+            origin = match["map_origin"]
+            val = match["val"]
+            txt = f"-in: {IO_DO} {label} → " if DEBUG_DEBUG_DEBUG else ""
+            txt += f'[{val}] "{get_io_name(IO_DO, val)}" → "{display}" ({origin})'
+            print(txt)
+        return out_matches
 
 
 if __name__ == "__main__":
     populate_from_yaml_file("../../config.yaml")
     for i in range(0, MAX_STATOBOOL):
-        run_io_search(IO_DI, i)
+        run_io_search(IO_DO, i)
 

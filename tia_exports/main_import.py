@@ -14,6 +14,7 @@ OUTPUT_FILE = os.path.join(BASE_DIR, "tia_constants.py")
 # ==============================
 RESERVED_NAMES = {"in", "class", "def", "return", "global", "lambda"}
 
+
 def get_prefix(name: str) -> str:
     parts = name.split("_")
     return "_".join(parts[:2]) if len(parts) > 1 else name

@@ -707,6 +707,7 @@ def get_io_index(iotype: int, idx: Optional[int] = None) -> List[int] | int | No
             return start + idx
         return None
 
+
 def get_io_name(iotype: int, Ind: int) -> Optional[str]:
     """
     Ritorna il nome (string) dell'IO dato iotype e indice *locale* (Ind).
@@ -751,6 +752,15 @@ def get_io_name(iotype: int, Ind: int) -> Optional[str]:
     except Exception:
         return None
 
+
+def run_axis_scan(iotype: int, Ind: int = None, axisInd: int = None):
+    if iotype == IO_DI:
+        if axisInd:
+            AxisParamIntVals = DATA_CONFIG.Axis_Param[axisInd].intval
+            
+        else:
+            for i in range(0, MAX_ASSE):
+                run_axis_scan(iotype=iotype, Ind=Ind, axisInd=i)
 
 def run_io_search(iotype: int, Ind: Optional[int] = None):
     if iotype == IO_DI:

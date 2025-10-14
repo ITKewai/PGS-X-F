@@ -757,19 +757,45 @@ def get_axis_name(Ind: int):
     return data_config.Axis_Name[Ind]
 
 
-def _debug_intval():
+def _debug_intval(iotype: int = None):
     AxisParamIntVals = data_config.Axis_Param[0].intval
     for idx, val in enumerate(AxisParamIntVals):
         idx_name = Type_AxisParam_Map["_intval"][idx]
         display = Type_AxisParam_Map["intval"][idx_name]["display"]
         origin = Type_AxisParam_Map["intval"][idx_name]["origin"]
+        _type = Type_AxisParam_Map["intval"][idx_name].get("type", None)
+        if iotype is not None:
+            if _type:
+                if iotype not in _type:
+                    continue
+            else:
+                continue
         axis_name = get_axis_name(Ind=0)
         try:
             origin = Type_AxisParam_Map["intval"][idx_name]["origin"].format(0, axis_name)
         except:
             pass
-        # if val == -1:
-        #     return
+        print(f'{idx}\t{display}\t-\tx{val}\t-\t{origin}')
+
+
+def _debug_realval(iotype: int = None):
+    AxisParamRealVals = data_config.Axis_Param[0].realval
+    for idx, val in enumerate(AxisParamRealVals):
+        idx_name = Type_AxisParam_Map["_realval"][idx]
+        display = Type_AxisParam_Map["realval"][idx_name]["display"]
+        origin = Type_AxisParam_Map["realval"][idx_name]["origin"]
+        _type = Type_AxisParam_Map["realval"][idx_name].get("type", None)
+        if iotype is not None:
+            if _type:
+                if iotype not in _type:
+                    continue
+            else:
+                continue
+        axis_name = get_axis_name(Ind=0)
+        try:
+            origin = Type_AxisParam_Map["realval"][idx_name]["origin"].format(0, axis_name)
+        except:
+            pass
         print(f'{idx}\t{display}\t-\tx{val}\t-\t{origin}')
 
 
@@ -887,5 +913,6 @@ if __name__ == "__main__":
     populate_from_yaml_file("../../config.yaml")
     # for i in range(0, MAX_STATOBOOL):
     #     run_io_search(IO_DI, i)
-    _debug_intval()
+    # _debug_intval()
+    _debug_realval()
 

@@ -799,6 +799,27 @@ def _debug_realval(iotype: int = None):
         print(f'{idx}\t{display}\t-\tx{val}\t-\t{origin}')
 
 
+def _debug_boolval(iotype: int = None):
+    AxisParamBoolVals = data_config.Axis_Param[0].boolval
+    for idx, val in enumerate(AxisParamBoolVals):
+        idx_name = Type_AxisParam_Map["_boolval"][idx]
+        display = Type_AxisParam_Map["boolval"][idx_name]["display"]
+        origin = Type_AxisParam_Map["boolval"][idx_name]["origin"]
+        _type = Type_AxisParam_Map["boolval"][idx_name].get("type", None)
+        if iotype is not None:
+            if _type:
+                if iotype not in _type:
+                    continue
+            else:
+                continue
+        axis_name = get_axis_name(Ind=0)
+        try:
+            origin = Type_AxisParam_Map["boolval"][idx_name]["origin"].format(0, axis_name)
+        except:
+            pass
+        print(f'{idx}\t{display}\t-\tx{val}\t-\t{origin}')
+
+
 def run_axis_scan(iotype: int, Ind: int = None, axisInd: int = None):
     """
     iotype: tipo di io
@@ -914,5 +935,6 @@ if __name__ == "__main__":
     # for i in range(0, MAX_STATOBOOL):
     #     run_io_search(IO_DI, i)
     # _debug_intval()
-    _debug_realval()
+    # _debug_realval()
+    _debug_boolval()
 

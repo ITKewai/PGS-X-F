@@ -757,6 +757,22 @@ def get_axis_name(Ind: int):
     return data_config.Axis_Name[Ind]
 
 
+def _debug_intval():
+    AxisParamIntVals = data_config.Axis_Param[0].intval
+    for idx, val in enumerate(AxisParamIntVals):
+        idx_name = Type_AxisParam_Map["_intval"][idx]
+        display = Type_AxisParam_Map["intval"][idx_name]["display"]
+        origin = Type_AxisParam_Map["intval"][idx_name]["origin"]
+        axis_name = get_axis_name(Ind=0)
+        try:
+            origin = Type_AxisParam_Map["intval"][idx_name]["origin"].format(0, axis_name)
+        except:
+            pass
+        # if val == -1:
+        #     return
+        print(f'{idx}\t{display}\t-\tx{val}\t-\t{origin}')
+
+
 def run_axis_scan(iotype: int, Ind: int = None, axisInd: int = None):
     """
     iotype: tipo di io
@@ -765,13 +781,19 @@ def run_axis_scan(iotype: int, Ind: int = None, axisInd: int = None):
     """
     if iotype == IO_DI:
         if axisInd is not None:
+            if axisInd != 0:
+                return
             AxisParamIntVals = data_config.Axis_Param[axisInd].intval
             for idx,val in enumerate(AxisParamIntVals):
                 intval_idx = [19, 20, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 48, 49, 50, 51, 52, 53, 56, 57,
-                              58, 59, 60, 61, 62, 63, 65, 66, 67, 70, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86,
+                              58, 59, 60, 61, 62, 63, 65, 66, 67, 70,71, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86,
                               87, 88, 89, 90]
                 if idx not in intval_idx:
                     continue
+                else:
+                    idx_name = Type_AxisParam_Map["_intval"][idx]
+                    print(f'{idx} - {Type_AxisParam_Map["intval"][idx_name]["display"]}')
+
                 if val == Ind:
                     idx_name = Type_AxisParam_Map["_intval"][idx]
                     display = Type_AxisParam_Map["intval"][idx_name]["display"]
@@ -865,5 +887,5 @@ if __name__ == "__main__":
     populate_from_yaml_file("../../config.yaml")
     # for i in range(0, MAX_STATOBOOL):
     #     run_io_search(IO_DI, i)
-    run_io_search(IO_DI, 199)
+    _debug_intval()
 

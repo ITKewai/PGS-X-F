@@ -610,24 +610,24 @@ Type_AxisParam_Map = {
         "ASSE_INT_INDSH": {"display": "ASSE_INT_INDSH", "origin":"??"},
         "ASSE_INT_INDSL": {"display": "ASSE_INT_INDSL", "origin":"??"},
         "ASSE_INT_INDSLL": {"display": "ASSE_INT_INDSLL", "origin":"??"},
-        "ASSE_INT_SAFETYUPIND1": {"display": "ASSE_INT_SAFETYUPIND1", "origin":"??"},
-        "ASSE_INT_SAFETYUPIND2": {"display": "ASSE_INT_SAFETYUPIND2", "origin":"??"},
-        "ASSE_INT_SAFETYUPIND3": {"display": "ASSE_INT_SAFETYUPIND3", "origin":"??"},
-        "ASSE_INT_SAFETYUPIND4": {"display": "ASSE_INT_SAFETYUPIND4", "origin":"??"},
-        "ASSE_INT_SAFETYUPIND5": {"display": "ASSE_INT_SAFETYUPIND5", "origin":"??"},
-        "ASSE_INT_SAFETYUPIND6": {"display": "ASSE_INT_SAFETYUPIND6", "origin":"??"},
+        "ASSE_INT_SAFETYUPIND1": {"display": "SAFETY1 UP", "origin":"Axes\t→\t[{}]{}\t→\tSafety/Interlock"},
+        "ASSE_INT_SAFETYUPIND2": {"display": "SAFETY2 UP", "origin":"Axes\t→\t[{}]{}\t→\tSafety/Interlock"},
+        "ASSE_INT_SAFETYUPIND3": {"display": "SAFETY3 UP", "origin":"Axes\t→\t[{}]{}\t→\tSafety/Interlock"},
+        "ASSE_INT_SAFETYUPIND4": {"display": "SAFETY4 UP", "origin":"Axes\t→\t[{}]{}\t→\tSafety/Interlock"},
+        "ASSE_INT_SAFETYUPIND5": {"display": "SAFETY5 UP", "origin":"Axes\t→\t[{}]{}\t→\tSafety/Interlock"},
+        "ASSE_INT_SAFETYUPIND6": {"display": "SAFETY6 UP", "origin":"Axes\t→\t[{}]{}\t→\tSafety/Interlock"},
         "ASSE_INT_INDSH0": {"display": "ASSE_INT_INDSH0", "origin":"??"},
         "ASSE_INT_INDSL0": {"display": "ASSE_INT_INDSL0", "origin":"??"},
         "ASSE_INT_INDMEM": {"display": "ASSE_INT_INDMEM", "origin":"??"},
         "ASSE_INT_PERACQ": {"display": "ASSE_INT_PERACQ", "origin":"??"},
         "ASSE_INT_NUMTIMEOUT": {"display": "ASSE_INT_NUMTIMEOUT", "origin":"??"},
         "ASSE_INT_PERVELAVG": {"display": "ASSE_INT_PERVELAVG", "origin":"??"},
-        "ASSE_INT_SAFETYDOWNIND1": {"display": "ASSE_INT_SAFETYDOWNIND1", "origin":"??"},
-        "ASSE_INT_SAFETYDOWNIND2": {"display": "ASSE_INT_SAFETYDOWNIND2", "origin":"??"},
-        "ASSE_INT_SAFETYDOWNIND3": {"display": "ASSE_INT_SAFETYDOWNIND3", "origin":"??"},
-        "ASSE_INT_SAFETYDOWNIND4": {"display": "ASSE_INT_SAFETYDOWNIND4", "origin":"??"},
-        "ASSE_INT_SAFETYDOWNIND5": {"display": "ASSE_INT_SAFETYDOWNIND5", "origin":"??"},
-        "ASSE_INT_SAFETYDOWNIND6": {"display": "ASSE_INT_SAFETYDOWNIND6", "origin":"??"},
+        "ASSE_INT_SAFETYDOWNIND1": {"display": "SAFETY1 DOWN", "origin":"Axes\t→\t[{}]{}\t→\tSafety/Interlock"},
+        "ASSE_INT_SAFETYDOWNIND2": {"display": "SAFETY2 DOWN", "origin":"Axes\t→\t[{}]{}\t→\tSafety/Interlock"},
+        "ASSE_INT_SAFETYDOWNIND3": {"display": "SAFETY3 DOWN", "origin":"Axes\t→\t[{}]{}\t→\tSafety/Interlock"},
+        "ASSE_INT_SAFETYDOWNIND4": {"display": "SAFETY4 DOWN", "origin":"Axes\t→\t[{}]{}\t→\tSafety/Interlock"},
+        "ASSE_INT_SAFETYDOWNIND5": {"display": "SAFETY5 DOWN", "origin":"Axes\t→\t[{}]{}\t→\tSafety/Interlock"},
+        "ASSE_INT_SAFETYDOWNIND6": {"display": "SAFETY6 DOWN", "origin":"Axes\t→\t[{}]{}\t→\tSafety/Interlock"},
         "ASSE_INT_DELAYUP": {"display": "ASSE_INT_DELAYUP", "origin":"??"},
         "ASSE_INT_DELAYDOWN": {"display": "ASSE_INT_DELAYDOWN", "origin":"??"},
         "ASSE_INT_MAXVELPERC": {"display": "ASSE_INT_MAXVELPERC", "origin":"??"},
@@ -963,7 +963,7 @@ Type_AxisParam_Map = {
 }
 
 
-def AxisParam_Map_Indexes():
+def axisparam_map_indexes():
     new_entries = {}
     for key, value in Type_AxisParam_Map.items():
         if isinstance(value, dict):
@@ -971,6 +971,6 @@ def AxisParam_Map_Indexes():
     return new_entries
 
 
-Type_AxisParam_Map.update(AxisParam_Map_Indexes())
+Type_AxisParam_Map.update(axisparam_map_indexes())
 
 

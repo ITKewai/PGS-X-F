@@ -762,6 +762,7 @@ def run_axis_scan(iotype: int, Ind: int = None, axisInd: int = None):
             for i in range(0, MAX_ASSE):
                 run_axis_scan(iotype=iotype, Ind=Ind, axisInd=i)
 
+
 def run_io_search(iotype: int, Ind: Optional[int] = None):
     if iotype == IO_DI:
         # ============================================
@@ -797,7 +798,18 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
             val = match["val"]
             txt = f"-in: {IO_DI} {label} → " if DEBUG_DEBUG_DEBUG else ""
             txt += f'[{val}] "{get_io_name(IO_DI, val)}" → "{display}" ({origin})'
-            print(txt)
+            # print(txt)
+
+        for i, Axis_Param in enumerate(data_config.Axis_Param):
+            if i != 0:
+                continue
+            # print(Axis_Param.intval[20])
+            intval_idx = [19, 20, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41,42, 43, 48, 49, 50, 51, 52, 53, 56, 57, 58, 59, 60, 61, 62, 63, 65, 66, 67, 70, 75, 76, 77, 78, 79, 80, 81, 82,83,84,85,86,87,88,89,90]
+            for x in intval_idx:
+                param_name = Type_AxisParam_Map["_intval"][x]
+                value = Axis_Param.intval[x]
+                print(f'{Type_AxisParam_Map["intval"][param_name]["display"]} - {value}')
+
         return in_matches
     elif iotype == IO_DO:
         # ============================================
@@ -839,6 +851,6 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
 
 if __name__ == "__main__":
     populate_from_yaml_file("../../config.yaml")
-    for i in range(0, MAX_STATOBOOL):
-        run_io_search(IO_DO, i)
-
+    # for i in range(0, MAX_STATOBOOL):
+    #     run_io_search(IO_DI, i)
+    run_io_search(IO_DI, 1)

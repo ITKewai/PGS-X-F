@@ -934,7 +934,7 @@ if __name__ == "__main__":
     populate_from_yaml_file("../../config.yaml")
     # for i in range(0, MAX_STATOBOOL):
     #     run_io_search(IO_DI, i)
-    # _debug_intval()
+    _debug_intval()
     # _debug_realval()
-    _debug_boolval()
+    # _debug_boolval()
 

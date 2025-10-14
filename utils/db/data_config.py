@@ -753,11 +753,32 @@ def get_io_name(iotype: int, Ind: int) -> Optional[str]:
         return None
 
 
+def get_axis_name(Ind: int):
+    return data_config.Axis_Name[Ind]
+
+
 def run_axis_scan(iotype: int, Ind: int = None, axisInd: int = None):
+    """
+    iotype: tipo di io
+    Ind: indice da cercare
+    axisInd: asse dove cercarlo
+    """
     if iotype == IO_DI:
-        if axisInd:
-            AxisParamIntVals = DATA_CONFIG.Axis_Param[axisInd].intval
-            
+        if axisInd is not None:
+            AxisParamIntVals = data_config.Axis_Param[axisInd].intval
+            for idx,val in enumerate(AxisParamIntVals):
+                intval_idx = [19, 20, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 48, 49, 50, 51, 52, 53, 56, 57,
+                              58, 59, 60, 61, 62, 63, 65, 66, 67, 70, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86,
+                              87, 88, 89, 90]
+                if idx not in intval_idx:
+                    continue
+                if val == Ind:
+                    idx_name = Type_AxisParam_Map["_intval"][idx]
+                    display = Type_AxisParam_Map["intval"][idx_name]["display"]
+                    origin = Type_AxisParam_Map["intval"][idx_name]["origin"]
+                    io_name = get_io_name(iotype=IO_DI, Ind=Ind)
+                    axis_name = get_axis_name(Ind=axisInd)
+                    print(f"{origin.format(axisInd, axis_name)}\t→\t{display}")
         else:
             for i in range(0, MAX_ASSE):
                 run_axis_scan(iotype=iotype, Ind=Ind, axisInd=i)
@@ -798,18 +819,9 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
             val = match["val"]
             txt = f"-in: {IO_DI} {label} → " if DEBUG_DEBUG_DEBUG else ""
             txt += f'[{val}] "{get_io_name(IO_DI, val)}" → "{display}" ({origin})'
-            # print(txt)
+            print(txt)
 
-        for i, Axis_Param in enumerate(data_config.Axis_Param):
-            if i != 0:
-                continue
-            # print(Axis_Param.intval[20])
-            intval_idx = [19, 20, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41,42, 43, 48, 49, 50, 51, 52, 53, 56, 57, 58, 59, 60, 61, 62, 63, 65, 66, 67, 70, 75, 76, 77, 78, 79, 80, 81, 82,83,84,85,86,87,88,89,90]
-            for x in intval_idx:
-                param_name = Type_AxisParam_Map["_intval"][x]
-                value = Axis_Param.intval[x]
-                print(f'{Type_AxisParam_Map["intval"][param_name]["display"]} - {value}')
-
+        run_axis_scan(iotype=IO_DI, axisInd=None, Ind=Ind)
         return in_matches
     elif iotype == IO_DO:
         # ============================================
@@ -845,7 +857,7 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
             val = match["val"]
             txt = f"-in: {IO_DO} {label} → " if DEBUG_DEBUG_DEBUG else ""
             txt += f'[{val}] "{get_io_name(IO_DO, val)}" → "{display}" ({origin})'
-            print(txt)
+            #print(txt)
         return out_matches
 
 
@@ -853,4 +865,5 @@ if __name__ == "__main__":
     populate_from_yaml_file("../../config.yaml")
     # for i in range(0, MAX_STATOBOOL):
     #     run_io_search(IO_DI, i)
-    run_io_search(IO_DI, 1)
+    run_io_search(IO_DI, 199)
+

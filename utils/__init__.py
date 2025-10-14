@@ -16,6 +16,7 @@ TODO: controllo che tutti i system usati degli assi abbiamo "YES"al flag se no n
 TODO: notificare se le termiche sono state inserite nei motori (no resistanza(
 TODO: nella ricerca dei DI ci sono anche RECICLEVALVIND dei motori
 TODO: tipo lunghezza asse uguale a lunghezza feedback
-TODO: supporti laterali GRAD
-
+TODO: supporti laterali feedback in GRAD anche dentro asse  (e in params '-')
+TODO: verifica che uso variabili system per motori
+TODO: verifica che indirizzi KE1/KE4 non sono scritti
 """

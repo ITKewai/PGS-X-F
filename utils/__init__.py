@@ -19,4 +19,9 @@ TODO: tipo lunghezza asse uguale a lunghezza feedback
 TODO: supporti laterali feedback in GRAD anche dentro asse  (e in params '-')
 TODO: verifica che uso variabili system per motori
 TODO: verifica che indirizzi KE1/KE4 non sono scritti
+TODO: va in errore se cerco system si patcha separando la ricerca
+TODO: ricerca nelle expression
+
+
+TODO: TEST FINALE RICERCA IN OGNI CAMPO VISIBILE
 """

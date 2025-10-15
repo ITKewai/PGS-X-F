@@ -18,6 +18,12 @@ from utils.exports.tia_constants import *  # noqa: F401,F403  (porta DATA_CONFIG
 # Istanza globale popolata dalla deserializzazione
 data_config: DATA_CONFIG = DATA_CONFIG()  # type: ignore[name-defined]
 
+data_config.IO_DI_List = []
+data_config.IO_DO_List = []
+data_config.IO_AI_List = []
+data_config.IO_AO_List = []
+data_config.IO_RI_List = []
+
 
 # ------------------------------
 # Public API
@@ -45,7 +51,7 @@ def deserialize_config(data: Dict[str, Any]) -> None:
     _deserialize_obj_maint(data)           # maint                    (da data['obj']['maint'])
     _deserialize_obj_toolset(data)         # toolset                  (da data['obj']['toolset'])
     _finalize_config(data)
-
+    _build_io_lists()
 
 # ------------------------------
 # Helpers
@@ -272,26 +278,34 @@ def _deserialize_io_row(field: str, ind: int, row: Sequence[Any]) -> None:
         for j in range(MAX_EXPRINT + 1):
             data_config.IO_Param[k].exprintval[j] = -1
 
-    # Indirizzamento/indice status semplificato
-    ADDR_TYPE = getattr(data_config, "IO_INT_ADDRTYPE", None)
-    IO_TYPE_PNET = getattr(data_config, "IO_TYPE_PNET", None)
-    IO_TYPE_SW = getattr(data_config, "IO_TYPE_SW", None)
-    IO_TYPE_NONE = getattr(data_config, "IO_TYPE_NONE", None)
-    if ADDR_TYPE is not None:
-        addr_type = data_config.IO_Param[k].intval[ADDR_TYPE]
-        if IO_TYPE_PNET is not None and addr_type == IO_TYPE_PNET:
-            if field in ("ai", "ao"):
-                data_config.DATA_STATUS.IO[k].Ind = data_config.IO_Param[k].intval[getattr(data_config, "IO_INT_ADDR1")]
-            else:
-                a1 = data_config.IO_Param[k].intval[getattr(data_config, "IO_INT_ADDR1")]
-                a2 = data_config.IO_Param[k].intval[getattr(data_config, "IO_INT_ADDR2")]
-                data_config.DATA_STATUS.IO[k].Ind = a1 * 8 + a2
-        elif IO_TYPE_SW is not None and addr_type == IO_TYPE_SW:
-            data_config.DATA_STATUS.IO[k].Ind = data_config.HMIAdd0 + data_config.IO_Param[k].intval[getattr(data_config, "IO_INT_ADDR1")]
-        elif IO_TYPE_NONE is not None and addr_type >= IO_TYPE_NONE:
-            data_config.DATA_STATUS.IO[k].Ind = -1
-        else:
-            data_config.DATA_STATUS.IO[k].Ind = -1
+    # if data_config.IO_Param[k].intval[IO_INT_ADDRTYPE] == IO_TYPE_PNET:
+    #     if field in ("ai", "ao"):
+    #         DATA_STATUS.IO[k].Ind = data_config.IO_Param[k].intval[IO_INT_ADDR1]
+    #     else:
+    #         a1 = data_config.IO_Param[k].intval[IO_INT_ADDR1]
+    #         a2 = data_config.IO_Param[k].intval[IO_INT_ADDR2]
+    #         DATA_STATUS.IO[k].Ind = a1 * 8 + a2
+    #
+    # elif data_config.IO_Param[k].intval[IO_INT_ADDRTYPE] == IO_TYPE_SW:
+    #     DATA_STATUS.IO[k].Ind = data_config.HMIAdd0 + data_config.IO_Param[k].intval[IO_INT_ADDR1]
+    # elif data_config.IO_Param[k].intval[IO_INT_ADDRTYPE] >= IO_TYPE_NONE:
+    #     DATA_STATUS.IO[k].Ind = -1
+    # else:
+    #     DATA_STATUS.IO[k].Ind = -1
+
+
+def _build_io_lists():
+    for param in data_config.IO_Param:
+        if param.iotype == IO_DI:
+            data_config.IO_DI_List.append(param)
+        elif param.iotype == IO_DO:
+            data_config.IO_DO_List.append(param)
+        elif param.iotype == IO_AI:
+            data_config.IO_AI_List.append(param)
+        elif param.iotype == IO_AO:
+            data_config.IO_AO_List.append(param)
+        elif param.iotype == IO_RI:
+            data_config.IO_RI_List.append(param)
 
 
 # ------------------ OBJ/AXIS ------------------
@@ -819,9 +833,18 @@ def _debug_boolval(iotype: int = None):
             pass
         print(f'{idx}\t{display}\t-\tx{val}\t-\t{origin}')
 
-def _debug_ioparam(iotype: int, Ind: int = 0):
-    print(data_config.IO_Param[0])
 
+def _debug_ioparam(iotype: int, Ind: int = 0):
+    if iotype == IO_DI:
+        print(f'[{Ind}] - "{get_io_name(iotype=iotype, Ind=Ind)}"\t{data_config.IO_DI_List[Ind]}')
+    elif iotype == IO_DO:
+        print(f'[{Ind}] - "{get_io_name(iotype=iotype, Ind=Ind)}"\t{data_config.IO_DO_List[Ind]}')
+    elif iotype == IO_AI:
+        print(f'[{Ind}] - "{get_io_name(iotype=iotype, Ind=Ind)}"\t{data_config.IO_AI_List[Ind]}')
+    elif iotype == IO_AO:
+        print(f'[{Ind}] - "{get_io_name(iotype=iotype, Ind=Ind)}"\t{data_config.IO_AO_List[Ind]}')
+    elif iotype == IO_RI:
+        print(f'[{Ind}] - "{get_io_name(iotype=iotype, Ind=Ind)}"\t{data_config.IO_RI_List[Ind]}')
 
 
 def run_params_scan(iotype: int, Ind: int):
@@ -944,4 +967,4 @@ if __name__ == "__main__":
     # _debug_intval()
     # _debug_realval()
     # _debug_boolval()
-    # _debug_ioparam(iotype=IO_DI)
+    _debug_ioparam(iotype=IO_DI, Ind=0)

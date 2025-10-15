@@ -819,6 +819,10 @@ def _debug_boolval(iotype: int = None):
             pass
         print(f'{idx}\t{display}\t-\tx{val}\t-\t{origin}')
 
+def _debug_ioparam(iotype: int, Ind: int = 0):
+    print(data_config.IO_Param[0])
+
+
 
 def run_params_scan(iotype: int, Ind: int):
     # ============================================
@@ -854,9 +858,8 @@ def run_params_scan(iotype: int, Ind: int):
         val = match["val"]
         txt = f"-in: {IO_DI} {label} → " if DEBUG_DEBUG_DEBUG else ""
         txt += f'[{val}] "{get_io_name(IO_DI, val)}" → "{display}" ({origin})'
-
-
         print(txt)
+
 
 def run_axis_scan(iotype: int, Ind: int = None, axisInd: int = None):
     """
@@ -867,9 +870,6 @@ def run_axis_scan(iotype: int, Ind: int = None, axisInd: int = None):
     if iotype == IO_DI:
         if axisInd is not None:
             AxisParamIntVals = data_config.Axis_Param[axisInd].intval
-            intval_idx = [19, 20, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 48, 49, 50, 51, 52, 53, 56, 57,
-                          58, 59, 60, 61, 62, 63, 65, 66, 67, 70, 71, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86,
-                          87, 88, 89, 90]
             for idx,val in enumerate(AxisParamIntVals):
                 idx_name = Type_AxisParam_Map["_intval"][idx]
 
@@ -882,9 +882,6 @@ def run_axis_scan(iotype: int, Ind: int = None, axisInd: int = None):
                         io_name = get_io_name(iotype=IO_DI, Ind=Ind)
                         axis_name = get_axis_name(Ind=axisInd)
                         print(f"{origin.format(axisInd, axis_name)}\t→\t{display} {str(val) + ' ' +io_name if DEBUG_DEBUG_DEBUG else ''}")
-                    if idx in intval_idx:
-                        intval_idx.remove(idx)
-            # [print(f'{_} {Type_AxisParam_Map["_intval"][_]}') for _ in intval_idx]
         else:
             for i in range(0, MAX_ASSE):
                 run_axis_scan(iotype=iotype, Ind=Ind, axisInd=i)
@@ -934,16 +931,17 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
 
 if __name__ == "__main__":
     populate_from_yaml_file("../../config.yaml")
-    while True:
-        num = input('DI')
-        try:
-            num = int(num)
-        except:
-            continue
-        run_io_search(IO_DI, num)
+    # while True:
+    #     num = input('DI')
+    #     try:
+    #         num = int(num)
+    #     except:
+    #         continue
+    #     run_io_search(IO_DI, num)
+    # run_axis_scan(iotype=IO_DI, axisInd=0, Ind=0)
     # for i in range(0, MAX_STATOBOOL):
-    run_io_search(IO_DI, 95)
-    #_debug_intval()
+    # run_io_search(IO_DI, 95)
+    # _debug_intval()
     # _debug_realval()
     # _debug_boolval()
-
+    # _debug_ioparam(iotype=IO_DI)

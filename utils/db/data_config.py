@@ -820,6 +820,44 @@ def _debug_boolval(iotype: int = None):
         print(f'{idx}\t{display}\t-\tx{val}\t-\t{origin}')
 
 
+def run_params_scan(iotype: int, Ind: int):
+    # ============================================
+    # 🧠 Campi generici configurazione nei -in
+    # ============================================
+    in_matches = []
+
+    for pid, val in enumerate(data_config.InInd):  # pid = posizione InInd, val = Indice IO
+        if val == Ind:
+            # Recupera la voce mappata, se esiste
+            if pid < len(IN_IND_MAP):
+                entry = IN_IND_MAP[pid]
+                label = entry.get("label")
+                display = entry.get("display", label)
+                origin = entry.get("origin", "??")
+            else:
+                label = display = origin = None
+
+            in_matches.append({
+                "origin": "InInd",
+                "pid": pid,
+                "label": label,
+                "display": display,
+                "map_origin": origin,
+                "val": val
+            })
+
+    # Stampa risultati
+    for match in in_matches:
+        label = match["label"]
+        display = match["display"]
+        origin = match["map_origin"]
+        val = match["val"]
+        txt = f"-in: {IO_DI} {label} → " if DEBUG_DEBUG_DEBUG else ""
+        txt += f'[{val}] "{get_io_name(IO_DI, val)}" → "{display}" ({origin})'
+
+
+        print(txt)
+
 def run_axis_scan(iotype: int, Ind: int = None, axisInd: int = None):
     """
     iotype: tipo di io
@@ -828,26 +866,25 @@ def run_axis_scan(iotype: int, Ind: int = None, axisInd: int = None):
     """
     if iotype == IO_DI:
         if axisInd is not None:
-            if axisInd != 0:
-                return
             AxisParamIntVals = data_config.Axis_Param[axisInd].intval
+            intval_idx = [19, 20, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 48, 49, 50, 51, 52, 53, 56, 57,
+                          58, 59, 60, 61, 62, 63, 65, 66, 67, 70, 71, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86,
+                          87, 88, 89, 90]
             for idx,val in enumerate(AxisParamIntVals):
-                intval_idx = [19, 20, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 48, 49, 50, 51, 52, 53, 56, 57,
-                              58, 59, 60, 61, 62, 63, 65, 66, 67, 70,71, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86,
-                              87, 88, 89, 90]
-                if idx not in intval_idx:
-                    continue
-                else:
-                    idx_name = Type_AxisParam_Map["_intval"][idx]
-                    print(f'{idx} - {Type_AxisParam_Map["intval"][idx_name]["display"]}')
+                idx_name = Type_AxisParam_Map["_intval"][idx]
 
-                if val == Ind:
-                    idx_name = Type_AxisParam_Map["_intval"][idx]
-                    display = Type_AxisParam_Map["intval"][idx_name]["display"]
-                    origin = Type_AxisParam_Map["intval"][idx_name]["origin"]
-                    io_name = get_io_name(iotype=IO_DI, Ind=Ind)
-                    axis_name = get_axis_name(Ind=axisInd)
-                    print(f"{origin.format(axisInd, axis_name)}\t→\t{display}")
+                axis_Type = Type_AxisParam_Map["intval"][idx_name].get("type", [])
+                if iotype in axis_Type:
+                    if val == Ind:
+                        idx_name = Type_AxisParam_Map["_intval"][idx]
+                        display = Type_AxisParam_Map["intval"][idx_name]["display"]
+                        origin = Type_AxisParam_Map["intval"][idx_name]["origin"]
+                        io_name = get_io_name(iotype=IO_DI, Ind=Ind)
+                        axis_name = get_axis_name(Ind=axisInd)
+                        print(f"{origin.format(axisInd, axis_name)}\t→\t{display} {str(val) + ' ' +io_name if DEBUG_DEBUG_DEBUG else ''}")
+                    if idx in intval_idx:
+                        intval_idx.remove(idx)
+            # [print(f'{_} {Type_AxisParam_Map["_intval"][_]}') for _ in intval_idx]
         else:
             for i in range(0, MAX_ASSE):
                 run_axis_scan(iotype=iotype, Ind=Ind, axisInd=i)
@@ -855,43 +892,8 @@ def run_axis_scan(iotype: int, Ind: int = None, axisInd: int = None):
 
 def run_io_search(iotype: int, Ind: Optional[int] = None):
     if iotype == IO_DI:
-        # ============================================
-        # 🧠 Campi generici configurazione nei -in
-        # ============================================
-        in_matches = []
-
-        for pid, val in enumerate(data_config.InInd):  # pid = posizione InInd, val = Indice IO
-            if val == Ind:
-                # Recupera la voce mappata, se esiste
-                if pid < len(IN_IND_MAP):
-                    entry = IN_IND_MAP[pid]
-                    label = entry.get("label")
-                    display = entry.get("display", label)
-                    origin = entry.get("origin", "??")
-                else:
-                    label = display = origin = None
-
-                in_matches.append({
-                    "origin": "InInd",
-                    "pid": pid,
-                    "label": label,
-                    "display": display,
-                    "map_origin": origin,
-                    "val": val
-                })
-
-        # Stampa risultati
-        for match in in_matches:
-            label = match["label"]
-            display = match["display"]
-            origin = match["map_origin"]
-            val = match["val"]
-            txt = f"-in: {IO_DI} {label} → " if DEBUG_DEBUG_DEBUG else ""
-            txt += f'[{val}] "{get_io_name(IO_DI, val)}" → "{display}" ({origin})'
-            print(txt)
-
+        run_params_scan(iotype=IO_DI, Ind=Ind)
         run_axis_scan(iotype=IO_DI, axisInd=None, Ind=Ind)
-        return in_matches
     elif iotype == IO_DO:
         # ============================================
         # 🧠 Campi generici configurazione nei -out
@@ -932,9 +934,16 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
 
 if __name__ == "__main__":
     populate_from_yaml_file("../../config.yaml")
+    while True:
+        num = input('DI')
+        try:
+            num = int(num)
+        except:
+            continue
+        run_io_search(IO_DI, num)
     # for i in range(0, MAX_STATOBOOL):
-    #     run_io_search(IO_DI, i)
-    _debug_intval()
+    run_io_search(IO_DI, 95)
+    #_debug_intval()
     # _debug_realval()
     # _debug_boolval()
 

@@ -1020,7 +1020,8 @@ Type_IOParam_Map = {
         "IO_REAL_COEFFMULT": {"display": "IO_REAL_COEFFMULT", "origin": ""},
     },
     "exprintval": {
-        0: {"display": "typ + (not, opnd, oper) x 8", "origin": ""}, #TODO
+        # 0: {"display": "typ + (not, opnd, oper) x 8", "origin": ""},
+
    },
     "exprrealval": {
         "": {"display": "", "origin": ""},

@@ -171,7 +171,7 @@ def load_yaml(path: str) -> Any:
 
     # ---- raggruppa IO e impacchetta i DI per indice di canale ----
     io_grouped = _group_io(data.get('io'))
-    io_grouped['di'] = _pack_by_index(io_grouped.get('di', []), idx_pos=7)
+    # io_grouped['di'] = _pack_by_index(io_grouped.get('di', []), idx_pos=7) # rovina l'ordine
     data['io'] = io_grouped
     # Raggruppa gli oggetti (fb) sotto 'obj'
     obj_grouped = _group_obj(data.get('obj'))

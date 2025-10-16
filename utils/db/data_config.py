@@ -836,7 +836,7 @@ def _debug_boolval(iotype: int = None):
 
 def _debug_ioparam(iotype: int, Ind: int = 0):
     if iotype == IO_DI:
-        print(f'[{Ind}] - "{get_io_name(iotype=iotype, Ind=Ind)}"\t{data_config.IO_DI_List[Ind]}')
+        print(f'[{Ind}] - "{get_io_name(iotype=iotype, Ind=Ind)}"\t{data_config.IO_DI_List[Ind].exprintval}')
     elif iotype == IO_DO:
         print(f'[{Ind}] - "{get_io_name(iotype=iotype, Ind=Ind)}"\t{data_config.IO_DO_List[Ind]}')
     elif iotype == IO_AI:
@@ -910,10 +910,27 @@ def run_axis_scan(iotype: int, Ind: int = None, axisInd: int = None):
                 run_axis_scan(iotype=iotype, Ind=Ind, axisInd=i)
 
 
+def run_io_expr_scan(iotype: int, Ind: int = None):
+    if iotype == IO_DI:
+        if Ind is not None:
+            if data_config.IO_DI_List[Ind].intval[IO_INT_ADDRTYPE] == IO_TYPE_CALC:
+                # Il primo valore è il tipo
+                typ = data_config.IO_DI_List[Ind].exprintval[0]
+                groups = data_config.IO_DI_List[Ind].exprintval[1:]
+                for i in range(0, len(groups), 3):
+                    not_val, opnd_val, oper_val = groups[i:i + 3]
+                    group_num = i // 3 + 1
+                    print(f"Group{group_num}: typ={typ}, not={not_val}, opnd={opnd_val}, oper={oper_val}")
+        else:
+            for _Ind in range(0, len(data_config.IO_DI_List)):
+                run_io_expr_scan(iotype=iotype, Ind=_Ind)
+
+
 def run_io_search(iotype: int, Ind: Optional[int] = None):
     if iotype == IO_DI:
         run_params_scan(iotype=IO_DI, Ind=Ind)
         run_axis_scan(iotype=IO_DI, axisInd=None, Ind=Ind)
+        run_io_expr_scan(iotype=IO_DI, Ind=Ind)
     elif iotype == IO_DO:
         # ============================================
         # 🧠 Campi generici configurazione nei -out
@@ -968,3 +985,7 @@ if __name__ == "__main__":
     # _debug_realval()
     # _debug_boolval()
     _debug_ioparam(iotype=IO_DI, Ind=0)
+    _debug_ioparam(iotype=IO_DI, Ind=96)
+    _debug_ioparam(iotype=IO_DI, Ind=206)
+    _debug_ioparam(iotype=IO_DI, Ind=160)
+    run_io_expr_scan(iotype=IO_DI, Ind=160)

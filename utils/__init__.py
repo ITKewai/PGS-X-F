@@ -26,4 +26,5 @@
 # TODO: quota di reset maggiore a quota apertura sgancio
 #TODO: TEST FINALE RICERCA IN OGNI CAMPO VISIBILE
 # TODO: ricerca di con stesso indirizzo
+# TODO: warning se expr calc e tipo non calc
 """

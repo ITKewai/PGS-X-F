@@ -984,3 +984,45 @@ def axisparam_map_indexes():
 
 
 Type_AxisParam_Map.update(axisparam_map_indexes())
+
+Type_IOParam_Map = {
+    "boolval": {
+        "IO_BOOL_BDEFVAL": {"display": "IO_BOOL_BDEFVAL", "origin": ""},
+        "IO_BOOL_PROG": {"display": "IO_BOOL_PROG", "origin": ""},
+        "IO_BOOL_SIM": {"display": "IO_BOOL_SIM", "origin": ""},
+        "IO_BOOL_SIMVAL": {"display": "IO_BOOL_SIMVAL", "origin": ""},
+    },
+    "intval": {
+        "IO_INT_ADDRTYPE": {"display": "ADDRESS", "origin": ""},
+        "IO_INT_ADDR1": {"display": "ADDR1", "origin": ""},
+        "IO_INT_ADDR2": {"display": "ADDR2", "origin": ""},
+        "IO_INT_NBYTES": {"display": "IO_INT_NBYTES", "origin": ""},
+        "IO_INT_TIPOMISURA": {"display": "IO_INT_TIPOMISURA", "origin": ""},
+        "IO_INT_MEMTYPE": {"display": "MEMTYPE", "origin": ""},
+        "IO_INT_MEMIND": {"display": "MEMIND", "origin": ""},
+        "IO_INT_TIMEOUT": {"display": "TIMEOUT", "origin": ""},
+        "IO_INT_ININD": {"display": "IO_INT_ININD", "origin": ""},
+    },
+    "dintval": {
+        "IO_DINT_DDEFVAL": {"display": "IO_DINT_DDEFVAL", "origin": ""},
+        "IO_DINT_SIMVAL": {"display": "IO_DINT_SIMVAL", "origin": ""},
+    },
+    "realvalcfg": {
+        "IO_REAL_RDEFVAL": {"display": "IO_REAL_RDEFVAL", "origin": ""},
+        "IO_REAL_DEADBAND": {"display": "IO_REAL_DEADBAND", "origin": ""},
+        "IO_REAL_TOTDELTAMAX": {"display": "IO_REAL_TOTDELTAMAX", "origin": ""},
+        "IO_REAL_COEFFMULT": {"display": "IO_REAL_COEFFMULT", "origin": ""},
+    },
+    "realval": {
+        "IO_REAL_RDEFVAL": {"display": "IO_REAL_RDEFVAL", "origin": ""},
+        "IO_REAL_DEADBAND": {"display": "IO_REAL_DEADBAND", "origin": ""},
+        "IO_REAL_TOTDELTAMAX": {"display": "IO_REAL_TOTDELTAMAX", "origin": ""},
+        "IO_REAL_COEFFMULT": {"display": "IO_REAL_COEFFMULT", "origin": ""},
+    },
+    "exprintval": {
+        0: {"display": "typ + (not, opnd, oper) x 8", "origin": ""}, #TODO
+   },
+    "exprrealval": {
+        "": {"display": "", "origin": ""},
+    },
+}

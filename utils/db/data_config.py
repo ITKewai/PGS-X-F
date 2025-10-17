@@ -931,25 +931,25 @@ def run_io_expr_scan(iotype: int, ind_target: int = None):
                         if opnd_val == ind_target:
                             print(f"IO\t→\tDI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tExpr N{group_num}")
         for Ind in range(0, len(data_config.IO_RI_List)):
-            if data_config.IO_DI_List[Ind].intval[IO_INT_ADDRTYPE] in [IO_TYPE_FUNC_TOT, IO_TYPE_FUNC_TOTAUTO,
+            if data_config.IO_RI_List[Ind].intval[IO_INT_ADDRTYPE] in [IO_TYPE_FUNC_TOT, IO_TYPE_FUNC_TOTAUTO,
                                                                        IO_TYPE_FUNC_TOTMAN, IO_TYPE_FUNC_DTOT,
                                                                        IO_TYPE_FUNC_DTOTAUTO, IO_TYPE_FUNC_DTOTMAN,
                                                                        IO_TYPE_FUNC_TIME, IO_TYPE_FUNC_TIMEAUTO,
                                                                        IO_TYPE_FUNC_TIMEMAN, IO_TYPE_FUNC_DTIME,
                                                                        IO_TYPE_FUNC_DTIMEAUTO, IO_TYPE_FUNC_DTIMEMAN]:
-                -
-                if len(data_config.IO_DI_List[Ind].exprintval) <= 1:
+                print(data_config.IO_RI_List[Ind])
+                if len(data_config.IO_RI_List[Ind].exprintval) <= 1:
                     continue
 
-                expr_type = data_config.IO_DI_List[Ind].exprintval[0]
+                expr_type = data_config.IO_RI_List[Ind].exprintval[0]
 
                 # 🔁 Ciclo sui gruppi (partendo da index 1, passo di 3)
-                for i in range(1, len(data_config.IO_DI_List[Ind].exprintval), 3):
-                    if i + 2 >= len(data_config.IO_DI_List[Ind].exprintval):
+                for i in range(1, len(data_config.IO_RI_List[Ind].exprintval), 3):
+                    if i + 2 >= len(data_config.IO_RI_List[Ind].exprintval):
                         if DEBUG_DEBUG_DEBUG:
                             print('xERR_001')
                         continue
-                    not_val, opnd_val, oper_val = data_config.IO_DI_List[Ind].exprintval[i:i + 3]
+                    not_val, opnd_val, oper_val = data_config.IO_RI_List[Ind].exprintval[i:i + 3]
                     if not_val in [IO_EXPR_NONE, IO_EXPR_VAL, IO_EXPR_NOTVAL]:
                         group_num = ((i - 1) // 3) + 1
                         if opnd_val == ind_target:
@@ -1035,4 +1035,4 @@ if __name__ == "__main__":
     # _debug_ioparam(iotype=IO_DI, Ind=96)
     # _debug_ioparam(iotype=IO_DI, Ind=206)
     # _debug_ioparam(iotype=IO_DI, Ind=160)
-    # run_io_expr_scan(iotype=IO_DI, Ind=160)
+    run_io_expr_scan(iotype=IO_DI, ind_target=160)

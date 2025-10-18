@@ -624,8 +624,8 @@ Config_Map = {
         "INT_ROLLERCHANGESEQ": {"display": "INT_ROLLERCHANGESEQ", "origin": "??"},
         "INT_ROLLNUM": {"display": "INT_ROLLNUM", "origin": "??"},
     }
-
 }
+
 
 def Config_Map_indexes():
     new_entries = {}
@@ -1123,3 +1123,33 @@ Type_IOParam_Map = {
         "": {"display": "", "origin": ""},
     },
 }
+
+Type_AlarmParam_Map = {
+    "boolval": {
+        "ALARM_BOOL_CONFIG": {"display": "CONFIG", "origin": "Alarms/Maint\t→\tAlarms\t→\t[{}]"},
+        "ALARM_BOOL_FLAGOUT": {"display": "INV OUT", "origin": "Alarms/Maint\t→\tAlarms\t→\t[{}]"},
+    },
+    "intval": {
+        "ALARM_INT_MODE": {"display": "ALARM_INT_MODE", "origin": "Alarms/Maint\t→\tAlarms\t→\t[{}] {}", "type": [IO_DI]},
+        "ALARM_INT_INDIN": {"display": "IN", "origin": "Alarms/Maint\t→\tAlarms\t→\t[{}] {}", "type": [IO_DI]},
+        "ALARM_INT_INDOUT": {"display": "OUT", "origin": "Alarms/Maint\t→\tAlarms\t→\t[{}] {}", "type": [IO_DO]},
+        "ALARM_INT_COD": {"display": "COD", "origin": "Alarms/Maint\t→\tAlarms\t→\t[{}] {}"},
+        "ALARM_INT_INDENAB": {"display": "ENAB", "origin": "Alarms/Maint\t→\tAlarms\t→\t[{}] {}", "type": [IO_DI]},
+        "ALARM_INT_INDDISAB": {"display": "DISAB", "origin": "Alarms/Maint\t→\tAlarms\t→\t[{}] {}", "type": [IO_DI]},
+        "ALARM_INT_INDREQACK": {"display": "REQ ACK", "origin": "Alarms/Maint\t→\tAlarms\t→\t[{}] {}", "type": [IO_DI]},
+        "ALARM_INT_INDACK": {"display": "ACK", "origin": "Alarms/Maint\t→\tAlarms\t→\t[{}] {}", "type": [IO_DI]},
+        "ALARM_INT_TIMEOUT": {"display": "TIMEOUT", "origin": "Alarms/Maint\t→\tAlarms\t→\t[{}] {}", "type": [IO_DI]},
+        "ALARM_INT_FREE_9": {"display": "ALARM_INT_FREE_9", "origin": "Alarms/Maint\t→\tAlarms\t→\t[{}] {}", "type": [IO_DI]},
+    }
+}
+
+
+def alarmparam_map_indexes():
+    new_entries = {}
+    for key, value in Type_AlarmParam_Map.items():
+        if isinstance(value, dict):
+            new_entries[f'_{key}'] = {i: k for i, k in enumerate(value.keys())}
+    return new_entries
+
+
+Type_AlarmParam_Map.update(alarmparam_map_indexes())

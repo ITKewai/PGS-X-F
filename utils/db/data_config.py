@@ -7,6 +7,7 @@ Replica in Python la deserializzazione del config YAML (ristrutturato da load_ya
 verso l'istanza DATA_CONFIG, seguendo la logica SCL.
 """
 from __future__ import annotations
+import logging
 
 from pathlib import Path
 from typing import Any, List, Dict, Sequence, Optional
@@ -15,8 +16,18 @@ from utils.exports.tia_constants_map import *
 from utils.yaml.load import load_yaml
 from utils.exports.tia_constants import *  # noqa: F401,F403  (porta DATA_CONFIG, MAX_*, costanti simboliche, UDT, ecc.)
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    datefmt="%H:%M:%S"  # <-- formato orario (solo ore:minuti:secondi)
+)
+
+logger = logging.getLogger(__name__)  # crea un logger con il nome del file
+
 # Istanza globale popolata dalla deserializzazione
+logger.debug('IN: building data_config class')
 data_config: DATA_CONFIG = DATA_CONFIG()  # type: ignore[name-defined]
+logger.debug('OUT: loading data_config class')
 
 data_config.IO_DI_List = []
 data_config.IO_DO_List = []
@@ -37,6 +48,7 @@ def populate_from_yaml_file(yaml_path: Path | str) -> None:
 
 
 def deserialize_config(data: Dict[str, Any]) -> None:
+    logger.debug('IN: deserialize_config')
     _deserialize_header(data)
     _deserialize_card_exc(data)            # card / exc
     _deserialize_axind_in_out(data)        # axind / in / out (indici mapping rapidi)
@@ -52,6 +64,8 @@ def deserialize_config(data: Dict[str, Any]) -> None:
     _deserialize_obj_toolset(data)         # toolset                  (da data['obj']['toolset'])
     _finalize_config(data)
     _build_io_lists()
+    logger.debug('OUT: deserialize_config')
+
 
 # ------------------------------
 # Helpers
@@ -90,32 +104,78 @@ def _bool_from_int(x: Any) -> bool:
 # Header / Card / AxInd
 # ------------------------------
 def _deserialize_header(data: Dict[str, Any]) -> None:
-    """ header / pstring / pbool / pint / preal / ptype """
+    """ header / pstring / pbool / pint / preal / ptype — compatibile con YAML dove 'param' è lista di dizionari """
     header = _as_list(data.get("header"))
-    for i in range(getattr(data_config, "MAX_HEADER", len(header)) + 1):
-        if i < len(header):
-            data_config.Config_Header[i] = _to_int(header[i])
+    logger.debug(f"header: {header}")
 
-    pstring = _as_list(data.get("pstring"))
-    for i in range(getattr(data_config, "MAX_PARAMSTRING", len(pstring)) + 1):
+    # Prepara Config_Header
+    max_len = getattr(data_config, "MAX_HEADER", len(header))
+    if len(data_config.Config_Header) <= max_len:
+        data_config.Config_Header = [0] * (max_len + 1)
+    for i in range(max_len + 1):
+        data_config.Config_Header[i] = _to_int(header[i]) if i < len(header) else 0
+
+    # --- Parsing 'param' (lista di dizionari nel tuo YAML) ---
+    raw_param = data.get("param", [])
+    param = {}
+
+    # Supporta lista di dict come nel tuo YAML
+    if isinstance(raw_param, list):
+        for entry in raw_param:
+            if isinstance(entry, dict):
+                param.update(entry)
+    elif isinstance(raw_param, dict):
+        param = raw_param
+
+    # Ora param è un dict come {"pstring": [...], "pbool": [...], ...}
+    pstring = _as_list(param.get("pstring"))
+    pbool   = _as_list(param.get("pbool"))
+    pint    = _as_list(param.get("pint"))
+    preal   = _as_list(param.get("preal"))
+    ptype   = _as_list(param.get("ptype"))
+
+    logger.debug(f"pstring: {pstring}")
+    logger.debug(f"pbool: {pbool}")
+    logger.debug(f"pint: {pint}")
+    logger.debug(f"preal: {preal}")
+    logger.debug(f"ptype: {ptype}")
+
+    # --- pstring ---
+    max_len = getattr(data_config, "MAX_PARAMSTRING", len(pstring))
+    if len(data_config.ParamString) <= max_len:
+        data_config.ParamString = [""] * (max_len + 1)
+    for i in range(max_len + 1):
         data_config.ParamString[i] = str(pstring[i]) if i < len(pstring) else ""
 
-    pbool = _as_list(data.get("pbool"))
-    for i in range(getattr(data_config, "MAX_PARAMBOOL", len(pbool)) + 1):
+    # --- pbool ---
+    max_len = getattr(data_config, "MAX_PARAMBOOL", len(pbool))
+    if len(data_config.ParamBool) <= max_len:
+        data_config.ParamBool = [False] * (max_len + 1)
+    for i in range(max_len + 1):
         data_config.ParamBool[i] = _bool_from_int(pbool[i]) if i < len(pbool) else False
 
-    pint = _as_list(data.get("pint"))
-    for i in range(getattr(data_config, "MAX_PARAMINT", len(pint)) + 1):
+    # --- pint ---
+    max_len = getattr(data_config, "MAX_PARAMINT", len(pint))
+    if len(data_config.ParamInt) <= max_len:
+        data_config.ParamInt = [0] * (max_len + 1)
+    for i in range(max_len + 1):
         data_config.ParamInt[i] = _to_int(pint[i]) if i < len(pint) else 0
 
-    preal = _as_list(data.get("preal"))
-    for i in range(getattr(data_config, "MAX_PARAMREAL", len(preal)) + 1):
+    # --- preal ---
+    max_len = getattr(data_config, "MAX_PARAMREAL", len(preal))
+    if len(data_config.ParamReal) <= max_len:
+        data_config.ParamReal = [0.0] * (max_len + 1)
+        data_config.ParamRealCfg = [0.0] * (max_len + 1)
+    for i in range(max_len + 1):
         val = _to_float(preal[i]) if i < len(preal) else 0.0
         data_config.ParamRealCfg[i] = val
         data_config.ParamReal[i] = val
 
-    ptype = _as_list(data.get("ptype"))
-    for i in range(getattr(data_config, "MAX_PARAMREAL", len(ptype)) + 1):
+    # --- ptype ---
+    max_len = getattr(data_config, "MAX_PARAMREAL", len(ptype))
+    if len(data_config.ParamRealType) <= max_len:
+        data_config.ParamRealType = [-1] * (max_len + 1)
+    for i in range(max_len + 1):
         data_config.ParamRealType[i] = _to_int(ptype[i], -1) if i < len(ptype) else -1
 
 
@@ -306,7 +366,7 @@ def _build_io_lists():
             data_config.IO_AO_List.append(param)
         elif param.iotype == IO_RI:
             data_config.IO_RI_List.append(param)
-
+    logger.debug(f'DI: {len(data_config.IO_DI_List)}, DO: {len(data_config.IO_DO_List)}, AI: {len(data_config.IO_AI_List)}, AO: {len(data_config.IO_AO_List)}, RI: {len(data_config.IO_RI_List)}, ')
 
 # ------------------ OBJ/AXIS ------------------
 def _deserialize_obj_axis(data: Dict[str, Any]) -> None:
@@ -755,6 +815,8 @@ def get_io_name(iotype: int, Ind: int) -> Optional[str]:
     # doppio fallback: IO_Name -> IO_Param[k].name -> None
     try:
         name = data_config.IO_Name[k]
+        if name == 'None':
+            name = '-'
         if name:
             return name
     except Exception:
@@ -848,43 +910,35 @@ def _debug_ioparam(iotype: int, Ind: int = 0):
 
 
 def run_params_scan(iotype: int, Ind: int):
-    # ============================================
-    # 🧠 Campi generici configurazione nei -in
-    # ============================================
-    in_matches = []
+    logger.debug('IN: run_params_scan')
+    if iotype == IO_DI:
+        for pid, val in enumerate(data_config.InInd):
+            if val == Ind:
+                if pid < len(IN_IND_MAP):
+                    entry = IN_IND_MAP[pid]
+                    label = entry.get("label")
+                    display = entry.get("display", label)
+                    origin = entry.get("origin", "??")
+                    print(f'{origin})')
 
-    for pid, val in enumerate(data_config.InInd):  # pid = posizione InInd, val = Indice IO
-        if val == Ind:
-            # Recupera la voce mappata, se esiste
-            if pid < len(IN_IND_MAP):
-                entry = IN_IND_MAP[pid]
-                label = entry.get("label")
-                display = entry.get("display", label)
-                origin = entry.get("origin", "??")
-            else:
-                label = display = origin = None
-
-            in_matches.append({
-                "origin": "InInd",
-                "pid": pid,
-                "label": label,
-                "display": display,
-                "map_origin": origin,
-                "val": val
-            })
-
-    # Stampa risultati
-    for match in in_matches:
-        label = match["label"]
-        display = match["display"]
-        origin = match["map_origin"]
-        val = match["val"]
-        txt = f"-in: {IO_DI} {label} → " if DEBUG_DEBUG_DEBUG else ""
-        txt += f'[{val}] "{get_io_name(IO_DI, val)}" → "{display}" ({origin})'
-        print(txt)
+        for idx, val in enumerate(data_config.ParamInt):
+            if idx not in Config_Map["_ParamInt"]:
+                # logging.warning(f'ParamInt out of range idx: {idx}')
+                continue  # evita KeyError se indice non mappato
+            idx_name = Config_Map["_ParamInt"][idx]
+            ParamInt_Type = Config_Map["ParamInt"][idx_name].get("type", [])
+            if iotype in ParamInt_Type:
+                if val == Ind:
+                    idx_name = Config_Map["_ParamInt"][idx]
+                    display = Config_Map["ParamInt"][idx_name]["display"]
+                    origin = Config_Map["ParamInt"][idx_name]["origin"]
+                    io_name = get_io_name(iotype=IO_DI, Ind=Ind)
+                    print(f"{origin}\t→\t{display}")
 
 
 def run_axis_scan(iotype: int, Ind: int = None, axisInd: int = None):
+    if axisInd is None:
+        logging.debug('IN: run_axis_scan')
     """
     iotype: tipo di io
     Ind: indice da cercare
@@ -899,18 +953,19 @@ def run_axis_scan(iotype: int, Ind: int = None, axisInd: int = None):
                 axis_Type = Type_AxisParam_Map["intval"][idx_name].get("type", [])
                 if iotype in axis_Type:
                     if val == Ind:
-                        idx_name = Type_AxisParam_Map["_intval"][idx]
                         display = Type_AxisParam_Map["intval"][idx_name]["display"]
                         origin = Type_AxisParam_Map["intval"][idx_name]["origin"]
-                        io_name = get_io_name(iotype=IO_DI, Ind=Ind)
                         axis_name = get_axis_name(Ind=axisInd)
-                        print(f"{origin.format(axisInd, axis_name)}\t→\t{display} {str(val) + ' ' +io_name if DEBUG_DEBUG_DEBUG else ''}")
+                        print(f"{origin.format(axisInd, axis_name)}\t→\t{display}")
         else:
             for i in range(0, MAX_ASSE):
                 run_axis_scan(iotype=iotype, Ind=Ind, axisInd=i)
+    if axisInd is None:
+        logging.debug('OUT: run_axis_scan')
 
 
 def run_io_expr_scan(iotype: int, ind_target: int = None):
+    logger.debug('IN: run_io_expr_scan')
     if iotype == IO_DI:
         for Ind in range(0, len(data_config.IO_DI_List)):
             if data_config.IO_DI_List[Ind].intval[IO_INT_ADDRTYPE] == IO_TYPE_CALC:
@@ -918,6 +973,8 @@ def run_io_expr_scan(iotype: int, ind_target: int = None):
                     continue
 
                 expr_type = data_config.IO_DI_List[Ind].exprintval[0]
+                if Ind == 160:
+                    print(Ind)
 
                 # 🔁 Ciclo sui gruppi (partendo da index 1, passo di 3)
                 for i in range(1, len(data_config.IO_DI_List[Ind].exprintval), 3):
@@ -929,34 +986,12 @@ def run_io_expr_scan(iotype: int, ind_target: int = None):
                     if not_val in [IO_EXPR_NONE, IO_EXPR_VAL, IO_EXPR_NOTVAL]:
                         group_num = ((i - 1) // 3) + 1
                         if opnd_val == ind_target:
-                            print(f"IO\t→\tDI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tExpr N{group_num}")
-        # for Ind in range(0, len(data_config.IO_RI_List)):
-        #     if data_config.IO_RI_List[Ind].intval[IO_INT_ADDRTYPE] in [IO_TYPE_FUNC_TOT, IO_TYPE_FUNC_TOTAUTO,
-        #                                                                IO_TYPE_FUNC_TOTMAN, IO_TYPE_FUNC_DTOT,
-        #                                                                IO_TYPE_FUNC_DTOTAUTO, IO_TYPE_FUNC_DTOTMAN,
-        #                                                                IO_TYPE_FUNC_TIME, IO_TYPE_FUNC_TIMEAUTO,
-        #                                                                IO_TYPE_FUNC_TIMEMAN, IO_TYPE_FUNC_DTIME,
-        #                                                                IO_TYPE_FUNC_DTIMEAUTO, IO_TYPE_FUNC_DTIMEMAN]:
-        #         print(data_config.IO_RI_List[Ind])
-        #         if len(data_config.IO_RI_List[Ind].exprintval) <= 1:
-        #             continue
-        #
-        #         expr_type = data_config.IO_RI_List[Ind].exprintval[0]
-        #
-        #         # 🔁 Ciclo sui gruppi (partendo da index 1, passo di 3)
-        #         for i in range(1, len(data_config.IO_RI_List[Ind].exprintval), 3):
-        #             if i + 2 >= len(data_config.IO_RI_List[Ind].exprintval):
-        #                 if DEBUG_DEBUG_DEBUG:
-        #                     print('xERR_001')
-        #                 continue
-        #             not_val, opnd_val, oper_val = data_config.IO_RI_List[Ind].exprintval[i:i + 3]
-        #             if not_val in [IO_EXPR_NONE, IO_EXPR_VAL, IO_EXPR_NOTVAL]:
-        #                 group_num = ((i - 1) // 3) + 1
-        #                 if opnd_val == ind_target:
-        #                     print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tExpr N{group_num}")
+                            print(f"IO\t→\tDI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}")
+    logger.debug('OUT: run_io_expr_scan')
 
 
 def run_io_scan(iotype: int, ind_target: int = None):
+    logging.debug('IN: run_io_scan')
     if iotype == IO_DI:
         for Ind in range(0, len(data_config.IO_DI_List)):
             if data_config.IO_DI_List[Ind].intval[IO_INT_ADDRTYPE] == IO_TYPE_CALC:
@@ -966,7 +1001,9 @@ def run_io_scan(iotype: int, ind_target: int = None):
                 if delay_di and delay_di == ind_target:
                     print(f"IO\t→\tDI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tIn")
                     # TODO: DI possono essere totman ecc ? se si fare ricerca
-            run_io_expr_scan(iotype=IO_DI, ind_target=Ind)
+
+        run_io_expr_scan(iotype=IO_DI, ind_target=ind_target)
+
         for Ind in range(0, len(data_config.IO_DO_List)):
             if data_config.IO_DO_List[Ind].intval[IO_INT_ININD] == ind_target:
                 print(f"IO\t→\tDO\t→\t[{Ind}] {get_io_name(iotype=IO_DO, Ind=Ind)}\t→\tIn")
@@ -984,64 +1021,42 @@ def run_io_scan(iotype: int, ind_target: int = None):
                 print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tEnabled")
             if data_config.IO_RI_List[Ind].intval[IO_INT_TIMEOUT] == ind_target:
                 print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tReset")
+    elif iotype == IO_DO:
+        for Ind, val in enumerate(data_config.OutInd):
+            if val == ind_target:
+                if Ind < len(OUT_IND_MAP):
+                    entry = OUT_IND_MAP[Ind]
+                    label = entry.get("label")
+                    display = entry.get("display", label)
+                    origin = entry.get("origin", "??")
+                    print(f'[{val}] "{get_io_name(IO_DO, val)}" → "{display}" ({origin})')
+    logging.debug('OUT: run_io_scan')
 
 
 def run_io_search(iotype: int, Ind: Optional[int] = None):
+    logging.debug('IN: run_io_search')
     if iotype == IO_DI:
         run_io_scan(iotype=IO_DI, ind_target=Ind)  # IO DI
         run_params_scan(iotype=IO_DI, Ind=Ind)  # PARAMETRI MACCHINA
         # run_motor_scan(iotype=IO_DI, Ind=Ind)
         run_axis_scan(iotype=IO_DI, axisInd=None, Ind=Ind)  # ASSE
     elif iotype == IO_DO:
-        # ============================================
-        # 🧠 Campi generici configurazione nei -out
-        # ============================================
-        out_matches = []
-
-        for pid, val in enumerate(data_config.OutInd):  # pid = posizione OutInd, val = Indice IO
-            if val == Ind:
-                # Recupera la voce mappata, se esiste
-                if pid < len(OUT_IND_MAP):
-                    entry = OUT_IND_MAP[pid]
-                    label = entry.get("label")
-                    display = entry.get("display", label)
-                    origin = entry.get("origin", "??")
-                else:
-                    label = display = origin = None
-
-                out_matches.append({
-                    "origin": "InInd",
-                    "pid": pid,
-                    "label": label,
-                    "display": display,
-                    "map_origin": origin,
-                    "val": val
-                })
-
-        # Stampa risultati
-        for match in out_matches:
-            label = match["label"]
-            display = match["display"]
-            origin = match["map_origin"]
-            val = match["val"]
-            txt = f"-in: {IO_DO} {label} → " if DEBUG_DEBUG_DEBUG else ""
-            txt += f'[{val}] "{get_io_name(IO_DO, val)}" → "{display}" ({origin})'
-            #print(txt)
-        return out_matches
+        run_io_scan(iotype=IO_DO, ind_target=Ind)  # IO DI
+    logging.debug('OUT: run_io_search')
 
 
 if __name__ == "__main__":
     populate_from_yaml_file("../../config.yaml")
-    while True:
-        num = input('DI')
-        try:
-            num = int(num)
-        except:
-            continue
-        run_io_search(IO_DI, num)
+    # while True:
+    #     num = input('')
+    #     try:
+    #         num = int(num)
+    #     except:
+    #         continue
+    #     run_io_search(IO_DI, num)
     # run_axis_scan(iotype=IO_DI, axisInd=0, Ind=0)
-    # for i in range(0, MAX_STATOBOOL):
-    # run_io_search(IO_DI, 95)
+    for i in range(0, MAX_STATOBOOL):
+        run_io_search(IO_DI, i)
     # _debug_intval()
     # _debug_realval()
     # _debug_boolval()
@@ -1052,4 +1067,4 @@ if __name__ == "__main__":
     # _debug_ioparam(iotype=IO_DI, Ind=96)
     # _debug_ioparam(iotype=IO_DI, Ind=206)
     # _debug_ioparam(iotype=IO_DI, Ind=160)
-    run_io_scan(iotype=IO_DI, ind_target=999)
+    # run_io_scan(iotype=IO_DI, ind_target=999)

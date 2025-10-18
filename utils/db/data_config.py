@@ -1028,6 +1028,35 @@ def run_io_scan(iotype: int, ind_target: int = None):
     logging.debug('OUT: run_io_scan')
 
 
+def run_alarm_scan(iotype: int, ind_target: int = None):
+    logging.debug('IN: run_alarm_scan')
+    if iotype == IO_DI:
+        AlarmParams = data_config.Alarm_Param
+        for idx, AlarmParam in enumerate(AlarmParams):
+            for _idx, val in enumerate(AlarmParam.intval):
+                idx_name = Type_AlarmParam_Map["_intval"][_idx]
+                param_type = Type_AlarmParam_Map["intval"][idx_name].get("type", [])
+                if iotype in param_type:
+                    if val == ind_target:
+                        display = Type_AlarmParam_Map["intval"][idx_name]["display"]
+                        origin = Type_AlarmParam_Map["intval"][idx_name]["origin"]
+                        alarm_name = AlarmParam.name
+                        print(f"{origin.format(idx, alarm_name)}\t→\t{display}")
+    elif iotype == IO_DO:
+        AlarmParams = data_config.Alarm_Param
+        for idx, AlarmParam in enumerate(AlarmParams):
+            for _idx, val in enumerate(AlarmParam.intval):
+                idx_name = Type_AlarmParam_Map["_intval"][_idx]
+                param_type = Type_AlarmParam_Map["intval"][idx_name].get("type", [])
+                if iotype in param_type:
+                    if val == ind_target:
+                        display = Type_AlarmParam_Map["intval"][idx_name]["display"]
+                        origin = Type_AlarmParam_Map["intval"][idx_name]["origin"]
+                        alarm_name = AlarmParam.name
+                        print(f"{origin.format(idx, alarm_name)}\t→\t{display}")
+    logging.debug('OUT: run_alarm_scan')
+
+
 def run_motor_scan(iotype: int, ind_target: int = None):
     logging.debug('IN: run_motor_scan')
     if iotype == IO_DI:
@@ -1054,7 +1083,7 @@ def run_motor_scan(iotype: int, ind_target: int = None):
                 print(f"Motor\t→\t{Ind + 1}\t→\tCMD2")
             if data_config.Motor_Cmd3Ind[Ind] == ind_target:
                 print(f"Motor\t→\t{Ind + 1}\t→\tCMD3")
-    logging.debug('OUT: run_io_scan')
+    logging.debug('OUT: run_motor_scan')
 
 
 def run_io_search(iotype: int, Ind: Optional[int] = None):
@@ -1064,6 +1093,7 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
         run_params_scan(iotype=IO_DI, ind_target=Ind)
         run_motor_scan(iotype=IO_DI, ind_target=Ind)
         run_axis_scan(iotype=IO_DI, ind_target=Ind, axisInd=None)
+        run_alarm_scan(iotype=IO_DI, ind_target=Ind)
     elif iotype == IO_DO:
         run_io_scan(iotype=IO_DO, ind_target=Ind)
     logging.debug('OUT: run_io_search')

@@ -909,11 +909,11 @@ def _debug_ioparam(iotype: int, Ind: int = 0):
         print(f'[{Ind}] - "{get_io_name(iotype=iotype, Ind=Ind)}"\t{data_config.IO_RI_List[Ind]}')
 
 
-def run_params_scan(iotype: int, Ind: int):
+def run_params_scan(iotype: int, ind_target: int):
     logger.debug('IN: run_params_scan')
     if iotype == IO_DI:
         for pid, val in enumerate(data_config.InInd):
-            if val == Ind:
+            if val == ind_target:
                 if pid < len(IN_IND_MAP):
                     entry = IN_IND_MAP[pid]
                     label = entry.get("label")
@@ -928,15 +928,15 @@ def run_params_scan(iotype: int, Ind: int):
             idx_name = Config_Map["_ParamInt"][idx]
             ParamInt_Type = Config_Map["ParamInt"][idx_name].get("type", [])
             if iotype in ParamInt_Type:
-                if val == Ind:
+                if val == ind_target:
                     idx_name = Config_Map["_ParamInt"][idx]
                     display = Config_Map["ParamInt"][idx_name]["display"]
                     origin = Config_Map["ParamInt"][idx_name]["origin"]
-                    io_name = get_io_name(iotype=IO_DI, Ind=Ind)
+                    io_name = get_io_name(iotype=IO_DI, Ind=ind_target)
                     print(f"{origin}\t→\t{display}")
 
 
-def run_axis_scan(iotype: int, Ind: int = None, axisInd: int = None):
+def run_axis_scan(iotype: int, ind_target: int = None, axisInd: int = None):
     if axisInd is None:
         logging.debug('IN: run_axis_scan')
     """
@@ -949,17 +949,16 @@ def run_axis_scan(iotype: int, Ind: int = None, axisInd: int = None):
             AxisParamIntVals = data_config.Axis_Param[axisInd].intval
             for idx,val in enumerate(AxisParamIntVals):
                 idx_name = Type_AxisParam_Map["_intval"][idx]
-
                 axis_Type = Type_AxisParam_Map["intval"][idx_name].get("type", [])
                 if iotype in axis_Type:
-                    if val == Ind:
+                    if val == ind_target:
                         display = Type_AxisParam_Map["intval"][idx_name]["display"]
                         origin = Type_AxisParam_Map["intval"][idx_name]["origin"]
                         axis_name = get_axis_name(Ind=axisInd)
                         print(f"{origin.format(axisInd, axis_name)}\t→\t{display}")
         else:
             for i in range(0, MAX_ASSE):
-                run_axis_scan(iotype=iotype, Ind=Ind, axisInd=i)
+                run_axis_scan(iotype=iotype, ind_target=ind_target, axisInd=i)
     if axisInd is None:
         logging.debug('OUT: run_axis_scan')
 
@@ -971,11 +970,7 @@ def run_io_expr_scan(iotype: int, ind_target: int = None):
             if data_config.IO_DI_List[Ind].intval[IO_INT_ADDRTYPE] == IO_TYPE_CALC:
                 if len(data_config.IO_DI_List[Ind].exprintval) <= 1:
                     continue
-
                 expr_type = data_config.IO_DI_List[Ind].exprintval[0]
-                if Ind == 160:
-                    print(Ind)
-
                 # 🔁 Ciclo sui gruppi (partendo da index 1, passo di 3)
                 for i in range(1, len(data_config.IO_DI_List[Ind].exprintval), 3):
                     if i + 2 >= len(data_config.IO_DI_List[Ind].exprintval):
@@ -1033,30 +1028,59 @@ def run_io_scan(iotype: int, ind_target: int = None):
     logging.debug('OUT: run_io_scan')
 
 
+def run_motor_scan(iotype: int, ind_target: int = None):
+    logging.debug('IN: run_motor_scan')
+    if iotype == IO_DI:
+        for Ind in range(0, MAX_MOTORE):
+            if data_config.Motor_LSInd[Ind] == ind_target:
+                print(f"Motor\t→\t{Ind + 1}\t→\tLS - STOP")
+            if data_config.Motor_LS2Ind[Ind] == ind_target:
+                print(f"Motor\t→\t{Ind + 1}\t→\tLS2 - START")
+            if data_config.Motor_TRInd[Ind] == ind_target:
+                print(f"Motor\t→\t{Ind + 1}\t→\tTR")
+            if data_config.Motor_TR2Ind[Ind] == ind_target:
+                print(f"Motor\t→\t{Ind + 1}\t→\tTR2")
+            if data_config.Motor_StatInd[Ind] == ind_target:
+                print(f"Motor\t→\t{Ind + 1}\t→\tSTAT")
+            if data_config.Motor_StartingInd[Ind] == ind_target:
+                print(f"Motor\t→\t{Ind + 1}\t→\tSTARTING")
+    elif iotype == IO_DO:
+        for Ind in range(0, MAX_MOTORE):
+            if data_config.Motor_CmdInd[Ind] == ind_target:
+                print(f"Motor\t→\t{Ind + 1}\t→\tCMD")
+            if data_config.Motor_Cmd1Ind[Ind] == ind_target:
+                print(f"Motor\t→\t{Ind + 1}\t→\tCMD1")
+            if data_config.Motor_Cmd2Ind[Ind] == ind_target:
+                print(f"Motor\t→\t{Ind + 1}\t→\tCMD2")
+            if data_config.Motor_Cmd3Ind[Ind] == ind_target:
+                print(f"Motor\t→\t{Ind + 1}\t→\tCMD3")
+    logging.debug('OUT: run_io_scan')
+
+
 def run_io_search(iotype: int, Ind: Optional[int] = None):
     logging.debug('IN: run_io_search')
     if iotype == IO_DI:
-        run_io_scan(iotype=IO_DI, ind_target=Ind)  # IO DI
-        run_params_scan(iotype=IO_DI, Ind=Ind)  # PARAMETRI MACCHINA
-        # run_motor_scan(iotype=IO_DI, Ind=Ind)
-        run_axis_scan(iotype=IO_DI, axisInd=None, Ind=Ind)  # ASSE
+        run_io_scan(iotype=IO_DI, ind_target=Ind)
+        run_params_scan(iotype=IO_DI, ind_target=Ind)
+        run_motor_scan(iotype=IO_DI, ind_target=Ind)
+        run_axis_scan(iotype=IO_DI, ind_target=Ind, axisInd=None)
     elif iotype == IO_DO:
-        run_io_scan(iotype=IO_DO, ind_target=Ind)  # IO DI
+        run_io_scan(iotype=IO_DO, ind_target=Ind)
     logging.debug('OUT: run_io_search')
 
 
 if __name__ == "__main__":
     populate_from_yaml_file("../../config.yaml")
-    # while True:
-    #     num = input('')
-    #     try:
-    #         num = int(num)
-    #     except:
-    #         continue
-    #     run_io_search(IO_DI, num)
+    while True:
+        num = input('')
+        try:
+            num = int(num)
+        except:
+            continue
+        run_io_search(IO_DI, num)
     # run_axis_scan(iotype=IO_DI, axisInd=0, Ind=0)
-    for i in range(0, MAX_STATOBOOL):
-        run_io_search(IO_DI, i)
+    # for i in range(0, MAX_STATOBOOL):
+    #     run_io_search(IO_DI, i)
     # _debug_intval()
     # _debug_realval()
     # _debug_boolval()

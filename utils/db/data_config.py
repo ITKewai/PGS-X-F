@@ -17,7 +17,7 @@ from utils.yaml.load import load_yaml
 from utils.exports.tia_constants import *  # noqa: F401,F403  (porta DATA_CONFIG, MAX_*, costanti simboliche, UDT, ecc.)
 
 logging.basicConfig(
-    level=logging.INFO,
+        level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
     datefmt="%H:%M:%S"  # <-- formato orario (solo ore:minuti:secondi)
 )
@@ -989,6 +989,56 @@ def run_input_scan(iotype: int, ind_target: int = None, inputInd: int = None):
         logging.debug('OUT: run_input_scan')
 
 
+def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None):
+    if outputInd is None:
+        logging.debug('IN: run_output_scan')
+    """
+    iotype: tipo di io
+    Ind: indice da cercare
+    outputInd: output dove cercarlo
+    """
+    if iotype == IO_DI:
+        if outputInd is not None:
+            OutputParamIntVals = data_config.Output_Param[outputInd].intval
+            if OutputParamIntVals[OUTPUT_INT_TIPO] in [OUTPUT_SEL, OUTPUT_DIR, OUTPUT_SELFL, OUTPUT_ATV340]:
+                for idx,val in enumerate(OutputParamIntVals):
+                    idx_name = Type_OutputParam_Map["_intval"][idx]
+                    output_Type = Type_OutputParam_Map["intval"][idx_name].get("type", [])
+                    if iotype in output_Type:
+                        if val == ind_target:
+                            display = Type_OutputParam_Map["intval"][idx_name]["display"]
+                            origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
+                            print(f"{origin.format(outputInd)}\t→\t{display}")
+            if OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_ATV340:
+                idx = next((k for k, v in Type_OutputParam_Map["intval"].items() if v == "OUTPUT_INT_ADDPARAM1"), None)
+                if idx:
+                    if OutputParamIntVals[idx] == ind_target:
+                        display = Type_OutputParam_Map["intval"]["OUTPUT_INT_ADDPARAM1"]["display"]
+                        origin = Type_OutputParam_Map["intval"]["OUTPUT_INT_ADDPARAM1"]["origin"]
+                        print(f"{origin.format(outputInd)}\t→\t{display}")
+                else:
+                    logging.warning('OUTPUT_INT_ADDPARAM1 non definito')
+            elif OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_SELSLOW:
+                custom_params = {
+                    "OUTPUT_INT_ANA1IND": "DIG1ADD",
+                    "OUTPUT_INT_ANA2IND": "DIG2ADD",
+                }
+                for idx_name, display in custom_params.items():
+                    idx = next((k for k, v in Type_OutputParam_Map["_intval"].items() if v == idx_name), None)
+                    if idx is not None:
+                        if OutputParamIntVals[idx] == ind_target:
+                            origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
+                            print(f"{origin.format(outputInd)}\t→\t{display}")
+                    else:
+                        logging.warning(f'{idx_name} non definito')
+
+        else:
+            for i in range(0, MAX_OUTPUT):
+                run_output_scan(iotype=iotype, ind_target=ind_target, outputInd=i)
+    if outputInd is None:
+        logging.debug('OUT: run_output_scan')
+
+
 def run_io_expr_scan(iotype: int, ind_target: int = None):
     logger.debug('IN: run_io_expr_scan')
     if iotype == IO_DI:
@@ -1147,6 +1197,7 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
         run_motor_scan(iotype=IO_DI, ind_target=Ind)
         run_axis_scan(iotype=IO_DI, ind_target=Ind, axisInd=None)
         run_input_scan(iotype=IO_DI, ind_target=Ind, inputInd=None)
+        run_output_scan(iotype=IO_DI, ind_target=Ind, outputInd=None)
         run_alarm_scan(iotype=IO_DI, ind_target=Ind)
         run_maintenance_scan(iotype=IO_DI, ind_target=Ind)
     elif iotype == IO_DO:

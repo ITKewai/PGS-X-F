@@ -94,6 +94,7 @@ def _group_obj(obj_node: Any) -> Dict[str, List[list] | List[dict]]:
         'output': [...],
         'mot': [...],
         'alarm': [...],
+        'maint': [...],
         'axis': [ { 'axis': [...], 'int': [...], 'bool': [...], 'type': [...] }, ... ]
       }
     """
@@ -104,6 +105,7 @@ def _group_obj(obj_node: Any) -> Dict[str, List[list] | List[dict]]:
         'mot': [],
         'alarm': [],
         'axis': [],
+        'maint': [],
     }
 
     def _is_row(x: Any) -> bool:
@@ -117,7 +119,7 @@ def _group_obj(obj_node: Any) -> Dict[str, List[list] | List[dict]]:
             # Raggruppa chiavi note se in forma semplice
             for k, v in node.items():
                 kl = str(k).lower()
-                if kl in ('fb', 'input', 'output', 'mot', 'alarm'):  # <--- alarm incluso
+                if kl in ('fb', 'input', 'output', 'mot', 'alarm', 'maint'):
                     if _is_row(v):
                         grouped[kl].append(v)  # es. {'fb': [ ...campi... ]}
                     elif isinstance(v, list):

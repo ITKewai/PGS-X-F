@@ -1130,7 +1130,7 @@ Type_AlarmParam_Map = {
         "ALARM_BOOL_FLAGOUT": {"display": "INV OUT", "origin": "Alarms/Maint\t→\tAlarms\t→\t[{}]"},
     },
     "intval": {
-        "ALARM_INT_MODE": {"display": "ALARM_INT_MODE", "origin": "Alarms/Maint\t→\tAlarms\t→\t[{}] {}", "type": [IO_DI]},
+        "ALARM_INT_MODE": {"display": "ALARM_INT_MODE", "origin": "Alarms/Maint\t→\tAlarms\t→\t[{}] {}", "type": []},
         "ALARM_INT_INDIN": {"display": "IN", "origin": "Alarms/Maint\t→\tAlarms\t→\t[{}] {}", "type": [IO_DI]},
         "ALARM_INT_INDOUT": {"display": "OUT", "origin": "Alarms/Maint\t→\tAlarms\t→\t[{}] {}", "type": [IO_DO]},
         "ALARM_INT_COD": {"display": "COD", "origin": "Alarms/Maint\t→\tAlarms\t→\t[{}] {}"},
@@ -1153,3 +1153,33 @@ def alarmparam_map_indexes():
 
 
 Type_AlarmParam_Map.update(alarmparam_map_indexes())
+
+Type_MaintParam_Map = {
+    "boolval": {
+        "MAINT_BOOL_CONFIG": {"display": "CONFIG", "origin": "Alarms/Maint\t→\tMaintenance\t→\t[{}] {}"},
+        "MAINT_BOOL_FLAGOUT": {"display": "INV OUT", "origin": "Alarms/Maint\t→\tMaintenance\t→\t[{} {}]"},
+    },
+    "intval": {
+        "MAINT_INT_CHECKTYPE": {"display": "MAINT_INT_CHECKTYPE", "origin": "", "type": []},
+        "MAINT_INT_MAXVAL": {"display": "MAINT_INT_MAXVAL", "origin": "", "type": []},
+        "MAINT_INT_YYYY": {"display": "MAINT_INT_YYYY", "origin": "", "type": []},
+        "MAINT_INT_MM": {"display": "MAINT_INT_MM", "origin": "", "type": []},
+        "MAINT_INT_DD": {"display": "MAINT_INT_DD", "origin": "", "type": []},
+        "MAINT_INT_HH": {"display": "MAINT_INT_HH", "origin": "", "type": []},
+        "MAINT_INT_NN": {"display": "MAINT_INT_NN", "origin": "", "type": []},
+        "MAINT_INT_COD": {"display": "MAINT_INT_COD", "origin": "", "type": []},
+        "MAINT_INT_INDENAB": {"display": "ENAB", "origin": "Alarms/Maint\t→\tMaintenance\t→\t[{}] {}", "type": [IO_DI]},
+        "MAINT_INT_INDDISAB": {"display": "DISAB", "origin": "Alarms/Maint\t→\tMaintenance\t→\t[{}] {}", "type": [IO_DI]},
+    }
+}
+
+
+def maintparam_map_indexes():
+    new_entries = {}
+    for key, value in Type_MaintParam_Map.items():
+        if isinstance(value, dict):
+            new_entries[f'_{key}'] = {i: k for i, k in enumerate(value.keys())}
+    return new_entries
+
+
+Type_MaintParam_Map.update(maintparam_map_indexes())

@@ -963,6 +963,32 @@ def run_axis_scan(iotype: int, ind_target: int = None, axisInd: int = None):
         logging.debug('OUT: run_axis_scan')
 
 
+def run_input_scan(iotype: int, ind_target: int = None, inputInd: int = None):
+    if inputInd is None:
+        logging.debug('IN: run_input_scan')
+    """
+    iotype: tipo di io
+    Ind: indice da cercare
+    InputInd: input dove cercarlo
+    """
+    if iotype == IO_DI:
+        if inputInd is not None:
+            InputParamIntVals = data_config.Input_Param[inputInd].intval
+            for idx,val in enumerate(InputParamIntVals):
+                idx_name = Type_InputParam_Map["_intval"][idx]
+                input_Type = Type_InputParam_Map["intval"][idx_name].get("type", [])
+                if iotype in input_Type:
+                    if val == ind_target:
+                        display = Type_InputParam_Map["intval"][idx_name]["display"]
+                        origin = Type_InputParam_Map["intval"][idx_name]["origin"]
+                        print(f"{origin.format(inputInd)}\t→\t{display}")
+        else:
+            for i in range(0, MAX_INPUT):
+                run_input_scan(iotype=iotype, ind_target=ind_target, inputInd=i)
+    if inputInd is None:
+        logging.debug('OUT: run_input_scan')
+
+
 def run_io_expr_scan(iotype: int, ind_target: int = None):
     logger.debug('IN: run_io_expr_scan')
     if iotype == IO_DI:
@@ -1120,6 +1146,7 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
         run_params_scan(iotype=IO_DI, ind_target=Ind)
         run_motor_scan(iotype=IO_DI, ind_target=Ind)
         run_axis_scan(iotype=IO_DI, ind_target=Ind, axisInd=None)
+        run_input_scan(iotype=IO_DI, ind_target=Ind, inputInd=None)
         run_alarm_scan(iotype=IO_DI, ind_target=Ind)
         run_maintenance_scan(iotype=IO_DI, ind_target=Ind)
     elif iotype == IO_DO:

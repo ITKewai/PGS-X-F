@@ -1231,3 +1231,75 @@ def inputparam_map_indexes():
 
 
 Type_InputParam_Map.update(inputparam_map_indexes())
+
+
+Type_OutputParam_Map = {
+    "intval": {  # tipi custom non rinominare indice
+        "OUTPUT_INT_TIPO": {"display": "TIPO", "origin": "??", "type": []},
+        "OUTPUT_INT_ANA1IND": {"display": "ANA1", "origin": "Output\t→\t[{}]", "type": [IO_AO]},
+        "OUTPUT_INT_ANA2IND": {"display": "ANA2", "origin": "Output\t→\t[{}]", "type": [IO_AO]},
+        "OUTPUT_INT_DIG1IND": {"display": "DIG1", "origin": "Output\t→\t[{}]", "type": [IO_DI]},
+        "OUTPUT_INT_DIG2IND": {"display": "DIG2", "origin": "Output\t→\t[{}]", "type": [IO_DI]},
+        "OUTPUT_INT_CCIND": {"display": "CC", "origin": "Output\t→\t[{}]", "type": []},
+        "OUTPUT_INT_ADDPARAM1": {"display": "ADDPARAM1", "origin": "Output\t→\t[{}]", "type": []},
+        "OUTPUT_INT_ADDPARAM2": {"display": "ADDPARAM2", "origin": "Output\t→\t[{}]", "type": []},
+        "OUTPUT_INT_ADDPARAM3": {"display": "ADDPARAM3", "origin": "Output\t→\t[{}]", "type": []},
+        "OUTPUT_INT_ADDPARAM4": {"display": "ADDPARAM4", "origin": "Output\t→\t[{}]", "type": []},
+        "OUTPUT_INT_ACTIND": {"display": "ACT", "origin": "??", "type": [IO_DI]},
+        "OUTPUT_INT_ENAB": {"display": "ENAB", "origin": "Output\t→\t[{}]", "type": [IO_DI]},
+        "OUTPUT_INT_ENAB2": {"display": "ENAB2", "origin": "Output\t→\t[{}]", "type": [IO_DI]},
+        "OUTPUT_INT_ENAB3": {"display": "ENAB3", "origin": "Output\t→\t[{}]", "type": [IO_DI]},
+    },
+    "dintval": {
+        "OUTPUT_DINT_SCALEMIN1": {"display": "OUTPUT_DINT_SCALEMIN1", "origin": "??", "type": []},
+        "OUTPUT_DINT_SCALEMAX1": {"display": "OUTPUT_DINT_SCALEMAX1", "origin": "??", "type": []},
+        "OUTPUT_DINT_SCALEMIN2": {"display": "OUTPUT_DINT_SCALEMIN2", "origin": "??", "type": []},
+        "OUTPUT_DINT_SCALEMAX2": {"display": "OUTPUT_DINT_SCALEMAX2", "origin": "??", "type": []},
+        "OUTPUT_DINT_SCALEMIN1H": {"display": "OUTPUT_DINT_SCALEMIN1H", "origin": "??", "type": []},
+        "OUTPUT_DINT_SCALEMAX1H": {"display": "OUTPUT_DINT_SCALEMAX1H", "origin": "??", "type": []},
+        "OUTPUT_DINT_SCALEMIN2H": {"display": "OUTPUT_DINT_SCALEMIN2H", "origin": "??", "type": []},
+        "OUTPUT_DINT_SCALEMAX2H": {"display": "OUTPUT_DINT_SCALEMAX2H", "origin": "??", "type": []},
+    },
+    "realval": {
+        "OUTPUT_REAL_VALMIN1": {"display": "OUTPUT_REAL_VALMIN1", "origin": "??", "type": []},
+        "OUTPUT_REAL_VALMAX1": {"display": "OUTPUT_REAL_VALMAX1", "origin": "??", "type": []},
+        "OUTPUT_REAL_VALMIN2": {"display": "OUTPUT_REAL_VALMIN2", "origin": "??", "type": []},
+        "OUTPUT_REAL_VALMAX2": {"display": "OUTPUT_REAL_VALMAX2", "origin": "??", "type": []},
+        "OUTPUT_REAL_VIN0": {"display": "OUTPUT_REAL_VIN0", "origin": "??", "type": []},
+        "OUTPUT_REAL_VOUT0": {"display": "OUTPUT_REAL_VOUT0", "origin": "??", "type": []},
+        "OUTPUT_REAL_VIN1": {"display": "OUTPUT_REAL_VIN1", "origin": "??", "type": []},
+        "OUTPUT_REAL_VOUT1": {"display": "OUTPUT_REAL_VOUT1", "origin": "??", "type": []},
+        "OUTPUT_REAL_VIN2": {"display": "OUTPUT_REAL_VIN2", "origin": "??", "type": []},
+        "OUTPUT_REAL_VOUT2": {"display": "OUTPUT_REAL_VOUT2", "origin": "??", "type": []},
+        "OUTPUT_REAL_VIN3": {"display": "OUTPUT_REAL_VIN3", "origin": "??", "type": []},
+        "OUTPUT_REAL_VOUT3": {"display": "OUTPUT_REAL_VOUT3", "origin": "??", "type": []},
+        "OUTPUT_REAL_VIN4": {"display": "OUTPUT_REAL_VIN4", "origin": "??", "type": []},
+        "OUTPUT_REAL_VOUT4": {"display": "OUTPUT_REAL_VOUT4", "origin": "??", "type": []},
+        "OUTPUT_REAL_VIN5": {"display": "OUTPUT_REAL_VIN5", "origin": "??", "type": []},
+        "OUTPUT_REAL_VOUT5": {"display": "OUTPUT_REAL_VOUT5", "origin": "??", "type": []},
+        "OUTPUT_REAL_V2IN0": {"display": "OUTPUT_REAL_V2IN0", "origin": "??", "type": []},
+        "OUTPUT_REAL_V2OUT0": {"display": "OUTPUT_REAL_V2OUT0", "origin": "??", "type": []},
+        "OUTPUT_REAL_V2IN1": {"display": "OUTPUT_REAL_V2IN1", "origin": "??", "type": []},
+        "OUTPUT_REAL_V2OUT1": {"display": "OUTPUT_REAL_V2OUT1", "origin": "??", "type": []},
+        "OUTPUT_REAL_V2IN2": {"display": "OUTPUT_REAL_V2IN2", "origin": "??", "type": []},
+        "OUTPUT_REAL_V2OUT2": {"display": "OUTPUT_REAL_V2OUT2", "origin": "??", "type": []},
+        "OUTPUT_REAL_V2IN3": {"display": "OUTPUT_REAL_V2IN3", "origin": "??", "type": []},
+        "OUTPUT_REAL_V2OUT3": {"display": "OUTPUT_REAL_V2OUT3", "origin": "??", "type": []},
+        "OUTPUT_REAL_V2IN4": {"display": "OUTPUT_REAL_V2IN4", "origin": "??", "type": []},
+        "OUTPUT_REAL_V2OUT4": {"display": "OUTPUT_REAL_V2OUT4", "origin": "??", "type": []},
+        "OUTPUT_REAL_V2IN5": {"display": "OUTPUT_REAL_V2IN5", "origin": "??", "type": []},
+        "OUTPUT_REAL_V2OUT5": {"display": "OUTPUT_REAL_V2OUT5", "origin": "??", "type": []},
+
+    }
+}
+
+
+def outputparam_map_indexes():
+    new_entries = {}
+    for key, value in Type_OutputParam_Map.items():
+        if isinstance(value, dict):
+            new_entries[f'_{key}'] = {i: k for i, k in enumerate(value.keys())}
+    return new_entries
+
+
+Type_OutputParam_Map.update(outputparam_map_indexes())

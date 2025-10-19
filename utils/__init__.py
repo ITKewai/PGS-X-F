@@ -27,4 +27,7 @@
 #TODO: TEST FINALE RICERCA IN OGNI CAMPO VISIBILE
 # TODO: ricerca di con stesso indirizzo
 # TODO: warning se expr calc e tipo non calc
+# TODO: verificare che input non ha seq imposto
+# TODO: verificare che un input non sia usato in piu assi
+# TODO: verificare che un uput non sia in piu assi
 """

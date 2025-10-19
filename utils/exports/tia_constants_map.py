@@ -1183,3 +1183,51 @@ def maintparam_map_indexes():
 
 
 Type_MaintParam_Map.update(maintparam_map_indexes())
+
+
+Type_InputParam_Map = {
+    "boolval": {
+        "INPUT_BOOL_HOLDTORUNENAB": {"display": "INPUT_BOOL_HOLDTORUNENAB", "origin": "Input\t→\t[{}]", "type": []},
+        "INPUT_BOOL_FREE": {"display": "INPUT_BOOL_FREE", "origin": "Input\t→\t[{}]", "type": []},
+    },
+    "intval": {
+        "INPUT_INT_TIPO": {"display": "TIPO", "origin": "Input\t→\t[{}]", "type": []},
+        "INPUT_INT_TIPOMISURA": {"display": "TIPOMISURA", "origin": "Input\t→\t[{}]", "type": []},
+        "INPUT_INT_ANAIND": {"display": "ANA", "origin": "Input\t→\t[{}]", "type": [IO_AI]},
+        "INPUT_INT_UPIND": {"display": "DIGUP1", "origin": "Input\t→\t[{}]", "type": [IO_DI]},
+        "INPUT_INT_DOWNIND": {"display": "DIGDOWN1", "origin": "Input\t→\t[{}]", "type": [IO_DI]},
+        "INPUT_INT_K": {"display": "K", "origin": "Input\t→\t[{}]", "type": []},
+        "INPUT_INT_UP2IND": {"display": "DIGUP2", "origin": "Input\t→\t[{}]", "type": [IO_DI]},
+        "INPUT_INT_DOWN2IND": {"display": "DIGDOWN2", "origin": "Input\t→\t[{}]", "type": [IO_DI]},
+        "INPUT_INT_K2": {"display": "K2", "origin": "Input\t→\t[{}]", "type": []},
+        "INPUT_INT_ACTIND": {"display": "ACT", "origin": "Input\t→\t[{}]", "type": [IO_DI]},
+        "INPUT_INT_ENABIND": {"display": "ENAB", "origin": "Input\t→\t[{}]", "type": [IO_DI]},
+        "INPUT_INT_ENAB2IND": {"display": "ENAB2", "origin": "Input\t→\t[{}]", "type": [IO_DI]},
+        "INPUT_INT_ENAB3IND": {"display": "ENAB3", "origin": "Input\t→\t[{}]", "type": [IO_DI]},
+        "INPUT_INT_SUPIND": {"display": "SUP", "origin": "Input\t→\t[{}]", "type": [IO_AI]},
+        "INPUT_INT_SEQID": {"display": "INPUT_INT_SEQID", "origin": "??", "type": []},
+    },
+    "dintvalcfg": {
+        "INPUT_DINT_VMIN": {"display": "INPUT_DINT_VMIN", "origin": "??", "type": []},
+        "INPUT_DINT_VMAX": {"display": "INPUT_DINT_VMAX", "origin": "??", "type": []},
+        "INPUT_DINT_VMIN2": {"display": "INPUT_DINT_VMIN2", "origin": "??", "type": []},
+        "INPUT_DINT_VMAX2": {"display": "INPUT_DINT_VMAX2", "origin": "??", "type": []},
+    },
+    "dintval": {
+        "INPUT_DINT_VMIN": {"display": "INPUT_DINT_VMIN", "origin": "??", "type": []},
+        "INPUT_DINT_VMAX": {"display": "INPUT_DINT_VMAX", "origin": "??", "type": []},
+        "INPUT_DINT_VMIN2": {"display": "INPUT_DINT_VMIN2", "origin": "??", "type": []},
+        "INPUT_DINT_VMAX2": {"display": "INPUT_DINT_VMAX2", "origin": "??", "type": []},
+    },
+}
+
+
+def inputparam_map_indexes():
+    new_entries = {}
+    for key, value in Type_InputParam_Map.items():
+        if isinstance(value, dict):
+            new_entries[f'_{key}'] = {i: k for i, k in enumerate(value.keys())}
+    return new_entries
+
+
+Type_InputParam_Map.update(inputparam_map_indexes())

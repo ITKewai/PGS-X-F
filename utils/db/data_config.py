@@ -1086,6 +1086,33 @@ def run_motor_scan(iotype: int, ind_target: int = None):
     logging.debug('OUT: run_motor_scan')
 
 
+def run_maintenance_scan(iotype: int, ind_target: int = None):
+    logging.debug('IN: run_maintenance_scan')
+    if iotype == IO_DI:
+        MaintParams = data_config.Maint_Param
+        for idx, MaintParam in enumerate(MaintParams):
+            for _idx, val in enumerate(MaintParam.intval):
+                idx_name = Type_MaintParam_Map["_intval"][_idx]
+                param_type = Type_MaintParam_Map["intval"][idx_name].get("type", [])
+                if iotype in param_type:
+                    if val == ind_target:
+                        display = Type_MaintParam_Map["intval"][idx_name]["display"]
+                        origin = Type_MaintParam_Map["intval"][idx_name]["origin"]
+                        maint_name = MaintParam.name
+                        print(f"{origin.format(idx, maint_name)}\t→\t{display}")
+    elif iotype == IO_DO:
+        for Ind in range(0, MAX_MAINT):
+            if data_config.Motor_CmdInd[Ind] == ind_target:
+                print(f"Motor\t→\t{Ind + 1}\t→\tCMD")
+            if data_config.Motor_Cmd1Ind[Ind] == ind_target:
+                print(f"Motor\t→\t{Ind + 1}\t→\tCMD1")
+            if data_config.Motor_Cmd2Ind[Ind] == ind_target:
+                print(f"Motor\t→\t{Ind + 1}\t→\tCMD2")
+            if data_config.Motor_Cmd3Ind[Ind] == ind_target:
+                print(f"Motor\t→\t{Ind + 1}\t→\tCMD3")
+    logging.debug('OUT: run_maintenance_scan')
+
+
 def run_io_search(iotype: int, Ind: Optional[int] = None):
     logging.debug('IN: run_io_search')
     if iotype == IO_DI:
@@ -1094,6 +1121,7 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
         run_motor_scan(iotype=IO_DI, ind_target=Ind)
         run_axis_scan(iotype=IO_DI, ind_target=Ind, axisInd=None)
         run_alarm_scan(iotype=IO_DI, ind_target=Ind)
+        run_maintenance_scan(iotype=IO_DI, ind_target=Ind)
     elif iotype == IO_DO:
         run_io_scan(iotype=IO_DO, ind_target=Ind)
     logging.debug('OUT: run_io_search')

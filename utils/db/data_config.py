@@ -919,7 +919,7 @@ def run_params_scan(iotype: int, ind_target: int):
                     label = entry.get("label")
                     display = entry.get("display", label)
                     origin = entry.get("origin", "??")
-                    print(f'{origin})')
+                    print(f'{origin}\t→\t{display}')
 
         for idx, val in enumerate(data_config.ParamInt):
             if idx not in Config_Map["_ParamInt"]:
@@ -1000,25 +1000,31 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None):
     if iotype == IO_DI:
         if outputInd is not None:
             OutputParamIntVals = data_config.Output_Param[outputInd].intval
-            if OutputParamIntVals[OUTPUT_INT_TIPO] in [OUTPUT_SEL, OUTPUT_DIR, OUTPUT_SELFL, OUTPUT_ATV340]:
-                for idx,val in enumerate(OutputParamIntVals):
-                    idx_name = Type_OutputParam_Map["_intval"][idx]
-                    output_Type = Type_OutputParam_Map["intval"][idx_name].get("type", [])
-                    if iotype in output_Type:
-                        if val == ind_target:
-                            display = Type_OutputParam_Map["intval"][idx_name]["display"]
-                            origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
-                            print(f"{origin.format(outputInd)}\t→\t{display}")
-            if OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_ATV340:
-                idx = next((k for k, v in Type_OutputParam_Map["intval"].items() if v == "OUTPUT_INT_ADDPARAM1"), None)
-                if idx:
+            # if OutputParamIntVals[OUTPUT_INT_TIPO] in [OUTPUT_SEL, OUTPUT_DIR, OUTPUT_SELFL, OUTPUT_ATV340]:
+            #     for idx,val in enumerate(OutputParamIntVals):
+            #         idx_name = Type_OutputParam_Map["_intval"][idx]
+            #         output_Type = Type_OutputParam_Map["intval"][idx_name].get("type", [])
+            #         if iotype in output_Type:
+            #             if val == ind_target:
+            #                 display = Type_OutputParam_Map["intval"][idx_name]["display"]
+            #                 origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
+            #                 print(f"{origin.format(outputInd)}\t→\t{display}")
+            custom_params = {
+                "OUTPUT_INT_ACTIND": "ACT",
+                "OUTPUT_INT_ENAB": "ENAB",
+                "OUTPUT_INT_ENAB2": "ENAB2",
+                "OUTPUT_INT_ENAB3": "ENAB3",
+            }
+            for idx_name, display in custom_params.items():
+                idx = next((k for k, v in Type_OutputParam_Map["_intval"].items() if v == idx_name), None)
+                if idx is not None:
                     if OutputParamIntVals[idx] == ind_target:
-                        display = Type_OutputParam_Map["intval"]["OUTPUT_INT_ADDPARAM1"]["display"]
-                        origin = Type_OutputParam_Map["intval"]["OUTPUT_INT_ADDPARAM1"]["origin"]
+                        origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
                         print(f"{origin.format(outputInd)}\t→\t{display}")
                 else:
-                    logging.warning('OUTPUT_INT_ADDPARAM1 non definito')
-            elif OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_SELSLOW:
+                    logging.warning(f'{idx_name} non definito')
+
+            if OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_SELSLOW:
                 custom_params = {
                     "OUTPUT_INT_ANA1IND": "DIG1ADD",
                     "OUTPUT_INT_ANA2IND": "DIG2ADD",
@@ -1031,7 +1037,6 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None):
                             print(f"{origin.format(outputInd)}\t→\t{display}")
                     else:
                         logging.warning(f'{idx_name} non definito')
-
         else:
             for i in range(0, MAX_OUTPUT):
                 run_output_scan(iotype=iotype, ind_target=ind_target, outputInd=i)

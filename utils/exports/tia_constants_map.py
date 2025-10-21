@@ -1303,3 +1303,41 @@ def outputparam_map_indexes():
 
 
 Type_OutputParam_Map.update(outputparam_map_indexes())
+
+
+Type_FeedbackParam_Map = {
+    "intval": {
+        "FB_INT_TIPO": {"display": "FB_INT_TIPO", "origin": "Feedback\t→\t[{}]", "type": []},
+        "FB_INT_TIPOMISURA": {"display": "FB_INT_TIPOMISURA", "origin": "Feedback\t→\t[{}]", "type": []},
+        "FB_INT_RESETIND": {"display": "FB_INT_RESETIND", "origin": "Feedback\t→\t[{}]", "type": []},
+        "FB_INT_ININD": {"display": "FB_INT_ININD", "origin": "Feedback\t→\t[{}]", "type": []},
+        "FB_INT_ERRIND": {"display": "FB_INT_ERRIND", "origin": "Feedback\t→\t[{}]", "type": []},
+    },
+    "dintval": {
+        # ...
+        # ...
+    },
+    "realvalcfg": {
+        "FB_REAL_DEADBAND": {"display": "FB_REAL_DEADBAND", "origin": "Feedback\t→\t[{}]", "type": []},
+        "FB_REAL_RATIO": {"display": "FB_REAL_RATIO", "origin": "Feedback\t→\t[{}]", "type": []},
+        "FB_REAL_SCALESUP": {"display": "FB_REAL_SCALESUP", "origin": "Feedback\t→\t[{}]", "type": []},
+        "FB_REAL_SCALEINF": {"display": "FB_REAL_SCALEINF", "origin": "Feedback\t→\t[{}]", "type": []},
+    },
+    "realval": {
+        "FB_REAL_DEADBAND": {"display": "FB_REAL_DEADBAND", "origin": "Feedback\t→\t[{}]", "type": []},
+        "FB_REAL_RATIO": {"display": "FB_REAL_RATIO", "origin": "Feedback\t→\t[{}]", "type": []},
+        "FB_REAL_SCALESUP": {"display": "FB_REAL_SCALESUP", "origin": "Feedback\t→\t[{}]", "type": []},
+        "FB_REAL_SCALEINF": {"display": "FB_REAL_SCALEINF", "origin": "Feedback\t→\t[{}]", "type": []},
+    }
+}
+
+
+def feedbackparam_map_indexes():
+    new_entries = {}
+    for key, value in Type_FeedbackParam_Map.items():
+        if isinstance(value, dict):
+            new_entries[f'_{key}'] = {i: k for i, k in enumerate(value.keys())}
+    return new_entries
+
+
+Type_FeedbackParam_Map.update(feedbackparam_map_indexes())

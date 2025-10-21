@@ -1034,6 +1034,33 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None):
         logging.debug('OUT: run_output_scan')
 
 
+def run_feedback_scan(iotype: int, ind_target: int = None, feedbackInd: int = None):
+    if feedbackInd is None:
+        logging.debug('IN: run_feedback_scan')
+    """
+    iotype: tipo di io
+    Ind: indice da cercare
+    feedbackInd: output dove cercarlo
+    """
+    if iotype == IO_DI:
+        if feedbackInd is not None:
+            FeedbackParamIntVals = data_config.Feedback_Param[feedbackInd].intval
+            if FeedbackParamIntVals[FB_INT_RESETIND] == ind_target:
+                origin = Type_FeedbackParam_Map["intval"]["FB_INT_RESETIND"]["origin"]
+                display = Type_FeedbackParam_Map["intval"]["FB_INT_RESETIND"]["display"]
+                print(f"{origin.format(feedbackInd)}\t→\t{display}")
+            if FeedbackParamIntVals[FB_INT_TIPO] == FB_DI:
+                if FeedbackParamIntVals[FB_INT_ININD] == ind_target:
+                    origin = Type_FeedbackParam_Map["intval"]["FB_INT_ININD"]["origin"]
+                    display = Type_FeedbackParam_Map["intval"]["FB_INT_ININD"]["display"]
+                    print(f"{origin.format(feedbackInd)}\t→\t{display}")
+        else:
+            for i in range(0, MAX_FEEDBACK):
+                run_feedback_scan(iotype=iotype, ind_target=ind_target, feedbackInd=i)
+    if feedbackInd is None:
+        logging.debug('OUT: run_feedback_scan')
+
+
 def run_io_expr_scan(iotype: int, ind_target: int = None):
     logger.debug('IN: run_io_expr_scan')
     if iotype == IO_DI:
@@ -1193,6 +1220,7 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
         run_axis_scan(iotype=IO_DI, ind_target=Ind, axisInd=None)
         run_input_scan(iotype=IO_DI, ind_target=Ind, inputInd=None)
         run_output_scan(iotype=IO_DI, ind_target=Ind, outputInd=None)
+        run_feedback_scan(iotype=IO_DI, ind_target=Ind, feedbackInd=None)
         run_alarm_scan(iotype=IO_DI, ind_target=Ind)
         run_maintenance_scan(iotype=IO_DI, ind_target=Ind)
     elif iotype == IO_DO:

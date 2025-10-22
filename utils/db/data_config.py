@@ -967,8 +967,8 @@ def run_axis_scan(iotype: int, ind_target: int = None, axisInd: int = None):
     Ind: indice da cercare
     axisInd: asse dove cercarlo
     """
-    if iotype == IO_DI:
-        if axisInd is not None:
+    if axisInd is not None:
+        if iotype == IO_DI:
             AxisParamIntVals = data_config.Axis_Param[axisInd].intval
             for idx,val in enumerate(AxisParamIntVals):
                 idx_name = Type_AxisParam_Map["_intval"][idx]
@@ -979,9 +979,9 @@ def run_axis_scan(iotype: int, ind_target: int = None, axisInd: int = None):
                         origin = Type_AxisParam_Map["intval"][idx_name]["origin"]
                         axis_name = get_axis_name(Ind=axisInd)
                         print(f"{origin.format(axisInd, axis_name)}\t→\t{display}")
-        else:
-            for i in range(0, MAX_ASSE):
-                run_axis_scan(iotype=iotype, ind_target=ind_target, axisInd=i)
+    else:
+        for i in range(0, MAX_ASSE):
+            run_axis_scan(iotype=iotype, ind_target=ind_target, axisInd=i)
     if axisInd is None:
         logging.debug('OUT: run_axis_scan')
 
@@ -1251,9 +1251,9 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
     elif iotype == IO_DO:
         run_io_scan(iotype=IO_DO, ind_target=Ind)
         run_params_scan(iotype=IO_DO, ind_target=Ind)
-        # run_motor_scan(iotype=IO_DO, ind_target=Ind)
-        # run_axis_scan(iotype=IO_DO, ind_target=Ind, axisInd=None)
-        # run_input_scan(iotype=IO_DO, ind_target=Ind, inputInd=None)
+        run_motor_scan(iotype=IO_DO, ind_target=Ind)
+        # run_axis_scan(iotype=IO_DO, ind_target=Ind, axisInd=None) # TODO: Non ci sono?
+        # run_input_scan(iotype=IO_DO, ind_target=Ind, inputInd=None) # TODO: Non ci sono?
         # run_output_scan(iotype=IO_DO, ind_target=Ind, outputInd=None)
         # run_feedback_scan(iotype=IO_DO, ind_target=Ind, feedbackInd=None)
         # run_alarm_scan(iotype=IO_DO, ind_target=Ind)

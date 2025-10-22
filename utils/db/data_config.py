@@ -1020,8 +1020,8 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None):
     Ind: indice da cercare
     outputInd: output dove cercarlo
     """
-    if iotype == IO_DI:
-        if outputInd is not None:
+    if outputInd is not None:
+        if iotype == IO_DI:
             OutputParamIntVals = data_config.Output_Param[outputInd].intval
             custom_params = {
                 "OUTPUT_INT_ACTIND": "ACT",
@@ -1037,9 +1037,9 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None):
                         print(f"{origin.format(outputInd)}\t→\t{display}")
                 else:
                     logging.warning(f'{idx_name} non definito')
-        else:
-            for i in range(0, MAX_OUTPUT):
-                run_output_scan(iotype=iotype, ind_target=ind_target, outputInd=i)
+    else:
+        for i in range(0, MAX_OUTPUT):
+            run_output_scan(iotype=iotype, ind_target=ind_target, outputInd=i)
     # if OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_SELSLOW:
     #     custom_params = {
     #         "OUTPUT_INT_ANA1IND": "DIG1ADD",
@@ -1254,7 +1254,7 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
         run_motor_scan(iotype=IO_DO, ind_target=Ind)
         # run_axis_scan(iotype=IO_DO, ind_target=Ind, axisInd=None) # TODO: Non ci sono?
         # run_input_scan(iotype=IO_DO, ind_target=Ind, inputInd=None) # TODO: Non ci sono?
-        # run_output_scan(iotype=IO_DO, ind_target=Ind, outputInd=None)
+        run_output_scan(iotype=IO_DO, ind_target=Ind, outputInd=None)
         # run_feedback_scan(iotype=IO_DO, ind_target=Ind, feedbackInd=None)
         # run_alarm_scan(iotype=IO_DO, ind_target=Ind)
         # run_maintenance_scan(iotype=IO_DO, ind_target=Ind)

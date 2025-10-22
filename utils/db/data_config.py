@@ -1115,14 +1115,16 @@ def run_io_scan(iotype: int, ind_target: int = None):
             if data_config.IO_RI_List[Ind].intval[IO_INT_TIMEOUT] == ind_target:
                 print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tReset")
     elif iotype == IO_DO:
-        for Ind, val in enumerate(data_config.OutInd):
-            if val == ind_target:
-                if Ind < len(OUT_IND_MAP):
-                    entry = OUT_IND_MAP[Ind]
-                    label = entry.get("label")
-                    display = entry.get("display", label)
-                    origin = entry.get("origin", "??")
-                    print(f'[{val}] "{get_io_name(IO_DO, val)}" → "{display}" ({origin})')
+        for Ind in range(0, len(data_config.IO_RI_List)):
+            if data_config.IO_RI_List[Ind].intval[IO_INT_ADDRTYPE] in [IO_TYPE_FUNC_TOT, IO_TYPE_FUNC_TOTAUTO,
+                                                                       IO_TYPE_FUNC_TOTMAN, IO_TYPE_FUNC_DTOT,
+                                                                       IO_TYPE_FUNC_DTOTAUTO, IO_TYPE_FUNC_DTOTMAN,
+                                                                       IO_TYPE_FUNC_TIME, IO_TYPE_FUNC_TIMEAUTO,
+                                                                       IO_TYPE_FUNC_TIMEMAN, IO_TYPE_FUNC_DTIME,
+                                                                       IO_TYPE_FUNC_DTIMEAUTO, IO_TYPE_FUNC_DTIMEMAN]:
+                if data_config.IO_RI_List[Ind].intval[IO_INT_ADDR1] == IO_DO:
+                    if data_config.IO_RI_List[Ind].intval[IO_INT_ADDR2] == ind_target:
+                        print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tAddress")
     logging.debug('OUT: run_io_scan')
 
 
@@ -1225,6 +1227,14 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
         run_maintenance_scan(iotype=IO_DI, ind_target=Ind)
     elif iotype == IO_DO:
         run_io_scan(iotype=IO_DO, ind_target=Ind)
+        # run_params_scan(iotype=IO_DO, ind_target=Ind)
+        # run_motor_scan(iotype=IO_DO, ind_target=Ind)
+        # run_axis_scan(iotype=IO_DO, ind_target=Ind, axisInd=None)
+        # run_input_scan(iotype=IO_DO, ind_target=Ind, inputInd=None)
+        # run_output_scan(iotype=IO_DO, ind_target=Ind, outputInd=None)
+        # run_feedback_scan(iotype=IO_DO, ind_target=Ind, feedbackInd=None)
+        # run_alarm_scan(iotype=IO_DO, ind_target=Ind)
+        # run_maintenance_scan(iotype=IO_DO, ind_target=Ind)
     logging.debug('OUT: run_io_search')
 
 
@@ -1236,18 +1246,4 @@ if __name__ == "__main__":
             num = int(num)
         except:
             continue
-        run_io_search(IO_DI, num)
-    # run_axis_scan(iotype=IO_DI, axisInd=0, Ind=0)
-    # for i in range(0, MAX_STATOBOOL):
-    #     run_io_search(IO_DI, i)
-    # _debug_intval()
-    # _debug_realval()
-    # _debug_boolval()
-    # _debug_ioparam(iotype=IO_DI, Ind=0)
-    # _debug_ioparam(iotype=IO_DI, Ind=1)
-    # _debug_ioparam(iotype=IO_DI, Ind=2)
-    # _debug_ioparam(iotype=IO_DI, Ind=3)
-    # _debug_ioparam(iotype=IO_DI, Ind=96)
-    # _debug_ioparam(iotype=IO_DI, Ind=206)
-    # _debug_ioparam(iotype=IO_DI, Ind=160)
-    # run_io_scan(iotype=IO_DI, ind_target=999)
+        run_io_search(IO_DO, num)

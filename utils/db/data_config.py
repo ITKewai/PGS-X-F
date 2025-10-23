@@ -1146,6 +1146,25 @@ def run_io_expr_scan(iotype: int, ind_target: int = None):
                         group_num = ((i - 1) // 3) + 1
                         if opnd_val == ind_target:
                             print(f"IO\t→\tDI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}")
+    elif iotype == IO_AI:
+        for Ind in range(0, len(data_config.IO_DI_List)):
+            if data_config.IO_DI_List[Ind].intval[IO_INT_ADDRTYPE] == IO_TYPE_CALC:
+                if len(data_config.IO_DI_List[Ind].exprintval) <= 1:
+                    continue
+                expr_type = data_config.IO_DI_List[Ind].exprintval[0]
+                # 🔁 Ciclo sui gruppi (partendo da index 1, passo di 3)
+                for i in range(1, len(data_config.IO_DI_List[Ind].exprintval), 3):
+                    if i + 2 >= len(data_config.IO_DI_List[Ind].exprintval):
+                        if DEBUG_DEBUG_DEBUG:
+                            print('xERR_001')
+                        continue
+                    not_val, opnd_val, oper_val = data_config.IO_DI_List[Ind].exprintval[i:i + 3]
+                    if not_val in [IO_EXPR_AIEQ0, IO_EXPR_AINE0, IO_EXPR_AIGT0,
+                                   IO_EXPR_AIGE0, IO_EXPR_AILT0, IO_EXPR_AILE0]:
+                        group_num = ((i - 1) // 3) + 1
+                        if opnd_val == ind_target:
+                            print(f"IO\t→\tDI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}")
+
     logger.debug('OUT: run_io_expr_scan')
 
 
@@ -1191,6 +1210,35 @@ def run_io_scan(iotype: int, ind_target: int = None):
                 if data_config.IO_RI_List[Ind].intval[IO_INT_ADDR1] == IO_DO:
                     if data_config.IO_RI_List[Ind].intval[IO_INT_ADDR2] == ind_target:
                         print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tAddress")
+    if iotype == IO_AI:
+        # for Ind in range(0, len(data_config.IO_DI_List)):
+        #     if data_config.IO_DI_List[Ind].intval[IO_INT_ADDRTYPE] == IO_TYPE_CALC:
+        #         if data_config.IO_DI_List[Ind].intval[IO_INT_TIMEOUT] == -1:
+        #             continue
+        #         delay_di = data_config.IO_DI_List[Ind].intval[IO_INT_ININD]
+        #         if delay_di and delay_di == ind_target:
+        #             print(f"IO\t→\tDI\t→\t[{Ind}] {get_io_name(iotype=IO_AI, Ind=Ind)}\t→\tIn")
+        #             TODO: DI possono essere totman ecc ? se si fare ricerca
+        #
+        run_io_expr_scan(iotype=IO_AI, ind_target=ind_target)
+
+        # for Ind in range(0, len(data_config.IO_DO_List)):
+        #     if data_config.IO_DO_List[Ind].intval[IO_INT_ININD] == ind_target:
+        #         print(f"IO\t→\tDO\t→\t[{Ind}] {get_io_name(iotype=IO_DO, Ind=Ind)}\t→\tIn")
+        # for Ind in range(0, len(data_config.IO_RI_List)):
+        #     if data_config.IO_RI_List[Ind].intval[IO_INT_ADDRTYPE] in [IO_TYPE_FUNC_TOT, IO_TYPE_FUNC_TOTAUTO,
+        #                                                                IO_TYPE_FUNC_TOTMAN, IO_TYPE_FUNC_DTOT,
+        #                                                                IO_TYPE_FUNC_DTOTAUTO, IO_TYPE_FUNC_DTOTMAN,
+        #                                                                IO_TYPE_FUNC_TIME, IO_TYPE_FUNC_TIMEAUTO,
+        #                                                                IO_TYPE_FUNC_TIMEMAN, IO_TYPE_FUNC_DTIME,
+        #                                                                IO_TYPE_FUNC_DTIMEAUTO, IO_TYPE_FUNC_DTIMEMAN]:
+        #         if data_config.IO_RI_List[Ind].intval[IO_INT_ADDR1] == IO_AI:
+        #             if data_config.IO_RI_List[Ind].intval[IO_INT_ADDR2] == ind_target:
+        #                 print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tAddress")
+        #     if data_config.IO_RI_List[Ind].intval[IO_INT_NBYTES] == ind_target:
+        #         print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tEnabled")
+        #     if data_config.IO_RI_List[Ind].intval[IO_INT_TIMEOUT] == ind_target:
+        #         print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tReset")
     logging.debug('OUT: run_io_scan')
 
 
@@ -1301,6 +1349,16 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
         # run_feedback_scan(iotype=IO_DO, ind_target=Ind, feedbackInd=None)
         run_alarm_scan(iotype=IO_DO, ind_target=Ind)
         # run_maintenance_scan(iotype=IO_DO, ind_target=Ind)
+    elif iotype == IO_AI:
+        run_io_scan(iotype=IO_AI, ind_target=Ind)
+        # run_params_scan(iotype=IO_AI, ind_target=Ind)
+        # run_motor_scan(iotype=IO_AI, ind_target=Ind)
+        # run_axis_scan(iotype=IO_AI, ind_target=Ind, axisInd=None)
+        # run_input_scan(iotype=IO_AI, ind_target=Ind, inputInd=None)
+        # run_output_scan(iotype=IO_AI, ind_target=Ind, outputInd=None)
+        # run_feedback_scan(iotype=IO_AI, ind_target=Ind, feedbackInd=None)
+        # run_alarm_scan(iotype=IO_AI, ind_target=Ind)
+        # run_maintenance_scan(iotype=IO_AI, ind_target=Ind)
     logging.debug('OUT: run_io_search')
 
 
@@ -1312,4 +1370,4 @@ if __name__ == "__main__":
             num = int(num)
         except:
             continue
-        run_io_search(IO_DO, num)
+        run_io_search(IO_AI, num)

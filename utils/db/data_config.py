@@ -1299,7 +1299,7 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
         # run_input_scan(iotype=IO_DO, ind_target=Ind, inputInd=None) # TODO: Non ci sono?
         run_output_scan(iotype=IO_DO, ind_target=Ind, outputInd=None)
         # run_feedback_scan(iotype=IO_DO, ind_target=Ind, feedbackInd=None)
-        # run_alarm_scan(iotype=IO_DO, ind_target=Ind)
+        run_alarm_scan(iotype=IO_DO, ind_target=Ind)
         # run_maintenance_scan(iotype=IO_DO, ind_target=Ind)
     logging.debug('OUT: run_io_search')
 

@@ -1147,6 +1147,7 @@ def run_io_expr_scan(iotype: int, ind_target: int = None):
                         if opnd_val == ind_target:
                             print(f"IO\t→\tDI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}")
     elif iotype == IO_AI:
+        # EXPR DI
         for Ind in range(0, len(data_config.IO_DI_List)):
             if data_config.IO_DI_List[Ind].intval[IO_INT_ADDRTYPE] == IO_TYPE_CALC:
                 if len(data_config.IO_DI_List[Ind].exprintval) <= 1:
@@ -1164,7 +1165,24 @@ def run_io_expr_scan(iotype: int, ind_target: int = None):
                         group_num = ((i - 1) // 3) + 1
                         if opnd_val == ind_target:
                             print(f"IO\t→\tDI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}")
-
+        # EXPR RI
+        for Ind in range(0, len(data_config.IO_RI_List)):
+            if data_config.IO_RI_List[Ind].intval[IO_INT_ADDRTYPE] == IO_TYPE_CALC:
+                if len(data_config.IO_RI_List[Ind].exprintval) <= 1:
+                    continue
+                expr_type = data_config.IO_RI_List[Ind].exprintval[0]
+                # 🔁 Ciclo sui gruppi (partendo da index 1, passo di 3)
+                for i in range(1, len(data_config.IO_RI_List[Ind].exprintval), 3):
+                    if i + 2 >= len(data_config.IO_RI_List[Ind].exprintval):
+                        if DEBUG_DEBUG_DEBUG:
+                            print('xERR_001')
+                        continue
+                    not_val, opnd_val, oper_val = data_config.IO_RI_List[Ind].exprintval[i:i + 3]
+                    if not_val in [IO_EXPR_AI, IO_EXPR_ABSAI]:
+                        group_num = ((i - 1) // 3) + 1
+                        if opnd_val == ind_target:
+                            print(
+                                f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}")
     logger.debug('OUT: run_io_expr_scan')
 
 
@@ -1219,20 +1237,16 @@ def run_io_scan(iotype: int, ind_target: int = None):
         # for Ind in range(0, len(data_config.IO_DO_List)):
         #     if data_config.IO_DO_List[Ind].intval[IO_INT_ININD] == ind_target:
         #         print(f"IO\t→\tDO\t→\t[{Ind}] {get_io_name(iotype=IO_DO, Ind=Ind)}\t→\tIn")
-        # for Ind in range(0, len(data_config.IO_RI_List)): da fare per tutti i tipi non solo di
-        #     if data_config.IO_RI_List[Ind].intval[IO_INT_ADDRTYPE] in [IO_TYPE_FUNC_TOT, IO_TYPE_FUNC_TOTAUTO,
-        #                                                                IO_TYPE_FUNC_TOTMAN, IO_TYPE_FUNC_DTOT,
-        #                                                                IO_TYPE_FUNC_DTOTAUTO, IO_TYPE_FUNC_DTOTMAN,
-        #                                                                IO_TYPE_FUNC_TIME, IO_TYPE_FUNC_TIMEAUTO,
-        #                                                                IO_TYPE_FUNC_TIMEMAN, IO_TYPE_FUNC_DTIME,
-        #                                                                IO_TYPE_FUNC_DTIMEAUTO, IO_TYPE_FUNC_DTIMEMAN]:
-        #         if data_config.IO_RI_List[Ind].intval[IO_INT_ADDR1] == IO_AI:
-        #             if data_config.IO_RI_List[Ind].intval[IO_INT_ADDR2] == ind_target:
-        #                 print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tAddress")
-        #     if data_config.IO_RI_List[Ind].intval[IO_INT_NBYTES] == ind_target:
-        #         print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tEnabled")
-        #     if data_config.IO_RI_List[Ind].intval[IO_INT_TIMEOUT] == ind_target:
-        #         print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tReset")
+        for Ind in range(0, len(data_config.IO_RI_List)):
+            if data_config.IO_RI_List[Ind].intval[IO_INT_ADDRTYPE] in [IO_TYPE_FUNC_TOT, IO_TYPE_FUNC_TOTAUTO,
+                                                                       IO_TYPE_FUNC_TOTMAN, IO_TYPE_FUNC_DTOT,
+                                                                       IO_TYPE_FUNC_DTOTAUTO, IO_TYPE_FUNC_DTOTMAN,
+                                                                       IO_TYPE_FUNC_TIME, IO_TYPE_FUNC_TIMEAUTO,
+                                                                       IO_TYPE_FUNC_TIMEMAN, IO_TYPE_FUNC_DTIME,
+                                                                       IO_TYPE_FUNC_DTIMEAUTO, IO_TYPE_FUNC_DTIMEMAN]:
+                if data_config.IO_RI_List[Ind].intval[IO_INT_ADDR1] == IO_AI:
+                    if data_config.IO_RI_List[Ind].intval[IO_INT_ADDR2] == ind_target:
+                        print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tAddress")
     elif iotype == IO_AO:
         for Ind in range(0, len(data_config.IO_AO_List)):
             if data_config.IO_AO_List[Ind].intval[IO_INT_TIMEOUT] == ind_target:

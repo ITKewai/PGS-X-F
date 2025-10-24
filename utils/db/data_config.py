@@ -1108,8 +1108,8 @@ def run_feedback_scan(iotype: int, ind_target: int = None, feedbackInd: int = No
     Ind: indice da cercare
     feedbackInd: output dove cercarlo
     """
-    if iotype == IO_DI:
-        if feedbackInd is not None:
+    if feedbackInd is not None:
+        if iotype == IO_DI:
             FeedbackParamIntVals = data_config.Feedback_Param[feedbackInd].intval
             if FeedbackParamIntVals[FB_INT_RESETIND] == ind_target:
                 origin = Type_FeedbackParam_Map["intval"]["FB_INT_RESETIND"]["origin"]
@@ -1120,9 +1120,16 @@ def run_feedback_scan(iotype: int, ind_target: int = None, feedbackInd: int = No
                     origin = Type_FeedbackParam_Map["intval"]["FB_INT_ININD"]["origin"]
                     display = Type_FeedbackParam_Map["intval"]["FB_INT_ININD"]["display"]
                     print(f"{origin.format(feedbackInd)}\t→\t{display}")
-        else:
-            for i in range(0, MAX_FEEDBACK):
-                run_feedback_scan(iotype=iotype, ind_target=ind_target, feedbackInd=i)
+        elif iotype == IO_AI:
+            FeedbackParamIntVals = data_config.Feedback_Param[feedbackInd].intval
+            if FeedbackParamIntVals[FB_INT_TIPO] in [FB_AI, FB_AHSC, FB_AI2]: # TODO: quello a ritenzione di analogico come sichiama?
+                if FeedbackParamIntVals[FB_INT_ININD] == ind_target:
+                    origin = Type_FeedbackParam_Map["intval"]["FB_INT_ININD"]["origin"]
+                    display = Type_FeedbackParam_Map["intval"]["FB_INT_ININD"]["display"]
+                    print(f"{origin.format(feedbackInd)}\t→\t{display}")
+    else:
+        for i in range(0, MAX_FEEDBACK):
+            run_feedback_scan(iotype=iotype, ind_target=ind_target, feedbackInd=i)
     if feedbackInd is None:
         logging.debug('OUT: run_feedback_scan')
 
@@ -1368,7 +1375,7 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
         # run_axis_scan(iotype=IO_AI, ind_target=Ind, axisInd=None)
         # run_input_scan(iotype=IO_AI, ind_target=Ind, inputInd=None)
         # run_output_scan(iotype=IO_AI, ind_target=Ind, outputInd=None)
-        # run_feedback_scan(iotype=IO_AI, ind_target=Ind, feedbackInd=None)
+        run_feedback_scan(iotype=IO_AI, ind_target=Ind, feedbackInd=None)
         # run_alarm_scan(iotype=IO_AI, ind_target=Ind)
         # run_maintenance_scan(iotype=IO_AI, ind_target=Ind)
     logging.debug('OUT: run_io_search')

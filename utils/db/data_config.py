@@ -1210,22 +1210,16 @@ def run_io_scan(iotype: int, ind_target: int = None):
                 if data_config.IO_RI_List[Ind].intval[IO_INT_ADDR1] == IO_DO:
                     if data_config.IO_RI_List[Ind].intval[IO_INT_ADDR2] == ind_target:
                         print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tAddress")
-    if iotype == IO_AI:
-        # for Ind in range(0, len(data_config.IO_DI_List)):
-        #     if data_config.IO_DI_List[Ind].intval[IO_INT_ADDRTYPE] == IO_TYPE_CALC:
-        #         if data_config.IO_DI_List[Ind].intval[IO_INT_TIMEOUT] == -1:
-        #             continue
-        #         delay_di = data_config.IO_DI_List[Ind].intval[IO_INT_ININD]
-        #         if delay_di and delay_di == ind_target:
-        #             print(f"IO\t→\tDI\t→\t[{Ind}] {get_io_name(iotype=IO_AI, Ind=Ind)}\t→\tIn")
-        #             TODO: DI possono essere totman ecc ? se si fare ricerca
-        #
+    elif iotype == IO_AI:
+        for Ind in range(0, len(data_config.IO_AO_List)):
+            if data_config.IO_AO_List[Ind].intval[IO_INT_ININD] == ind_target:
+                print(f"IO\t→\tAO\t→\t[{Ind}] {get_io_name(iotype=IO_AI, Ind=Ind)}\t→\tIn")
         run_io_expr_scan(iotype=IO_AI, ind_target=ind_target)
 
         # for Ind in range(0, len(data_config.IO_DO_List)):
         #     if data_config.IO_DO_List[Ind].intval[IO_INT_ININD] == ind_target:
         #         print(f"IO\t→\tDO\t→\t[{Ind}] {get_io_name(iotype=IO_DO, Ind=Ind)}\t→\tIn")
-        # for Ind in range(0, len(data_config.IO_RI_List)):
+        # for Ind in range(0, len(data_config.IO_RI_List)): da fare per tutti i tipi non solo di
         #     if data_config.IO_RI_List[Ind].intval[IO_INT_ADDRTYPE] in [IO_TYPE_FUNC_TOT, IO_TYPE_FUNC_TOTAUTO,
         #                                                                IO_TYPE_FUNC_TOTMAN, IO_TYPE_FUNC_DTOT,
         #                                                                IO_TYPE_FUNC_DTOTAUTO, IO_TYPE_FUNC_DTOTMAN,
@@ -1239,6 +1233,10 @@ def run_io_scan(iotype: int, ind_target: int = None):
         #         print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tEnabled")
         #     if data_config.IO_RI_List[Ind].intval[IO_INT_TIMEOUT] == ind_target:
         #         print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tReset")
+    elif iotype == IO_AO:
+        for Ind in range(0, len(data_config.IO_AO_List)):
+            if data_config.IO_AO_List[Ind].intval[IO_INT_TIMEOUT] == ind_target:
+                print(f"IO\t→\tAO\t→\t[{Ind}] {get_io_name(iotype=IO_AI, Ind=Ind)}\t→\tAO Dual")
     logging.debug('OUT: run_io_scan')
 
 
@@ -1350,7 +1348,7 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
         run_alarm_scan(iotype=IO_DO, ind_target=Ind)
         # run_maintenance_scan(iotype=IO_DO, ind_target=Ind)
     elif iotype == IO_AI:
-        run_io_scan(iotype=IO_AI, ind_target=Ind)
+        run_io_scan(iotype=IO_AI, ind_target=Ind) # cercare in DO IN
         # run_params_scan(iotype=IO_AI, ind_target=Ind)
         # run_motor_scan(iotype=IO_AI, ind_target=Ind)
         # run_axis_scan(iotype=IO_AI, ind_target=Ind, axisInd=None)

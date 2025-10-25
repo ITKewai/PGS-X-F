@@ -1304,6 +1304,16 @@ def run_io_scan(iotype: int, ind_target: int = None):
         for Ind in range(0, len(data_config.IO_AO_List)):
             if data_config.IO_AO_List[Ind].intval[IO_INT_TIMEOUT] == ind_target:
                 print(f"IO\t→\tAO\t→\t[{Ind}] {get_io_name(iotype=IO_AO, Ind=Ind)}\t→\tAO Dual")
+        for Ind in range(0, len(data_config.IO_RI_List)):
+            if data_config.IO_RI_List[Ind].intval[IO_INT_ADDRTYPE] in [IO_TYPE_FUNC_TOT, IO_TYPE_FUNC_TOTAUTO,
+                                                                       IO_TYPE_FUNC_TOTMAN, IO_TYPE_FUNC_DTOT,
+                                                                       IO_TYPE_FUNC_DTOTAUTO, IO_TYPE_FUNC_DTOTMAN,
+                                                                       IO_TYPE_FUNC_TIME, IO_TYPE_FUNC_TIMEAUTO,
+                                                                       IO_TYPE_FUNC_TIMEMAN, IO_TYPE_FUNC_DTIME,
+                                                                       IO_TYPE_FUNC_DTIMEAUTO, IO_TYPE_FUNC_DTIMEMAN]:
+                if data_config.IO_RI_List[Ind].intval[IO_INT_ADDR1] == IO_AO:
+                    if data_config.IO_RI_List[Ind].intval[IO_INT_ADDR2] == ind_target:
+                        print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tAddress")
     elif iotype == IO_RI:
         for Ind in range(0, len(data_config.IO_RI_List)):
             if data_config.IO_RI_List[Ind].intval[IO_INT_ININD] == ind_target:
@@ -1429,7 +1439,7 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
         run_alarm_scan(iotype=IO_DO, ind_target=Ind)
         # run_maintenance_scan(iotype=IO_DO, ind_target=Ind)
     elif iotype == IO_AI:
-        run_io_scan(iotype=IO_AI, ind_target=Ind)  # cercare in DO IN
+        run_io_scan(iotype=IO_AI, ind_target=Ind)
         # run_params_scan(iotype=IO_AI, ind_target=Ind)
         # run_motor_scan(iotype=IO_AI, ind_target=Ind)
         # run_axis_scan(iotype=IO_AI, ind_target=Ind, axisInd=None)
@@ -1439,7 +1449,7 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
         # run_alarm_scan(iotype=IO_AI, ind_target=Ind)
         # run_maintenance_scan(iotype=IO_AI, ind_target=Ind)
     elif iotype == IO_AO:
-        run_io_scan(iotype=IO_AO, ind_target=Ind)  # cercare in DO IN
+        run_io_scan(iotype=IO_AO, ind_target=Ind)
     #     # run_params_scan(iotype=IO_AO, ind_target=Ind)
     #     # run_motor_scan(iotype=IO_AO, ind_target=Ind)
     #     # run_axis_scan(iotype=IO_AO, ind_target=Ind, axisInd=None)
@@ -1449,7 +1459,7 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
     #     # run_alarm_scan(iotype=IO_AO, ind_target=Ind)
     #     # run_maintenance_scan(iotype=IO_AO, ind_target=Ind)
     elif iotype == IO_RI:
-        run_io_scan(iotype=IO_RI, ind_target=Ind) # cercare in DO IN
+        run_io_scan(iotype=IO_RI, ind_target=Ind)
     #     # run_params_scan(iotype=IO_RI, ind_target=Ind)
     #     # run_motor_scan(iotype=IO_RI, ind_target=Ind)
     #     # run_axis_scan(iotype=IO_RI, ind_target=Ind, axisInd=None)

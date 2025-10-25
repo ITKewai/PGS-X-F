@@ -979,6 +979,17 @@ def run_axis_scan(iotype: int, ind_target: int = None, axisInd: int = None):
                         origin = Type_AxisParam_Map["intval"][idx_name]["origin"]
                         axis_name = get_axis_name(Ind=axisInd)
                         print(f"{origin.format(axisInd, axis_name)}\t→\t{display}")
+        if iotype == IO_RI:
+            AxisParamIntVals = data_config.Axis_Param[axisInd].intval
+            for idx, val in enumerate(AxisParamIntVals):
+                idx_name = Type_AxisParam_Map["_intval"][idx]
+                axis_Type = Type_AxisParam_Map["intval"][idx_name].get("type", [])
+                if iotype in axis_Type:
+                    if val == ind_target:
+                        display = Type_AxisParam_Map["intval"][idx_name]["display"]
+                        origin = Type_AxisParam_Map["intval"][idx_name]["origin"]
+                        axis_name = get_axis_name(Ind=axisInd)
+                        print(f"{origin.format(axisInd, axis_name)}\t→\t{display}")
     else:
         for i in range(0, MAX_ASSE):
             run_axis_scan(iotype=iotype, ind_target=ind_target, axisInd=i)
@@ -1378,6 +1389,26 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
         run_feedback_scan(iotype=IO_AI, ind_target=Ind, feedbackInd=None)
         # run_alarm_scan(iotype=IO_AI, ind_target=Ind)
         # run_maintenance_scan(iotype=IO_AI, ind_target=Ind)
+    # elif iotype == IO_AO:
+    #     run_io_scan(iotype=IO_AI, ind_target=Ind) # cercare in DO IN
+    #     # run_params_scan(iotype=IO_AI, ind_target=Ind)
+    #     # run_motor_scan(iotype=IO_AI, ind_target=Ind)
+    #     # run_axis_scan(iotype=IO_AI, ind_target=Ind, axisInd=None)
+    #     # run_input_scan(iotype=IO_AI, ind_target=Ind, inputInd=None)
+    #     # run_output_scan(iotype=IO_AI, ind_target=Ind, outputInd=None)
+    #     run_feedback_scan(iotype=IO_AI, ind_target=Ind, feedbackInd=None)
+    #     # run_alarm_scan(iotype=IO_AI, ind_target=Ind)
+    #     # run_maintenance_scan(iotype=IO_AI, ind_target=Ind)
+    # elif iotype == IO_RI:
+    #     run_io_scan(iotype=IO_AI, ind_target=Ind) # cercare in DO IN
+    #     # run_params_scan(iotype=IO_AI, ind_target=Ind)
+    #     # run_motor_scan(iotype=IO_AI, ind_target=Ind)
+    #     # run_axis_scan(iotype=IO_AI, ind_target=Ind, axisInd=None)
+    #     # run_input_scan(iotype=IO_AI, ind_target=Ind, inputInd=None)
+    #     # run_output_scan(iotype=IO_AI, ind_target=Ind, outputInd=None)
+    #     run_feedback_scan(iotype=IO_AI, ind_target=Ind, feedbackInd=None)
+    #     # run_alarm_scan(iotype=IO_AI, ind_target=Ind)
+    #     # run_maintenance_scan(iotype=IO_AI, ind_target=Ind)
     logging.debug('OUT: run_io_search')
 
 
@@ -1389,4 +1420,4 @@ if __name__ == "__main__":
             num = int(num)
         except:
             continue
-        run_io_search(IO_AI, num)
+        run_io_search(IO_DI, num)

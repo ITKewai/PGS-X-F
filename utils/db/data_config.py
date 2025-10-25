@@ -815,7 +815,7 @@ def get_io_name(iotype: int, Ind: int) -> Optional[str]:
     # doppio fallback: IO_Name -> IO_Param[k].name -> None
     try:
         name = data_config.IO_Name[k]
-        if name == 'None':
+        if name == 'None' or name is None:
             name = '-'
         if name:
             return name
@@ -1207,7 +1207,7 @@ def run_feedback_scan(iotype: int, ind_target: int = None, feedbackInd: int = No
                     print(f"{origin.format(feedbackInd)}\t→\t{display}")
         elif iotype == IO_AI:
             FeedbackParamIntVals = data_config.Feedback_Param[feedbackInd].intval
-            if FeedbackParamIntVals[FB_INT_TIPO] in [FB_AI, FB_AHSC, FB_AI2]: # TODO: quello a ritenzione di analogico come sichiama?
+            if FeedbackParamIntVals[FB_INT_TIPO] in [FB_AI, FB_AHSC, FB_AI2]: # TODO: quello a ritenzione di analogico come si chiama?
                 if FeedbackParamIntVals[FB_INT_ININD] == ind_target:
                     origin = Type_FeedbackParam_Map["intval"]["FB_INT_ININD"]["origin"]
                     display = Type_FeedbackParam_Map["intval"]["FB_INT_ININD"]["display"]

@@ -620,7 +620,7 @@ Config_Map = {
         "INT_ARCHIMETER_COMWIFI": {"display": "INT_ARCHIMETER_COMWIFI", "origin": "??"},
         "INT_ARCHIMETER_TIMEOUT": {"display": "INT_ARCHIMETER_TIMEOUT", "origin": "??"},
         "INT_RCTYPE": {"display": "INT_RCTYPE", "origin": "??"},
-        "INT_RCSEL": {"display": "INT_RCSEL", "origin": "??"},
+        "INT_RCSEL": {"display": "RC SEL AI", "origin": "Params\t→\tConfiguration\t→\tRadio Control", "type": [IO_AI]},
         "INT_ROLLERCHANGESEQ": {"display": "INT_ROLLERCHANGESEQ", "origin": "??"},
         "INT_ROLLNUM": {"display": "INT_ROLLNUM", "origin": "??"},
     }

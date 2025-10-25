@@ -1199,8 +1199,7 @@ def run_io_expr_scan(iotype: int, ind_target: int = None):
                     if not_val in [IO_EXPR_AI, IO_EXPR_ABSAI]:
                         group_num = ((i - 1) // 3) + 1
                         if opnd_val == ind_target:
-                            print(
-                                f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}")
+                            print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}")
     elif iotype == IO_RI:
         # EXPR DI
         for Ind in range(0, len(data_config.IO_DI_List)):
@@ -1220,6 +1219,23 @@ def run_io_expr_scan(iotype: int, ind_target: int = None):
                         group_num = ((i - 1) // 3) + 1
                         if opnd_val == ind_target:
                             print(f"IO\t→\tDI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}")
+        # EXPR RI
+        for Ind in range(0, len(data_config.IO_RI_List)):
+            if data_config.IO_RI_List[Ind].intval[IO_INT_ADDRTYPE] == IO_TYPE_CALC:
+                if len(data_config.IO_RI_List[Ind].exprintval) <= 1:
+                    continue
+                expr_type = data_config.IO_RI_List[Ind].exprintval[0]
+                # 🔁 Ciclo sui gruppi (partendo da index 1, passo di 3)
+                for i in range(1, len(data_config.IO_RI_List[Ind].exprintval), 3):
+                    if i + 2 >= len(data_config.IO_RI_List[Ind].exprintval):
+                        if DEBUG_DEBUG_DEBUG:
+                            print('xERR_001')
+                        continue
+                    not_val, opnd_val, oper_val = data_config.IO_RI_List[Ind].exprintval[i:i + 3]
+                    if not_val in [IO_EXPR_RI, IO_EXPR_ABSRI]:
+                        group_num = ((i - 1) // 3) + 1
+                        if opnd_val == ind_target:
+                            print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}")
     logger.debug('OUT: run_io_expr_scan')
 
 
@@ -1286,12 +1302,22 @@ def run_io_scan(iotype: int, ind_target: int = None):
                         print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tAddress")
     elif iotype == IO_AO:
         for Ind in range(0, len(data_config.IO_AO_List)):
-            if Ind == 0:
-                for _idx, val in enumerate(data_config.IO_AO_List[Ind].intval):
-                    idx_name = Type_IOParam_Map["_intval"][_idx]
-                    print(idx_name, _idx)
             if data_config.IO_AO_List[Ind].intval[IO_INT_TIMEOUT] == ind_target:
-                print(f"IO\t→\tAO\t→\t[{Ind}] {get_io_name(iotype=IO_AI, Ind=Ind)}\t→\tAO Dual")
+                print(f"IO\t→\tAO\t→\t[{Ind}] {get_io_name(iotype=IO_AO, Ind=Ind)}\t→\tAO Dual")
+    elif iotype == IO_RI:
+        for Ind in range(0, len(data_config.IO_RI_List)):
+            if data_config.IO_RI_List[Ind].intval[IO_INT_ININD] == ind_target:
+                print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tIn")
+            if data_config.IO_RI_List[Ind].intval[IO_INT_ADDRTYPE] in [IO_TYPE_FUNC_TOT, IO_TYPE_FUNC_TOTAUTO,
+                                                                       IO_TYPE_FUNC_TOTMAN, IO_TYPE_FUNC_DTOT,
+                                                                       IO_TYPE_FUNC_DTOTAUTO, IO_TYPE_FUNC_DTOTMAN,
+                                                                       IO_TYPE_FUNC_TIME, IO_TYPE_FUNC_TIMEAUTO,
+                                                                       IO_TYPE_FUNC_TIMEMAN, IO_TYPE_FUNC_DTIME,
+                                                                       IO_TYPE_FUNC_DTIMEAUTO, IO_TYPE_FUNC_DTIMEMAN]:
+                if data_config.IO_RI_List[Ind].intval[IO_INT_ADDR1] == IO_RI:
+                    if data_config.IO_RI_List[Ind].intval[IO_INT_ADDR2] == ind_target:
+                        print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tAddress")
+        run_io_expr_scan(iotype=IO_RI, ind_target=ind_target)
     logging.debug('OUT: run_io_scan')
 
 

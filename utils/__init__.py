@@ -31,4 +31,5 @@
 # TODO: verificare che un input non sia usato in piu assi
 # TODO: verificare che un uput non sia in piu assi
 # TODO: verificare che un funaxis non siano indici su piu assi
+# TODO: rendere questo programma un server web anche cosi si integra nell'hmi
 """

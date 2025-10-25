@@ -1124,6 +1124,17 @@ Type_IOParam_Map = {
     },
 }
 
+
+def ioparam_map_indexes():
+    new_entries = {}
+    for key, value in Type_IOParam_Map.items():
+        if isinstance(value, dict):
+            new_entries[f'_{key}'] = {i: k for i, k in enumerate(value.keys())}
+    return new_entries
+
+
+Type_IOParam_Map.update(ioparam_map_indexes())
+
 Type_AlarmParam_Map = {
     "boolval": {
         "ALARM_BOOL_CONFIG": {"display": "CONFIG", "origin": "Alarms/Maint\t→\tAlarms\t→\t[{}]"},

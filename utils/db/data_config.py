@@ -1235,7 +1235,7 @@ def run_io_expr_scan(iotype: int, ind_target: int = None):
                     if not_val in [IO_EXPR_RI, IO_EXPR_ABSRI]:
                         group_num = ((i - 1) // 3) + 1
                         if opnd_val == ind_target:
-                            print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}")
+                            print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}")
     logger.debug('OUT: run_io_expr_scan')
 
 

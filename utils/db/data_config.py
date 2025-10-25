@@ -957,6 +957,20 @@ def run_params_scan(iotype: int, ind_target: int):
                     origin = Config_Map["ParamInt"][idx_name]["origin"]
                     io_name = get_io_name(iotype=IO_DI, Ind=ind_target)
                     print(f"{origin}\t→\t{display}")
+    elif iotype == IO_AI:
+        for idx, val in enumerate(data_config.ParamInt):
+            if idx not in Config_Map["_ParamInt"]:
+                # logging.warning(f'ParamInt out of range idx: {idx}')
+                continue  # evita KeyError se indice non mappato
+            idx_name = Config_Map["_ParamInt"][idx]
+            ParamInt_Type = Config_Map["ParamInt"][idx_name].get("type", [])
+            if iotype in ParamInt_Type:
+                if val == ind_target:
+                    idx_name = Config_Map["_ParamInt"][idx]
+                    display = Config_Map["ParamInt"][idx_name]["display"]
+                    origin = Config_Map["ParamInt"][idx_name]["origin"]
+                    io_name = get_io_name(iotype=IO_DI, Ind=ind_target)
+                    print(f"{origin}\t→\t{display}")
 
 
 def run_axis_scan(iotype: int, ind_target: int = None, axisInd: int = None):
@@ -1440,7 +1454,7 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
         # run_maintenance_scan(iotype=IO_DO, ind_target=Ind)
     elif iotype == IO_AI:
         run_io_scan(iotype=IO_AI, ind_target=Ind)
-        # run_params_scan(iotype=IO_AI, ind_target=Ind)
+        run_params_scan(iotype=IO_AI, ind_target=Ind)
         # run_motor_scan(iotype=IO_AI, ind_target=Ind)
         # run_axis_scan(iotype=IO_AI, ind_target=Ind, axisInd=None)
         # run_input_scan(iotype=IO_AI, ind_target=Ind, inputInd=None)

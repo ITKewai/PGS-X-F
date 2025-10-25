@@ -1019,8 +1019,8 @@ def run_input_scan(iotype: int, ind_target: int = None, inputInd: int = None):
     Ind: indice da cercare
     InputInd: input dove cercarlo
     """
-    if iotype == IO_DI:
-        if inputInd is not None:
+    if inputInd is not None:
+        if iotype == IO_DI:
             InputParamIntVals = data_config.Input_Param[inputInd].intval
             for idx,val in enumerate(InputParamIntVals):
                 idx_name = Type_InputParam_Map["_intval"][idx]
@@ -1030,9 +1030,19 @@ def run_input_scan(iotype: int, ind_target: int = None, inputInd: int = None):
                         display = Type_InputParam_Map["intval"][idx_name]["display"]
                         origin = Type_InputParam_Map["intval"][idx_name]["origin"]
                         print(f"{origin.format(inputInd)}\t→\t{display}")
-        else:
-            for i in range(0, MAX_INPUT):
-                run_input_scan(iotype=iotype, ind_target=ind_target, inputInd=i)
+        if iotype == IO_AI:
+            InputParamIntVals = data_config.Input_Param[inputInd].intval
+            for idx,val in enumerate(InputParamIntVals):
+                idx_name = Type_InputParam_Map["_intval"][idx]
+                input_Type = Type_InputParam_Map["intval"][idx_name].get("type", [])
+                if iotype in input_Type:
+                    if val == ind_target:
+                        display = Type_InputParam_Map["intval"][idx_name]["display"]
+                        origin = Type_InputParam_Map["intval"][idx_name]["origin"]
+                        print(f"{origin.format(inputInd)}\t→\t{display}")
+    else:
+        for i in range(0, MAX_INPUT):
+            run_input_scan(iotype=iotype, ind_target=ind_target, inputInd=i)
     if inputInd is None:
         logging.debug('OUT: run_input_scan')
 
@@ -1108,6 +1118,56 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None):
                 custom_params = {
                     "OUTPUT_INT_ANA1IND": "DIG1ADD",
                     "OUTPUT_INT_ANA2IND": "DIG2ADD",
+                }
+                for idx_name, display in custom_params.items():
+                    idx = next((k for k, v in Type_OutputParam_Map["_intval"].items() if v == idx_name), None)
+                    if idx is not None:
+                        if OutputParamIntVals[idx] == ind_target:
+                            origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
+                            print(f"{origin.format(outputInd)}\t→\t{display}")
+                    else:
+                        logging.warning(f'{idx_name} non definito')
+        elif iotype == IO_AI:
+            OutputParamIntVals = data_config.Output_Param[outputInd].intval
+            if OutputParamIntVals[OUTPUT_INT_TIPO] not in [OUTPUT_ADV, OUTPUT_PSLCAN]:
+                for idx, val in enumerate(OutputParamIntVals):
+                    idx_name = Type_OutputParam_Map["_intval"][idx]
+                    output_Type = Type_OutputParam_Map["intval"][idx_name].get("type", [])
+                    if iotype in output_Type:
+                        if val == ind_target:
+                            display = Type_OutputParam_Map["intval"][idx_name]["display"]
+                            origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
+                            print(f"{origin.format(idx)}\t→\t{display}")
+            if OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_PSLCAN:
+                custom_params = {
+                    "OUTPUT_INT_ADDPARAM2": "STATUS1 PSLCAN",
+                    "OUTPUT_INT_ADDPARAM4": "STATUS2 PSLCAN",
+                }
+                for idx_name, display in custom_params.items():
+                    idx = next((k for k, v in Type_OutputParam_Map["_intval"].items() if v == idx_name), None)
+                    if idx is not None:
+                        if OutputParamIntVals[idx] == ind_target:
+                            origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
+                            print(f"{origin.format(outputInd)}\t→\t{display}")
+                    else:
+                        logging.warning(f'{idx_name} non definito')
+        elif iotype == IO_AO:
+            OutputParamIntVals = data_config.Output_Param[outputInd].intval
+            if OutputParamIntVals[OUTPUT_INT_TIPO] not in [OUTPUT_ADV, OUTPUT_PSLCAN]:
+                for idx, val in enumerate(OutputParamIntVals):
+                    idx_name = Type_OutputParam_Map["_intval"][idx]
+                    output_Type = Type_OutputParam_Map["intval"][idx_name].get("type", [])
+                    if iotype in output_Type:
+                        if val == ind_target:
+                            display = Type_OutputParam_Map["intval"][idx_name]["display"]
+                            origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
+                            print(f"{origin.format(idx)}\t→\t{display}")
+            if OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_PSLCAN:
+                custom_params = {
+                    "OUTPUT_INT_ANA1IND": "ANA1",
+                    "OUTPUT_INT_ANA2IND": "ANA2",
+                    "OUTPUT_INT_ADDPARAM1": "CTRL1 PSLCAN",
+                    "OUTPUT_INT_ADDPARAM3": "CTRL2 PSLCAN",
                 }
                 for idx_name, display in custom_params.items():
                     idx = next((k for k, v in Type_OutputParam_Map["_intval"].items() if v == idx_name), None)
@@ -1446,8 +1506,8 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
         run_io_scan(iotype=IO_DO, ind_target=Ind)
         run_params_scan(iotype=IO_DO, ind_target=Ind)
         run_motor_scan(iotype=IO_DO, ind_target=Ind)
-        # run_axis_scan(iotype=IO_DO, ind_target=Ind, axisInd=None) # TODO: Non ci sono?
-        # run_input_scan(iotype=IO_DO, ind_target=Ind, inputInd=None) # TODO: Non ci sono?
+        # run_axis_scan(iotype=IO_DO, ind_target=Ind, axisInd=None)
+        # run_input_scan(iotype=IO_DO, ind_target=Ind, inputInd=None)
         run_output_scan(iotype=IO_DO, ind_target=Ind, outputInd=None)
         # run_feedback_scan(iotype=IO_DO, ind_target=Ind, feedbackInd=None)
         run_alarm_scan(iotype=IO_DO, ind_target=Ind)
@@ -1457,8 +1517,8 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
         run_params_scan(iotype=IO_AI, ind_target=Ind)
         # run_motor_scan(iotype=IO_AI, ind_target=Ind)
         # run_axis_scan(iotype=IO_AI, ind_target=Ind, axisInd=None)
-        # run_input_scan(iotype=IO_AI, ind_target=Ind, inputInd=None)
-        # run_output_scan(iotype=IO_AI, ind_target=Ind, outputInd=None)
+        run_input_scan(iotype=IO_AI, ind_target=Ind, inputInd=None)
+        run_output_scan(iotype=IO_AI, ind_target=Ind, outputInd=None)
         run_feedback_scan(iotype=IO_AI, ind_target=Ind, feedbackInd=None)
         # run_alarm_scan(iotype=IO_AI, ind_target=Ind)
         # run_maintenance_scan(iotype=IO_AI, ind_target=Ind)
@@ -1467,8 +1527,8 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
         # run_params_scan(iotype=IO_AO, ind_target=Ind)
         # run_motor_scan(iotype=IO_AO, ind_target=Ind)
         # run_axis_scan(iotype=IO_AO, ind_target=Ind, axisInd=None)
-        # run_input_scan(iotype=IO_AO, ind_target=Ind, inputInd=None)
-        # run_output_scan(iotype=IO_AO, ind_target=Ind, outputInd=None)
+        run_input_scan(iotype=IO_AO, ind_target=Ind, inputInd=None)
+        run_output_scan(iotype=IO_AO, ind_target=Ind, outputInd=None)
         # run_feedback_scan(iotype=IO_AO, ind_target=Ind, feedbackInd=None)
         # run_alarm_scan(iotype=IO_AO, ind_target=Ind)
         # run_maintenance_scan(iotype=IO_AO, ind_target=Ind)

@@ -787,6 +787,9 @@ def get_io_name(iotype: int, Ind: int) -> Optional[str]:
     Ritorna il nome (string) dell'IO dato iotype e indice *locale* (Ind).
     Se out of range o non definito, ritorna None.
     """
+    is_system = decode_sys_addr(Ind)
+    if is_system and iotype == IO_DI:
+        return is_system
     # calcolo start e count per blocco
     if iotype == IO_DI:
         start = 0
@@ -1490,6 +1493,62 @@ def run_maintenance_scan(iotype: int, ind_target: int = None):
     logging.debug('OUT: run_maintenance_scan')
 
 
+def decode_sys_addr(ind_target: int):
+    """
+    Decodifica un numero SYSTEM (>=2048) in (systyp, objind, elemind, sysname).
+    Esempio:
+        2113 → (1, 1, 1, "AXIS[1].UP")
+    Ritorna None se il valore non è un indirizzo SYS valido.
+    """
+    if not isinstance(ind_target, int) or ind_target < 2048:
+        return None
+
+    systyp = ind_target // 2048
+    objelemind = ind_target % 2048
+
+    if 1 <= systyp <= 7:  # TTTTT NNNNNN (Axis, Input, Output, ecc.)
+        objind = objelemind % 64
+        elemind = objelemind // 64
+    elif 8 <= systyp <= 10:  # TTT NNNNNNNN (Alarm, Maint, BoolSystem)
+        objind = objelemind % 256
+        elemind = objelemind // 256
+    else:
+        return None
+
+    # Nome descrittivo opzionale (solo se vuoi stamparlo)
+    systype_names = {
+        1: "AXIS",
+        2: "FEEDBACK",
+        3: "INPUT",
+        4: "OUTPUT",
+        5: "MOTOR",
+        6: "PID",
+        7: "TOOLSET",
+        8: "ALARM",
+        9: "MAINT",
+        10: "BOOLSYSTEM",
+    }
+
+    sysaxis_names = {
+        0: "MOVING", 1: "UP", 2: "DOWN", 3: "MAX", 4: "MIN", 5: "SUPLS", 6: "INFLS",
+        7: "HH", 8: "H", 9: "L", 10: "LL", 11: "H0", 12: "L0", 13: "SAF", 14: "ALTFB",
+        15: "BAD", 16: "TILT", 17: "P1UP", 18: "P1DOWN", 19: "P2UP", 20: "P2DOWN",
+        21: "SLOW", 22: "FAST"
+    }
+
+    systyp_name = systype_names.get(systyp, f"TYPE{str(systyp)}")
+
+    if systyp == 1:
+        elem_name = sysaxis_names.get(elemind, f"ELEM{elemind}")
+    else:
+        elem_name = f"ELEM{elemind}"
+
+    sysname = f"{systyp_name}[{get_axis_name(objind)}].{elem_name}"
+
+    # return systyp, objind, elemind, sysname
+    return sysname
+
+
 def run_io_search(iotype: int, Ind: Optional[int] = None):
     logging.debug('IN: run_io_search')
     if iotype == IO_DI:
@@ -1547,15 +1606,15 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
 
 if __name__ == "__main__":
     populate_from_yaml_file("../../config.yaml")
-    while True:
-        _type = input('T')
-        try:
-            _type = int(_type)
-        except:
-            continue
-        _target = input('TO')
-        try:
-            _target = int(_target)
-        except:
-            continue
-        run_io_search(_type, _target)
+    # while True:
+    #     _type = input('T')
+    #     try:
+    #         _type = int(_type)
+    #     except:
+    #         continue
+    #     _target = input('TO')
+    #     try:
+    #         _target = int(_target)
+    #     except:
+    #         continue
+    #     run_io_search(_type, _target)

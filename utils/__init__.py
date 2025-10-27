@@ -31,5 +31,9 @@
 # TODO: verificare che un input non sia usato in piu assi
 # TODO: verificare che un uput non sia in piu assi
 # TODO: verificare che un funaxis non siano indici su piu assi
-# TODO: rendere questo programma un server web anche cosi si integra nell'hmi
+# TODO: ricerca input o output o feedback
+# TODO: rendere questo programma un server web anche cosi si integra nell'hmi ,fare vedere allarmi a lato cliccabili per errori console
+
+# TODO: dailytotauto possono essere anche AI AO ?
+
 """

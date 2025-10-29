@@ -729,21 +729,9 @@ def _deserialize_obj_toolset(data: Dict[str, Any]) -> None:
 # ------------------ Finalize ------------------
 def _finalize_config(data: Dict[str, Any]) -> None:
     """ Allineamenti finali a EOF """
-    try:
-        HEADER_SN = getattr(data_config, "HEADER_SN")
-        INT_SN = getattr(data_config, "INT_SN")
-        data_config.Config_Header[HEADER_SN] = data_config.ParamInt[INT_SN]
-    except Exception:
-        pass
-
-    try:
-        HEADER_TYPEVERSION = getattr(data_config, "HEADER_TYPEVERSION")
-        HEADER_FILEVERSION = getattr(data_config, "HEADER_FILEVERSION")
-        if data_config.Config_Header[HEADER_TYPEVERSION] != data_config.CFGVersion:
-            data_config.Config_Header[HEADER_TYPEVERSION] = data_config.CFGVersion
-            data_config.Config_Header[HEADER_FILEVERSION] = 0
-    except Exception:
-        pass
+    data_config.Config_Header[HEADER_SN] = data_config.ParamInt[INT_SN]
+    data_config.Config_Header[HEADER_TYPEVERSION] = data_config.CFGVersion
+    # essendo script based non c è modo di reperirlo dal config
 
 
 # ------------------- Logic --------------------
@@ -1547,6 +1535,37 @@ def decode_sys_addr(ind_target: int):
 
     # return systyp, objind, elemind, sysname
     return sysname
+
+
+def run_free_scan(iotype: int):
+    """
+    Scansiona tutti gli IO di un certo tipo (DI/DO/AI/AO)
+    e per ogni elemento con nome vuoto o 'FREE', esegue una ricerca completa.
+    """
+    if iotype == IO_DI:
+        io_list = data_config.IO_DI_List
+        label = "DI"
+    elif iotype == IO_DO:
+        io_list = data_config.IO_DO_List
+        label = "DO"
+    elif iotype == IO_AI:
+        io_list = data_config.IO_AI_List
+        label = "AI"
+    elif iotype == IO_AO:
+        io_list = data_config.IO_AO_List
+        label = "AO"
+    else:
+        print(f"[ERRORE] Tipo IO sconosciuto: {iotype}")
+        return
+
+    if not io_list:
+        print(f"Nessun {label} trovato nel data_config.")
+        return
+
+    for i, param in enumerate(io_list):
+        if param.name == "" or param.name.strip().upper() == "FREE":
+            # print(f"\n[{label} {i:03d}] nome vuoto o 'FREE' → ricerca in corso...")
+            run_io_search(iotype=iotype, Ind=i)
 
 
 def run_io_search(iotype: int, Ind: Optional[int] = None):

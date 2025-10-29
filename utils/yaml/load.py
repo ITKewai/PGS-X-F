@@ -173,6 +173,13 @@ def load_yaml(path: str) -> Any:
 
     # ---- raggruppa IO e impacchetta i DI per indice di canale ----
     io_grouped = _group_io(data.get('io'))
+    # ✅ FIX: sostituisce None in prima posizione con stringa vuota
+    for key, arr in io_grouped.items():
+        if isinstance(arr, list):
+            for i, row in enumerate(arr):
+                if isinstance(row, list) and row:
+                    if row[0] is None:
+                        row[0] = ""
     # io_grouped['di'] = _pack_by_index(io_grouped.get('di', []), idx_pos=7) # rovina l'ordine
     data['io'] = io_grouped
     # Raggruppa gli oggetti (fb) sotto 'obj'

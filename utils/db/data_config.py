@@ -591,6 +591,10 @@ def _deserialize_obj_alarm(data: Dict[str, Any]) -> None:
         pass
 
     for ind, row in enumerate(rows):
+        if ind >= len(data_config.Alarm_Name):
+            #print(ind >= len(data_config.Alarm_Name), len(data_config.Alarm_Name), ind)
+            print(f"allarme {ind} ignorato")  # TODO: se allarmi maggiori di 192 allora versione diversa
+            continue
         if not isinstance(row, (list, tuple)) or len(row) == 0:
             continue
         name = str(row[0])
@@ -1625,15 +1629,15 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
 
 if __name__ == "__main__":
     populate_from_yaml_file("../../config.yaml")
-    # while True:
-    #     _type = input('T')
-    #     try:
-    #         _type = int(_type)
-    #     except:
-    #         continue
-    #     _target = input('TO')
-    #     try:
-    #         _target = int(_target)
-    #     except:
-    #         continue
-    #     run_io_search(_type, _target)
+    while True:
+        _type = input('T')
+        try:
+            _type = int(_type)
+        except:
+            continue
+        _target = input('TO')
+        try:
+            _target = int(_target)
+        except:
+            continue
+        run_io_search(_type, _target)

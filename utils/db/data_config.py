@@ -1226,7 +1226,7 @@ def run_io_expr_scan(iotype: int, ind_target: int = None):
                         continue
                     not_val, opnd_val, oper_val = data_config.IO_DI_List[Ind].exprintval[i:i + 3]
                     if not_val in [IO_EXPR_NONE, IO_EXPR_VAL, IO_EXPR_NOTVAL]:
-                        group_num = ((i - 1) // 3) + 1
+                        group_num = ((i - 1) // 3)  # + 1
                         if opnd_val == ind_target:
                             print(f"IO\t→\tDI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}")
     elif iotype == IO_AI:
@@ -1245,7 +1245,7 @@ def run_io_expr_scan(iotype: int, ind_target: int = None):
                     not_val, opnd_val, oper_val = data_config.IO_DI_List[Ind].exprintval[i:i + 3]
                     if not_val in [IO_EXPR_AIEQ0, IO_EXPR_AINE0, IO_EXPR_AIGT0,
                                    IO_EXPR_AIGE0, IO_EXPR_AILT0, IO_EXPR_AILE0]:
-                        group_num = ((i - 1) // 3) + 1
+                        group_num = ((i - 1) // 3)  # + 1
                         if opnd_val == ind_target:
                             print(f"IO\t→\tDI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}")
         # EXPR RI
@@ -1262,7 +1262,7 @@ def run_io_expr_scan(iotype: int, ind_target: int = None):
                         continue
                     not_val, opnd_val, oper_val = data_config.IO_RI_List[Ind].exprintval[i:i + 3]
                     if not_val in [IO_EXPR_AI, IO_EXPR_ABSAI]:
-                        group_num = ((i - 1) // 3) + 1
+                        group_num = ((i - 1) // 3)  # + 1
                         if opnd_val == ind_target:
                             print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}")
     elif iotype == IO_RI:
@@ -1281,7 +1281,7 @@ def run_io_expr_scan(iotype: int, ind_target: int = None):
                     not_val, opnd_val, oper_val = data_config.IO_DI_List[Ind].exprintval[i:i + 3]
                     if not_val in [IO_EXPR_RIEQ0, IO_EXPR_RINE0, IO_EXPR_RIGT0,
                                    IO_EXPR_RIGE0, IO_EXPR_RILT0, IO_EXPR_RILE0]:
-                        group_num = ((i - 1) // 3) + 1
+                        group_num = ((i - 1) // 3)  # + 1
                         if opnd_val == ind_target:
                             print(f"IO\t→\tDI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}")
         # EXPR RI
@@ -1298,7 +1298,7 @@ def run_io_expr_scan(iotype: int, ind_target: int = None):
                         continue
                     not_val, opnd_val, oper_val = data_config.IO_RI_List[Ind].exprintval[i:i + 3]
                     if not_val in [IO_EXPR_RI, IO_EXPR_ABSRI]:
-                        group_num = ((i - 1) // 3) + 1
+                        group_num = ((i - 1) // 3)  # + 1
                         if opnd_val == ind_target:
                             print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}")
     logger.debug('OUT: run_io_expr_scan')
@@ -1554,6 +1554,9 @@ def run_free_scan(iotype: int):
     elif iotype == IO_AO:
         io_list = data_config.IO_AO_List
         label = "AO"
+    elif iotype == IO_RI:
+        io_list = data_config.IO_RI_List
+        label = "RI"
     else:
         print(f"[ERRORE] Tipo IO sconosciuto: {iotype}")
         return
@@ -1564,7 +1567,6 @@ def run_free_scan(iotype: int):
 
     for i, param in enumerate(io_list):
         if param.name == "" or param.name.strip().upper() == "FREE":
-            # print(f"\n[{label} {i:03d}] nome vuoto o 'FREE' → ricerca in corso...")
             run_io_search(iotype=iotype, Ind=i)
 
 

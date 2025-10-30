@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 import sys
 from utils.version import __version__, __pgs_version__, __author__, __company__, __product__, __copyright__, get_version_info
-from utils.yaml.data.io import *
+from utils.yaml.data.axis import get_axis_int_di
+from utils.yaml.data.io import run_free_scan_di, run_free_scan_do, run_free_scan_ai, run_free_scan_ao
 from utils.yaml.data.params import *
 from utils.yaml.download import *
-from utils.yaml.load import *
+from utils.db.data_config import *
 
 
 def _pause_if_frozen():
@@ -22,15 +23,14 @@ def main():
     cfg_path = choose_and_prepare_config()
 
     try:
-        data = load_yaml(str(cfg_path))
+        # data = load_yaml(str(cfg_path))
+        populate_from_yaml_file(cfg_path)
     except Exception as e:
         print(f"Errore nel parsing YAML: {e}")
         _pause_if_frozen()
         return
 
-    sn = get_sn_from_param(data)
-    if sn:
-        print(f"Caricato config della commessa: {sn}")
+    print(f"Caricato config della commessa: {data_config.Config_Header[HEADER_SN]}")
 
     # 2) Loop interattivo: ripeti la domanda dopo ogni ricerca
     while True:
@@ -39,17 +39,17 @@ def main():
         tipo_raw = input("Che tipo stai cercando? (1=DI, 2=AI, 3=DO, 4=AO, 5=SYSTEM, 7=FREE, Invio per uscire): ").strip().lower()
         # Invio -> torna al menu precedente (scelta config) e ricarica il YAML
         if tipo_raw == "":
-            print("\n⤴️  Torno alla scelta del config...")
+            print("-" * 60)
             cfg_path = choose_and_prepare_config()
             try:
-                data = load_yaml(str(cfg_path))
+                # data = load_yaml(str(cfg_path))
+                populate_from_yaml_file(cfg_path)
             except Exception as e:
                 print(f"Errore nel parsing YAML: {e}")
                 _pause_if_frozen()
                 return
-            sn = get_sn_from_param(data)
-            if sn:
-                print(f"Caricato config della commessa: {sn}")
+
+            print(f"Caricato config della commessa: {data_config.Config_Header[HEADER_SN]}")
             # torna al menu dei tipi
             continue
         # forse lo riabiliterò
@@ -97,18 +97,13 @@ def main():
 
             # --- Prima di chiedere l'indice, mostra mappa indice -> nome ---
             if sys_type == "AXIS":
-                axis_nodes = ((data.get('obj') or {}).get('axis') or [])
+                axis_nodes = data_config.Axis_Param
 
                 def axis_name(i: int) -> str:
                     try:
-                        node = axis_nodes[i]
-                        if isinstance(node, dict):
-                            a = node.get('axis')
-                            if isinstance(a, list) and a and isinstance(a[0], (str, int, float)):
-                                return str(a[0])
+                        return get_axis_name(i)
                     except Exception:
-                        pass
-                    return f"axis[{i}]"
+                        return f"axis[{i}]"
 
                 n_to_show = min(len(axis_nodes), AXIS_MAX_INDEX + 1)
 
@@ -127,18 +122,18 @@ def main():
 
                 idx_prompt_max = AXIS_MAX_INDEX
             else:  # ALARM
-                alarm_rows = ((data.get('obj') or {}).get('alarm') or [])
+                alarm_rows = data_config.Alarm_Param
                 print("\nAlcuni ALARM definiti (indice → nome):")
-                for i, row in enumerate(alarm_rows):
+                for i, alarm in enumerate(alarm_rows):
                     try:
-                        nm = row[0] if (
-                                    isinstance(row, list) and row and isinstance(row[0], (str, int, float))) else None
-                        if nm not in (None, "", "x", "X"):
-                            print(f"  [{i:03d}] {nm}")
+                        name = getattr(alarm, "name", None)
+                        if name not in (None, "", "x", "X"):
+                            print(f"  [{i:03d}] {name}")
                     except Exception:
                         continue
+
                 if len(alarm_rows) < ALARM_MAX_INDEX + 1:
-                    print(f"(presenti {len(alarm_rows)} righe alarm; range massimo supportato 0..{ALARM_MAX_INDEX})")
+                    print(f"(presenti {len(alarm_rows)} allarmi; range massimo supportato 0..{ALARM_MAX_INDEX})")
 
                 idx_prompt_max = ALARM_MAX_INDEX
 
@@ -160,8 +155,8 @@ def main():
                     print("\nScegli FIELD di AXIS.INT (nome o indice):")
                     entries = [f"[{i:02d}] {lab}" for i, lab in enumerate(axis_int_fields)]
                     print_in_columns(entries, cols=3)
-                    fsel2 = input("FIELD AXIS.INT: ").strip()
 
+                    fsel2 = input("FIELD AXIS.INT: ").strip()
                     if fsel2.isdigit():
                         fidx2 = int(fsel2)
                         if not (0 <= fidx2 < len(axis_int_fields)):
@@ -174,16 +169,20 @@ def main():
                             print("FIELD AXIS.INT sconosciuto.")
                             continue
 
-                    di_id = get_axis_int_di(data, index, field_int)
+                    try:
+                        field_idx = IDX_AXIS_INT[field_int]
+                        di_id = data_config.Axis_Param[index].intval[field_idx]
+                    except (KeyError, IndexError, AttributeError):
+                        di_id = None
+
                     if di_id is None or di_id < 0:
                         print(f"AXIS.INT → {field_int}[{index}] non configurato (o valore invalido).")
                         continue
 
                     print(f"\nAXIS.INT → {field_int}[{index}]  => DI: {di_id}\n")
-                    # usa la stessa identica ricerca DI
-                    run_di_search(data, di_id)
-                    # torna al menu principale
+                    run_io_search(iotype=IO_DI, Ind=di_id)
                     continue
+
             # --- Scelta FIELD (nome o indice) ---
             fields = AXIS_GROUPS_ORDER if sys_type == "AXIS" else ALARM_GROUPS_ORDER
 
@@ -217,20 +216,22 @@ def main():
 
             human = decode_system_addr(number) or f"{sys_type}.{field}[{index}]"
             print(f"\nSYSTEM → {human}  => numero: {number}")
-            run_di_search(data, number)
+            run_io_search(iotype=IO_DI, Ind=number)
             continue
         # ==================== /SYSTEM ====================
 
         # ====================== FREE (scan automatico) ======================
         if tipo == 7:
             print("DI:")
-            run_free_scan_di(data)
+            run_free_scan(IO_DI)
             print("DO:")
-            run_free_scan_do(data)
+            run_free_scan(IO_DO)
             print("AI:")
-            run_free_scan_ai(data)
+            run_free_scan(IO_AI)
             print("AO:")
-            run_free_scan_ao(data)
+            run_free_scan(IO_AO)
+            print("RI:")
+            run_free_scan(IO_RI)
             continue
         # ==================== /FREE ======================
 
@@ -249,14 +250,13 @@ def main():
 
                 print("-" * 60)
                 if tipo == 1:
-                    run_di_search(data, target_number)
+                    run_io_search(iotype=IO_DI, Ind=target_number)
                 elif tipo == 2:
-                    run_ai_search(data, target_number)
+                    run_io_search(iotype=IO_AI, Ind=target_number)
                 elif tipo == 3:
-                    run_do_serach(data, target_number)
+                    run_io_search(iotype=IO_DO, Ind=target_number)
                 elif tipo == 4:
-                    run_ao_search(data, target_number)
-            # finito il sottoloop, riparte il while principale
+                    run_io_search(iotype=IO_AO, Ind=target_number)
             continue
 
 

@@ -263,17 +263,17 @@ IDX_RI_IO_INT_ADDR2 = 10
 
 # --- Variabili di sistema: TYPE (IDX_SYSTEM) ---
 SYSTEM_TYPE = {
-    "INDEX": 1,
-    "AXIS": 2,
-    "FEEDBACK": 3,
-    "INPUT": 4,
-    "OUTPUT": 5,
-    "MOTOR": 6,
-    "PID": 7,
-    "TOOLSET": 8,
-    "ALARM": 9,
-    "MAINT": 10,
-    "AXISREAL": 11,
+    "INDEX": 0,
+    "AXIS": 1,
+    "FEEDBACK": 2,
+    "INPUT": 3,
+    "OUTPUT": 4,
+    "MOTOR": 5,
+    "PID": 6,
+    "TOOLSET": 7,
+    "ALARM": 8,
+    "MAINT": 9,
+    "AXISREAL": 10,
 }
 SYSTEM_TYPE_REV = {v: k for k, v in SYSTEM_TYPE.items()}
 

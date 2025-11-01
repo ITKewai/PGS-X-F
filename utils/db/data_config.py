@@ -1831,6 +1831,8 @@ def custom_function():
     logger.info("IN: custom_function")
 
     def check_axis_flag() -> list[str]:
+        print('-'*60)
+        print('Controllo flag')
         """
         Controlla limiti e flag per ogni asse.
         Stampa warning prima del gruppo di riferimenti.
@@ -1950,13 +1952,36 @@ def custom_function():
         logging.debug("OUT: check_axis_flag")
         return out_lines
 
-    # check_axis_flag()
+    def check_duplicate_do_ao():
+        """
+        Controlla se una DO/AO è referenziata in più punti nel progetto.
+        Usa run_io_scan per verificare dove viene utilizzata ogni uscita.
+        """
+        print('-'*60)
+        print('Controllo duplicati output')
+        duplicates = {}
+
+        for iotype, label in [(IO_DO, "DO"), (IO_AO, "AO")]:
+            io_list = data_config.IO_DO_List if iotype == IO_DO else data_config.IO_AO_List
+
+            for idx in range(len(io_list)):
+                used_in = run_io_search(iotype=iotype, Ind=idx, verbose=False)
+                if len(used_in) > 1:
+                    io_name = get_io_name(iotype=iotype, Ind=idx)
+                    duplicates[io_name or f"{label}[{idx}]"] = used_in
+                    print(f"⚠️ {label}[{idx}] {io_name or ''} usato in più punti:")
+                    for u in used_in:
+                        print(f"   ↳ {u}")
+        return duplicates
+
+    check_axis_flag()
+    check_duplicate_do_ao()
     logger.info("OUT: custom_function")
 
 
 if __name__ == "__main__":
     populate_from_yaml_file("../../config.yaml")
-    custom_function()
+    # custom_function()
     while True:
         print(", ".join([f"{name.replace('IO_', '')}={globals()[name]}" for name in ["IO_DI", "IO_AI", "IO_DO", "IO_AO", "IO_RI"]]))
         _type = input()

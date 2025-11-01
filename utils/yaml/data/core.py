@@ -1,3 +1,4 @@
+from utils.exports.tia_constants import MAX_MAINT, MAX_ALARM, MAX_TOOLSET, MAX_MOTORE, MAX_ASSE
 from utils.yaml.data.costants import *
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -14,8 +15,8 @@ def make_axis_sys_addr(group: str, axis_index: int) -> int:
     g = group.strip().upper()
     if g not in AXIS_GROUP_BASE:
         raise KeyError(f"Gruppo AXIS sconosciuto: {group}")
-    if not (0 <= axis_index <= AXIS_MAX_INDEX):  # 0..47
-        raise ValueError(f"axis_index fuori range (0..{AXIS_MAX_INDEX}): {axis_index}")
+    if not (0 <= axis_index <= MAX_ASSE):
+        raise ValueError(f"axis_index fuori range (0..{MAX_ASSE}): {axis_index}")
     return AXIS_GROUP_BASE[g] + axis_index
 
 
@@ -27,7 +28,7 @@ def parse_axis_sys_addr(addr: int) -> Optional[Tuple[str, int]]:
         return None
     base = 2048 + group_idx * AXIS_GROUP_STEP
     axis_index = addr - base
-    if not (0 <= axis_index <= AXIS_MAX_INDEX):  # 0..47
+    if not (0 <= axis_index <= MAX_ASSE):
         return None
     return AXIS_GROUPS_ORDER[group_idx], axis_index
 
@@ -75,8 +76,8 @@ def validate_system_index(sys_type: str, index: int) -> None:
     """Lancia ValueError se l'indice non rientra nei limiti dichiarati per il tipo."""
     t = sys_type.strip().upper()
     if t in {"AXIS", "INPUT", "OUTPUT", "FEEDBACK", "AXISREAL"}:
-        if not (0 <= index <= AXIS_MAX_INDEX):
-            raise ValueError(f"{t} index fuori range (0..{AXIS_MAX_INDEX}): {index}")
+        if not (0 <= index <= MAX_ASSE):
+            raise ValueError(f"{t} index fuori range (0..{MAX_ASSE}): {index}")
     elif t == "MOTOR":
         if not (1 <= index <= MAX_MOTORE):
             raise ValueError(f"MOTOR index fuori range ({1}..{MAX_MOTORE}): {index}")
@@ -177,31 +178,3 @@ def find_axis_int_lists(root: Any) -> List[List[Any]]:
 
     walk(root, under_axis=False)
     return axis_ints
-
-
-def iter_expr_groups(di_fields: list) -> List[Tuple[int, int, int]]:
-    groups: List[Tuple[int, int, int]] = []
-    if not isinstance(di_fields, list) or len(di_fields) <= IDX_EXPRTYPE:
-        return groups
-    # EXPRTYPE è a indice 20; le terne partono da 21 → (operand, address, operator)
-    start = IDX_EXPRTYPE + 1
-    max_needed = start + DI_NUM_EXPR_GROUPS * DI_EXPR_GROUP_SIZE
-    limit = min(len(di_fields), max_needed)
-    i = start
-    while i + 2 < limit and len(groups) < DI_NUM_EXPR_GROUPS:
-        try:
-            operand = int(di_fields[i])
-        except Exception:
-            operand = -999999
-        try:
-            address = int(di_fields[i + 1])
-        except Exception:
-            address = -999999
-        try:
-            operator = int(di_fields[i + 2])
-        except Exception:
-            operator = -999999
-        groups.append((operand, address, operator))  # (OPERAND, ADDRESS, OPERATOR)
-        i += DI_EXPR_GROUP_SIZE
-    return groups
-

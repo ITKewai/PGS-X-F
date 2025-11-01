@@ -1628,15 +1628,16 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
 
 if __name__ == "__main__":
     populate_from_yaml_file("../../config.yaml")
-    # while True:
-    #     _type = input('T')
-    #     try:
-    #         _type = int(_type)
-    #     except:
-    #         continue
-    #     _target = input('TO')
-    #     try:
-    #         _target = int(_target)
-    #     except:
-    #         continue
-    #     run_io_search(_type, _target)
+    while True:
+        print(", ".join([f"{name.replace('IO_', '')}={globals()[name]}" for name in ["IO_DI", "IO_AI", "IO_DO", "IO_AO", "IO_RI"]]))
+        _type = input()
+        try:
+            _type = int(_type)
+        except:
+            continue
+        _target = input('Target:')
+        try:
+            _target = int(_target)
+        except:
+            continue
+        run_io_search(_type, _target)

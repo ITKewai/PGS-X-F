@@ -1714,50 +1714,51 @@ def run_free_scan(iotype: int):
             run_io_search(iotype=iotype, Ind=i)
 
 
-def run_io_search(iotype: int, Ind: Optional[int] = None):
+def run_io_search(iotype: int, Ind: Optional[int] = None) -> List[str]:
     logging.debug('IN: run_io_search')
+    _return = []
     if iotype == IO_DI:
-        run_io_scan(iotype=IO_DI, ind_target=Ind)
-        run_params_scan(iotype=IO_DI, ind_target=Ind)
-        run_motor_scan(iotype=IO_DI, ind_target=Ind)
-        run_axis_scan(iotype=IO_DI, ind_target=Ind, axisInd=None)
-        run_input_scan(iotype=IO_DI, ind_target=Ind, inputInd=None)
-        run_output_scan(iotype=IO_DI, ind_target=Ind, outputInd=None)
-        run_feedback_scan(iotype=IO_DI, ind_target=Ind, feedbackInd=None)
-        run_alarm_scan(iotype=IO_DI, ind_target=Ind)
-        run_maintenance_scan(iotype=IO_DI, ind_target=Ind)
+        _return.extend(run_io_scan(iotype=IO_DI, ind_target=Ind))
+        _return.extend(run_params_scan(iotype=IO_DI, ind_target=Ind))
+        _return.extend(run_motor_scan(iotype=IO_DI, ind_target=Ind))
+        _return.extend(run_axis_scan(iotype=IO_DI, ind_target=Ind, axisInd=None))
+        _return.extend(run_input_scan(iotype=IO_DI, ind_target=Ind, inputInd=None))
+        _return.extend(run_output_scan(iotype=IO_DI, ind_target=Ind, outputInd=None))
+        _return.extend(run_feedback_scan(iotype=IO_DI, ind_target=Ind, feedbackInd=None))
+        _return.extend(run_alarm_scan(iotype=IO_DI, ind_target=Ind))
+        _return.extend(run_maintenance_scan(iotype=IO_DI, ind_target=Ind))
     elif iotype == IO_DO:
-        run_io_scan(iotype=IO_DO, ind_target=Ind)
-        run_params_scan(iotype=IO_DO, ind_target=Ind)
-        run_motor_scan(iotype=IO_DO, ind_target=Ind)
+        _return.extend(run_io_scan(iotype=IO_DO, ind_target=Ind))
+        _return.extend(run_params_scan(iotype=IO_DO, ind_target=Ind))
+        _return.extend(run_motor_scan(iotype=IO_DO, ind_target=Ind))
         # run_axis_scan(iotype=IO_DO, ind_target=Ind, axisInd=None)
         # run_input_scan(iotype=IO_DO, ind_target=Ind, inputInd=None)
-        run_output_scan(iotype=IO_DO, ind_target=Ind, outputInd=None)
+        _return.extend(run_output_scan(iotype=IO_DO, ind_target=Ind, outputInd=None))
         # run_feedback_scan(iotype=IO_DO, ind_target=Ind, feedbackInd=None)
-        run_alarm_scan(iotype=IO_DO, ind_target=Ind)
+        _return.extend(run_alarm_scan(iotype=IO_DO, ind_target=Ind))
         # run_maintenance_scan(iotype=IO_DO, ind_target=Ind)
     elif iotype == IO_AI:
-        run_io_scan(iotype=IO_AI, ind_target=Ind)
-        run_params_scan(iotype=IO_AI, ind_target=Ind)
+        _return.extend(run_io_scan(iotype=IO_AI, ind_target=Ind))
+        _return.extend(run_params_scan(iotype=IO_AI, ind_target=Ind))
         # run_motor_scan(iotype=IO_AI, ind_target=Ind)
         # run_axis_scan(iotype=IO_AI, ind_target=Ind, axisInd=None)
-        run_input_scan(iotype=IO_AI, ind_target=Ind, inputInd=None)
-        run_output_scan(iotype=IO_AI, ind_target=Ind, outputInd=None)
-        run_feedback_scan(iotype=IO_AI, ind_target=Ind, feedbackInd=None)
+        _return.extend(run_input_scan(iotype=IO_AI, ind_target=Ind, inputInd=None))
+        _return.extend(run_output_scan(iotype=IO_AI, ind_target=Ind, outputInd=None))
+        _return.extend(run_feedback_scan(iotype=IO_AI, ind_target=Ind, feedbackInd=None))
         # run_alarm_scan(iotype=IO_AI, ind_target=Ind)
         # run_maintenance_scan(iotype=IO_AI, ind_target=Ind)
     elif iotype == IO_AO:
-        run_io_scan(iotype=IO_AO, ind_target=Ind)
+        _return.extend(run_io_scan(iotype=IO_AO, ind_target=Ind))
         # run_params_scan(iotype=IO_AO, ind_target=Ind)
         # run_motor_scan(iotype=IO_AO, ind_target=Ind)
         # run_axis_scan(iotype=IO_AO, ind_target=Ind, axisInd=None)
-        run_input_scan(iotype=IO_AO, ind_target=Ind, inputInd=None)
-        run_output_scan(iotype=IO_AO, ind_target=Ind, outputInd=None)
+        _return.extend(run_input_scan(iotype=IO_AO, ind_target=Ind, inputInd=None))
+        _return.extend(run_output_scan(iotype=IO_AO, ind_target=Ind, outputInd=None))
         # run_feedback_scan(iotype=IO_AO, ind_target=Ind, feedbackInd=None)
         # run_alarm_scan(iotype=IO_AO, ind_target=Ind)
         # run_maintenance_scan(iotype=IO_AO, ind_target=Ind)
     elif iotype == IO_RI:
-        run_io_scan(iotype=IO_RI, ind_target=Ind)
+        _return.extend(run_io_scan(iotype=IO_RI, ind_target=Ind))
         # run_params_scan(iotype=IO_RI, ind_target=Ind)
         # run_motor_scan(iotype=IO_RI, ind_target=Ind)
         # run_axis_scan(iotype=IO_RI, ind_target=Ind, axisInd=None)
@@ -1767,10 +1768,92 @@ def run_io_search(iotype: int, Ind: Optional[int] = None):
         # run_alarm_scan(iotype=IO_RI, ind_target=Ind)
         # run_maintenance_scan(iotype=IO_RI, ind_target=Ind)
     logging.debug('OUT: run_io_search')
+    return _return
+
+
+def custom_function():
+    """Controlla coerenza flag booleani e riferimenti I/O per SMAX, SHH, SH, SL, SLL, SMIN, SH0, SL0."""
+    logger.info("IN: custom_function")
+
+    def check_axis_flag():
+        logger.info("IN: custom_function.check_axis_flag")
+
+        # 🔹 Campi accoppiati INT ↔ BOOL
+        axis_pairs = [
+            ("ASSE_INT_INDSHH", "ASSE_BOOL_ENABSHH"),
+            ("ASSE_INT_INDSH", "ASSE_BOOL_ENABSH"),
+            ("ASSE_INT_INDSL", "ASSE_BOOL_ENABSL"),
+            ("ASSE_INT_INDSLL", "ASSE_BOOL_ENABSLL"),
+            ("ASSE_INT_INDSH0", "ASSE_BOOL_ENABSH0"),
+            ("ASSE_INT_INDSL0", "ASSE_BOOL_ENABSL0"),
+        ]
+
+        # 🔹 Campi solo booleani (senza INT associato)
+        bool_only = [
+            ("ASSE_BOOL_ENABSMAX", "SMAX"),
+            ("ASSE_BOOL_ENABSMIN", "SMIN"),
+        ]
+
+        for axisInd in range(MAX_ASSE):
+            axis_name = get_axis_name(Ind=axisInd)
+            AxisParamIntVals = data_config.Axis_Param[axisInd].intval
+            AxisParamBoolVals = data_config.Axis_Param[axisInd].boolval
+
+            output_lines = []  # buffer locale per questo asse
+
+            # --- (1) Campi accoppiati INT↔BOOL ---
+            for int_const, bool_const in axis_pairs:
+                try:
+                    int_idx = globals()[int_const]
+                    bool_idx = globals()[bool_const]
+                except KeyError:
+                    continue
+
+                val = AxisParamIntVals[int_idx]
+                flag = AxisParamBoolVals[bool_idx]
+
+                if val > 0:
+                    # io_refs = run_io_search(val)
+                    io_refs = run_io_search(iotype=IO_DI, Ind=val)
+                    if io_refs:
+                        output_lines.append(f"  {int_const}={val} usato in IO:")
+                        for ref in io_refs:
+                            output_lines.append(f"    ↳ {ref}")
+                    if not flag:
+                        output_lines.append(f"  ⚠️  {bool_const} disattivo ma {int_const}={val} è impostato/usato")
+
+            # --- (2) Campi solo booleani ---
+            for bool_const, sys_name in bool_only:
+                try:
+                    bool_idx = globals()[bool_const]
+                except KeyError:
+                    continue
+
+                flag = AxisParamBoolVals[bool_idx]
+                sys_refs = run_io_search(f"SYS.{sys_name}")
+                if sys_refs:
+                    output_lines.append(f"  SYS.{sys_name} usato in:")
+                    for ref in sys_refs:
+                        output_lines.append(f"    ↳ {ref}")
+                    if not flag:
+                        output_lines.append(f"  ⚠️  {bool_const} disattivo ma SYS.{sys_name} è usato")
+
+            # --- Stampa solo se ci sono risultati ---
+            if output_lines:
+                print(f"\n[ASSE {axisInd:02d}] {axis_name}")
+                print("\n".join(output_lines))
+
+        logger.info("OUT: custom_function.check_axis_flag")
+
+    check_axis_flag()
+    logger.info("OUT: custom_function")
+
+
 
 
 if __name__ == "__main__":
     populate_from_yaml_file("../../config.yaml")
+    custom_function()
     while True:
         print(", ".join([f"{name.replace('IO_', '')}={globals()[name]}" for name in ["IO_DI", "IO_AI", "IO_DO", "IO_AO", "IO_RI"]]))
         _type = input()

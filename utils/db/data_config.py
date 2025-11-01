@@ -1832,70 +1832,53 @@ def custom_function():
 
     def check_axis_flag() -> list[str]:
         """
-        Per ogni asse controlla i limiti:
-          - coppie INT↔BOOL: SHH, SH, SL, SLL, SH0, SL0
-            (se INT > 0 o il relativo SYS.* è usato ⇒ il flag deve essere attivo)
-          - solo BOOL: SMAX, SMIN
-            (se il relativo SYS.* è usato ⇒ il flag deve essere attivo)
-
-        Stampa SOLO gli assi con righe da mostrare e raggruppa:
-          [ASSE XX] NAME
-            ↳ Axes -> [XX]NAME -> <LABEL>
-                ↳ <ref 1>
-                ↳ <ref 2>
-            ↳ ...
+        Controlla limiti e flag per ogni asse.
+        Stampa warning prima del gruppo di riferimenti.
         """
         logging.debug("IN: check_axis_flag")
 
-        # label brevi dai mapping ufficiali
         def _axis_label_from_int_idx(int_idx: int) -> str:
             try:
-                key = Type_AxisParam_Map["_intval"][int_idx]  # es. 'INDSL'
+                key = Type_AxisParam_Map["_intval"][int_idx]
                 return str(Type_AxisParam_Map["intval"][key].get("display", key))
             except Exception:
                 return "??"
 
         def _axis_label_from_bool_idx(bool_idx: int) -> str:
             try:
-                key = Type_AxisParam_Map["_boolval"][bool_idx]  # es. 'ENABSL'
+                key = Type_AxisParam_Map["_boolval"][bool_idx]
                 return str(Type_AxisParam_Map["boolval"][key].get("display", key))
             except Exception:
                 return "??"
 
-        # Coppie INT↔BOOL (indici già definiti dai tuoi constants)
         axis_pairs = [
-            (ASSE_INT_INDSHH, ASSE_BOOL_ENABSHH),  # HH
-            (ASSE_INT_INDSH, ASSE_BOOL_ENABSH),  # H
-            (ASSE_INT_INDSL, ASSE_BOOL_ENABSL),  # L
-            (ASSE_INT_INDSLL, ASSE_BOOL_ENABSLL),  # LL
-            (ASSE_INT_INDSH0, ASSE_BOOL_ENABSH0),  # H0
-            (ASSE_INT_INDSL0, ASSE_BOOL_ENABSL0),  # L0
+            (ASSE_INT_INDSHH, ASSE_BOOL_ENABSHH),
+            (ASSE_INT_INDSH, ASSE_BOOL_ENABSH),
+            (ASSE_INT_INDSL, ASSE_BOOL_ENABSL),
+            (ASSE_INT_INDSLL, ASSE_BOOL_ENABSLL),
+            (ASSE_INT_INDSH0, ASSE_BOOL_ENABSH0),
+            (ASSE_INT_INDSL0, ASSE_BOOL_ENABSL0),
         ]
 
-        # Codici elemento SYS per AXIS (coerenti con sysaxis_names in decode_sys_addr)
         AXIS_SYS_CODE = {
-            "HH": 7, "H": 8, "L": 9, "LL": 10, "H0": 11, "L0": 12,  # coppie INT↔BOOL
-            "SMAX": 3, "SMIN": 4,  # solo BOOL
+            "HH": 7, "H": 8, "L": 9, "LL": 10, "H0": 11, "L0": 12,
+            "SMAX": 3, "SMIN": 4,
         }
 
-        # Solo booleani (senza INT associato)
         bool_only = [
             (ASSE_BOOL_ENABSMAX, "SMAX"),
             (ASSE_BOOL_ENABSMIN, "SMIN"),
         ]
 
         def _sys_index_for(axisInd: int, label: str) -> int:
-            """Calcola l'indice SYSTEM per AXIS[label] dell'asse axisInd."""
             code = AXIS_SYS_CODE.get(label)
             if code is None:
                 return -1
-            # SYSTYP=1 (AXIS): BASE_AXIS*1 + (elem*AXIS_GROUP_STEP + axisInd)
             return BASE_AXIS * 1 + (code * AXIS_GROUP_STEP + axisInd)
 
         out_lines: list[str] = []
 
         for axisInd in range(MAX_ASSE):
-            # protezione bounds
             try:
                 AxisParamIntVals = data_config.Axis_Param[axisInd].intval
                 AxisParamBoolVals = data_config.Axis_Param[axisInd].boolval
@@ -1905,19 +1888,15 @@ def custom_function():
             axis_name = get_axis_name(Ind=axisInd)
             local_buf: list[str] = []
 
-            # --- (1) Campi accoppiati INT↔BOOL ---
             for int_idx, bool_idx in axis_pairs:
                 if int_idx >= len(AxisParamIntVals) or bool_idx >= len(AxisParamBoolVals):
                     continue
 
                 di_val = AxisParamIntVals[int_idx]
                 flag = AxisParamBoolVals[bool_idx]
-                label = _axis_label_from_int_idx(int_idx)  # es. "HH"/"H"/"L"/...
-
-                # SYS index per questo label (es. HH -> codice 7)
+                label = _axis_label_from_int_idx(int_idx)
                 sys_idx = _sys_index_for(axisInd, label)
 
-                # Raccogli riferimenti dove è usato l'indice DI e l'indirizzo SYS
                 refs: list[str] = []
                 try:
                     if di_val > 0:
@@ -1930,20 +1909,17 @@ def custom_function():
                 except Exception:
                     pass
 
-                # Stampa se c'è qualcosa di usato (DI o SYS)
                 if refs or di_val > 0:
-                    # riga del nodo principale
+                    # ⚠️ warning PRIMA
+                    if not flag and (di_val > 0 or refs):
+                        local_buf.append(
+                            f"  ⚠️  Flag {label} disattivo ma {label}={di_val if di_val > 0 else 'SYS'} è impostato/usato")
+
+                    # header label
                     local_buf.append(f"    ↳ Axes\t→\t[{axisInd}]{axis_name}\t→\t{label}")
-                    # sotto-riferimenti (indentati)
                     for ref in refs:
                         local_buf.append(f"        ↳ {ref}")
 
-                    # warning se flag spento ma c'è un valore impostato/uso SYS
-                    if not flag and (di_val > 0 or refs):
-                        local_buf.append(
-                            f"  ⚠️  Flag {label} disattivo ma {label}={'{}'.format(di_val) if di_val > 0 else 'SYS'} è impostato/usato")
-
-            # --- (2) Solo BOOL: SMAX/SMIN ---
             for bool_idx, sys_name in bool_only:
                 if bool_idx >= len(AxisParamBoolVals):
                     continue
@@ -1958,15 +1934,13 @@ def custom_function():
                     pass
 
                 if refs:
-                    # nodo principale (mostro comunque la riga dell'asse+label)
+                    if not flag:
+                        label = _axis_label_from_bool_idx(bool_idx)
+                        local_buf.append(f"  ⚠️  Flag {label} disattivo ma {label} è usato")
                     local_buf.append(f"    ↳ Axes\t→\t[{axisInd}]{axis_name}\t→\t{sys_name}")
                     for ref in refs:
                         local_buf.append(f"        ↳ {ref}")
-                    if not flag:
-                        label = _axis_label_from_bool_idx(bool_idx)  # "MAX"/"MIN"
-                        local_buf.append(f"  ⚠️  Flag {label} disattivo ma {label} è usato")
 
-            # stampa SOLO se ci sono righe per questo asse
             if local_buf:
                 print(f"\n[ASSE {axisInd:02d}] {axis_name}")
                 print("\n".join(local_buf))
@@ -1976,8 +1950,7 @@ def custom_function():
         logging.debug("OUT: check_axis_flag")
         return out_lines
 
-
-    check_axis_flag()
+    # check_axis_flag()
     logger.info("OUT: custom_function")
 
 

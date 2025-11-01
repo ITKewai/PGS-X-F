@@ -3,7 +3,7 @@
 import sys
 from utils.version import __version__, __pgs_version__, __author__, __company__, __product__, __copyright__, get_version_info
 from utils.yaml.data.core import make_axis_sys_addr, make_alarm_sys_addr
-from utils.yaml.data.costants import AXIS_GROUPS_ORDER, ALARM_GROUPS_ORDER
+from utils.yaml.data.costants import AXIS_GROUPS_ORDER, ALARM_GROUPS_ORDER, SYSTEM_TYPE, SYSTEM_TYPE_REV
 from utils.yaml.download import *
 # from utils.yaml.data.params import *
 from utils.db.data_config import *
@@ -35,8 +35,8 @@ def main():
     # 2) Loop interattivo: ripeti la domanda dopo ogni ricerca
     while True:
         print("\n" + "-" * 60)
-        tipo_opt = (1, 2, 3, 4, 5, 7)
-        tipo_raw = input("Che tipo stai cercando? (1=DI, 2=AI, 3=DO, 4=AO, 5=SYSTEM, 7=FREE, Invio per uscire): ").strip().lower()
+        tipo_opt = (1, 2, 3, 4, 5, 6, 7)
+        tipo_raw = input("Che tipo stai cercando? (1=DI, 2=AI, 3=DO, 4=AO, 5=SYSTEM, 6=CHECK, 7=FREE, Invio per uscire): ").strip().lower()
         # Invio -> torna al menu precedente (scelta config) e ricarica il YAML
         if tipo_raw == "":
             print("-" * 60)
@@ -179,6 +179,9 @@ def main():
             human = decode_sys_addr(number) or f"{sys_type}.{field}[{index}]"
             print(f"\nSYSTEM → {human}  => numero: {number}")
             run_io_search(iotype=IO_DI, Ind=number, verbose=True)
+            continue
+        if tipo == 6:
+            custom_function()
             continue
         # ==================== /SYSTEM ====================
 

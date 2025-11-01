@@ -1830,74 +1830,122 @@ def custom_function():
     """Controlla coerenza flag booleani e riferimenti I/O per SMAX, SHH, SH, SL, SLL, SMIN, SH0, SL0."""
     logger.info("IN: custom_function")
 
-    def check_axis_flag():
-        logger.info("IN: custom_function.check_axis_flag")
+    def check_axis_flag() -> list[str]:
+        """
+        Per ogni asse controlla:
+          1) Coppie INT↔BOOL: SHH, SH, SL, SLL, SH0, SL0
+             (se l'INT > 0 ⇒ il flag deve essere True).
+             Stampa prima il warning, poi gli utilizzi.
+          2) Solo BOOL: SMAX, SMIN
+             (se il SYS.* è usato ⇒ il flag deve essere True).
+        Stampa SOLO gli assi con righe da mostrare.
+        Ritorna la lista delle righe stampate.
+        """
+        logging.debug("IN: check_axis_flag")
 
-        # 🔹 Campi accoppiati INT ↔ BOOL
+        # label corte dai mapping ufficiali
+        def _axis_label_from_int_idx(int_idx: int) -> str:
+            try:
+                key = Type_AxisParam_Map["_intval"][int_idx]
+                return str(Type_AxisParam_Map["intval"][key].get("display", key))
+            except Exception:
+                return "??"
+
+        def _axis_label_from_bool_idx(bool_idx: int) -> str:
+            try:
+                key = Type_AxisParam_Map["_boolval"][bool_idx]
+                return str(Type_AxisParam_Map["boolval"][key].get("display", key))
+            except Exception:
+                return "??"
+
+        # coppie INT↔BOOL (indici costanti già importati)
         axis_pairs = [
-            ("ASSE_INT_INDSHH", "ASSE_BOOL_ENABSHH"),
-            ("ASSE_INT_INDSH", "ASSE_BOOL_ENABSH"),
-            ("ASSE_INT_INDSL", "ASSE_BOOL_ENABSL"),
-            ("ASSE_INT_INDSLL", "ASSE_BOOL_ENABSLL"),
-            ("ASSE_INT_INDSH0", "ASSE_BOOL_ENABSH0"),
-            ("ASSE_INT_INDSL0", "ASSE_BOOL_ENABSL0"),
+            (ASSE_INT_INDSHH, ASSE_BOOL_ENABSHH),
+            (ASSE_INT_INDSH, ASSE_BOOL_ENABSH),
+            (ASSE_INT_INDSL, ASSE_BOOL_ENABSL),
+            (ASSE_INT_INDSLL, ASSE_BOOL_ENABSLL),
+            (ASSE_INT_INDSH0, ASSE_BOOL_ENABSH0),
+            (ASSE_INT_INDSL0, ASSE_BOOL_ENABSL0),
         ]
 
-        # 🔹 Campi solo booleani (senza INT associato)
+        # solo booleani: mappa nome→codice elemento SYS per AXIS
+        AXIS_SYS_CODE = {"SMAX": 3, "SMIN": 4}
+
+        def _sys_index(axisInd: int, sys_name: str) -> int:
+            code = AXIS_SYS_CODE.get(sys_name)
+            if code is None:
+                return -1
+            # SYS index: BASE_AXIS*AXIS + (elem*AXIS_GROUP_STEP + axisInd)
+            return BASE_AXIS * 1 + code * AXIS_GROUP_STEP + axisInd
+
         bool_only = [
-            ("ASSE_BOOL_ENABSMAX", "SMAX"),
-            ("ASSE_BOOL_ENABSMIN", "SMIN"),
+            (ASSE_BOOL_ENABSMAX, "SMAX"),
+            (ASSE_BOOL_ENABSMIN, "SMIN"),
         ]
 
+        out_lines: list[str] = []
         for axisInd in range(MAX_ASSE):
+            try:
+                AxisParamIntVals = data_config.Axis_Param[axisInd].intval
+                AxisParamBoolVals = data_config.Axis_Param[axisInd].boolval
+            except Exception:
+                continue
+
             axis_name = get_axis_name(Ind=axisInd)
-            AxisParamIntVals = data_config.Axis_Param[axisInd].intval
-            AxisParamBoolVals = data_config.Axis_Param[axisInd].boolval
+            local_buf: list[str] = []
 
-            output_lines = []  # buffer locale per questo asse
-
-            # --- (1) Campi accoppiati INT↔BOOL ---
-            for int_const, bool_const in axis_pairs:
-                try:
-                    int_idx = globals()[int_const]
-                    bool_idx = globals()[bool_const]
-                except KeyError:
+            # (1) INT↔BOOL
+            for int_idx, bool_idx in axis_pairs:
+                if int_idx >= len(AxisParamIntVals) or bool_idx >= len(AxisParamBoolVals):
                     continue
 
                 val = AxisParamIntVals[int_idx]
-                flag = AxisParamBoolVals[bool_idx]
-
-                if val > 0:
-                    io_refs = run_io_search(iotype=IO_DI, Ind=val, verbose=False)
-                    if io_refs:
-                        output_lines.append(f"  {int_const}={val} usato in IO:")
-                        for ref in io_refs:
-                            output_lines.append(f"    ↳ {ref}")
-                    if not flag:
-                        output_lines.append(f"  ⚠️  {bool_const} disattivo ma {int_const}={val} è impostato/usato")
-
-            # --- (2) Campi solo booleani ---
-            for bool_const, sys_name in bool_only:
-                try:
-                    bool_idx = globals()[bool_const]
-                except KeyError:
+                if val <= 0:
                     continue
 
                 flag = AxisParamBoolVals[bool_idx]
-                sys_refs = run_io_search(f"SYS.{sys_name}")
-                if sys_refs:
-                    output_lines.append(f"  SYS.{sys_name} usato in:")
-                    for ref in sys_refs:
-                        output_lines.append(f"    ↳ {ref}")
-                    if not flag:
-                        output_lines.append(f"  ⚠️  {bool_const} disattivo ma SYS.{sys_name} è usato")
+                label = _axis_label_from_int_idx(int_idx)  # es. "L", "H", ...
 
-            # --- Stampa solo se ci sono risultati ---
-            if output_lines:
+                # warning prima
+                if not flag:
+                    local_buf.append(f"  ⚠️  Flag {label} disattivo ma {label}={val} è impostato/usato")
+
+                # poi dove è usato quell'indice
+                try:
+                    refs = run_io_search(iotype=IO_DI, Ind=val, verbose=False) or []
+                except Exception:
+                    refs = []
+                for ref in refs:
+                    local_buf.append(f"    ↳ {ref}")
+
+            # (2) Solo BOOL: SMAX/SMIN
+            for bool_idx, sys_name in bool_only:
+                if bool_idx >= len(AxisParamBoolVals):
+                    continue
+                flag = AxisParamBoolVals[bool_idx]
+                sys_idx = _sys_index(axisInd, sys_name)
+                if sys_idx < 0:
+                    continue
+
+                try:
+                    sys_refs = run_io_search(iotype=IO_DI, Ind=sys_idx, verbose=False) or []
+                except Exception:
+                    sys_refs = []
+
+                if sys_refs and not flag:
+                    label = _axis_label_from_bool_idx(bool_idx)  # "MAX" o "MIN"
+                    local_buf.append(f"  ⚠️  Flag {label} disattivo ma {label} è usato")
+                for ref in sys_refs:
+                    local_buf.append(f"    ↳ {ref}")
+
+            # stampa SOLO se ci sono righe
+            if local_buf:
                 print(f"\n[ASSE {axisInd:02d}] {axis_name}")
-                print("\n".join(output_lines))
+                print("\n".join(local_buf))
+                out_lines.extend([f"[ASSE {axisInd:02d}] {axis_name}", *local_buf])
 
-        logger.info("OUT: custom_function.check_axis_flag")
+        logging.debug("OUT: check_axis_flag")
+        return out_lines
 
     check_axis_flag()
     logger.info("OUT: custom_function")

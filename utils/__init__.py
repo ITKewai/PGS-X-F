@@ -5,7 +5,6 @@ NON POSSIBILI
 # TODO: veridicare che la variabile di sistema sia su "SI" il booleano in caso di assi se no non VA (L LL L0 EEC)
 
 POSSIBILI
-# TODO: controllo per vedere se un uscita DO o AO è usata su piu assi
 # TODO: controllo se c è un SYSTEM di usasse usato ma c'è il FLAG su NO
 # TODO: controllo safety interlock sgancio chiusura, non deve esserci Droll L (o la system)
 # TODO: ricarca Freee daindici sbagliati

@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 import sys
 from utils.version import __version__, __pgs_version__, __author__, __company__, __product__, __copyright__, get_version_info
-from utils.yaml.data.axis import get_axis_int_di
-from utils.yaml.data.io import run_free_scan_di, run_free_scan_do, run_free_scan_ai, run_free_scan_ao
-from utils.yaml.data.params import *
+from utils.yaml.data.core import make_axis_sys_addr, make_alarm_sys_addr
+from utils.yaml.data.costants import AXIS_GROUPS_ORDER, ALARM_GROUPS_ORDER
 from utils.yaml.download import *
+# from utils.yaml.data.params import *
 from utils.db.data_config import *
+from utils.yaml.data.functions import *
 
 
 def _pause_if_frozen():
@@ -105,7 +106,7 @@ def main():
                     except Exception:
                         return f"axis[{i}]"
 
-                n_to_show = min(len(axis_nodes), AXIS_MAX_INDEX + 1)
+                n_to_show = min(len(axis_nodes), MAX_ASSE + 1)
 
                 print("\nMappa AXIS (indice → nome):")
                 # prepara le stringhe "[ii] nome"
@@ -117,10 +118,10 @@ def main():
                         row = entries[k:k + cols]
                         print("  " + "".join(s.ljust(colw) for s in row))
 
-                if n_to_show < AXIS_MAX_INDEX + 1:
-                    print(f"... (definiti {n_to_show} assi su {AXIS_MAX_INDEX + 1})")
+                if n_to_show < MAX_ASSE + 1:
+                    print(f"... (definiti {n_to_show} assi su {MAX_ASSE + 1})")
 
-                idx_prompt_max = AXIS_MAX_INDEX
+                idx_prompt_max = MAX_ASSE
             else:  # ALARM
                 alarm_rows = data_config.Alarm_Param
                 print("\nAlcuni ALARM definiti (indice → nome):")
@@ -132,56 +133,18 @@ def main():
                     except Exception:
                         continue
 
-                if len(alarm_rows) < ALARM_MAX_INDEX + 1:
-                    print(f"(presenti {len(alarm_rows)} allarmi; range massimo supportato 0..{ALARM_MAX_INDEX})")
+                if len(alarm_rows) < MAX_ALARM + 1:
+                    print(f"(presenti {len(alarm_rows)} allarmi; range massimo supportato 0..{MAX_ALARM})")
 
-                idx_prompt_max = ALARM_MAX_INDEX
+                idx_prompt_max = MAX_ALARM
 
             # --- Scelta INDEX con validazione ---
             try:
                 idx_raw = input(f"\nInserisci INDEX per {sys_type} (0..{idx_prompt_max}): ").strip()
                 index = int(idx_raw)
-                validate_system_index(sys_type, index)
-            except Exception as e:
+            except TypeError:
                 print(f"INDEX non valido: {e}")
                 continue
-            # --- Scelta modalità: System Address o DI da AXIS.INT ---
-            if sys_type == "AXIS":
-                # mode = (input("Vuoi cercare (1) indirizzo SYSTEM AXIS.* oppure (2) DI da AXIS.INT? [1/2]: ").strip() or "1") # per ora non (2)
-                mode = 1
-                if mode == "2":
-                    # elenco dei campi disponibili in AXIS.INT
-                    axis_int_fields = list(IDX_AXIS_INT.keys())
-                    print("\nScegli FIELD di AXIS.INT (nome o indice):")
-                    entries = [f"[{i:02d}] {lab}" for i, lab in enumerate(axis_int_fields)]
-                    print_in_columns(entries, cols=3)
-
-                    fsel2 = input("FIELD AXIS.INT: ").strip()
-                    if fsel2.isdigit():
-                        fidx2 = int(fsel2)
-                        if not (0 <= fidx2 < len(axis_int_fields)):
-                            print("FIELD AXIS.INT index fuori range.")
-                            continue
-                        field_int = axis_int_fields[fidx2]
-                    else:
-                        field_int = fsel2.strip().upper()
-                        if field_int not in IDX_AXIS_INT:
-                            print("FIELD AXIS.INT sconosciuto.")
-                            continue
-
-                    try:
-                        field_idx = IDX_AXIS_INT[field_int]
-                        di_id = data_config.Axis_Param[index].intval[field_idx]
-                    except (KeyError, IndexError, AttributeError):
-                        di_id = None
-
-                    if di_id is None or di_id < 0:
-                        print(f"AXIS.INT → {field_int}[{index}] non configurato (o valore invalido).")
-                        continue
-
-                    print(f"\nAXIS.INT → {field_int}[{index}]  => DI: {di_id}\n")
-                    run_io_search(iotype=IO_DI, Ind=di_id)
-                    continue
 
             # --- Scelta FIELD (nome o indice) ---
             fields = AXIS_GROUPS_ORDER if sys_type == "AXIS" else ALARM_GROUPS_ORDER
@@ -214,7 +177,7 @@ def main():
                 print(f"Errore nel calcolo dell'indirizzo di sistema: {e}")
                 continue
 
-            human = decode_system_addr(number) or f"{sys_type}.{field}[{index}]"
+            human = decode_sys_addr(number) or f"{sys_type}.{field}[{index}]"
             print(f"\nSYSTEM → {human}  => numero: {number}")
             run_io_search(iotype=IO_DI, Ind=number)
             continue

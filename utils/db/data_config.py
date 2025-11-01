@@ -901,8 +901,9 @@ def _debug_ioparam(iotype: int, Ind: int = 0):
         print(f'[{Ind}] - "{get_io_name(iotype=iotype, Ind=Ind)}"\t{data_config.IO_RI_List[Ind]}')
 
 
-def run_params_scan(iotype: int, ind_target: int):
+def run_params_scan(iotype: int, ind_target: int) -> List[str]:
     logger.debug('IN: run_params_scan')
+    _return = []
     if iotype == IO_DI:
         for pid, val in enumerate(data_config.InInd):
             if val == ind_target:
@@ -911,7 +912,9 @@ def run_params_scan(iotype: int, ind_target: int):
                     label = entry.get("label")
                     display = entry.get("display", label)
                     origin = entry.get("origin", "??")
-                    print(f'{origin}\t→\t{display}')
+                    txt = f'{origin}\t→\t{display}'
+                    _return.append(txt)
+                    print(txt)
 
         for idx, val in enumerate(data_config.ParamInt):
             if idx not in Config_Map["_ParamInt"]:
@@ -925,7 +928,9 @@ def run_params_scan(iotype: int, ind_target: int):
                     display = Config_Map["ParamInt"][idx_name]["display"]
                     origin = Config_Map["ParamInt"][idx_name]["origin"]
                     io_name = get_io_name(iotype=IO_DI, Ind=ind_target)
-                    print(f"{origin}\t→\t{display}")
+                    txt = f'{origin}\t→\t{display}'
+                    _return.append(txt)
+                    print(txt)
     elif iotype == IO_DO:
         for pid, val in enumerate(data_config.OutInd):
             if val == ind_target:
@@ -934,7 +939,9 @@ def run_params_scan(iotype: int, ind_target: int):
                     label = entry.get("label")
                     display = entry.get("display", label)
                     origin = entry.get("origin", "??")
-                    print(f'{origin}\t→\t{display}')
+                    txt = f'{origin}\t→\t{display}'
+                    _return.append(txt)
+                    print(txt)
 
         for idx, val in enumerate(data_config.ParamInt):
             if idx not in Config_Map["_ParamInt"]:
@@ -948,7 +955,9 @@ def run_params_scan(iotype: int, ind_target: int):
                     display = Config_Map["ParamInt"][idx_name]["display"]
                     origin = Config_Map["ParamInt"][idx_name]["origin"]
                     io_name = get_io_name(iotype=IO_DI, Ind=ind_target)
-                    print(f"{origin}\t→\t{display}")
+                    txt = f'{origin}\t→\t{display}'
+                    _return.append(txt)
+                    print(txt)
     elif iotype == IO_AI:
         for idx, val in enumerate(data_config.ParamInt):
             if idx not in Config_Map["_ParamInt"]:
@@ -962,10 +971,13 @@ def run_params_scan(iotype: int, ind_target: int):
                     display = Config_Map["ParamInt"][idx_name]["display"]
                     origin = Config_Map["ParamInt"][idx_name]["origin"]
                     io_name = get_io_name(iotype=IO_DI, Ind=ind_target)
-                    print(f"{origin}\t→\t{display}")
+                    txt = f'{origin}\t→\t{display}'
+                    _return.append(txt)
+                    print(txt)
+    return _return
 
 
-def run_axis_scan(iotype: int, ind_target: int = None, axisInd: int = None):
+def run_axis_scan(iotype: int, ind_target: int = None, axisInd: int = None) -> List[str]:
     if axisInd is None:
         logging.debug('IN: run_axis_scan')
     """
@@ -974,6 +986,7 @@ def run_axis_scan(iotype: int, ind_target: int = None, axisInd: int = None):
     axisInd: asse dove cercarlo
     """
     if axisInd is not None:
+        _return = []
         if iotype == IO_DI:
             AxisParamIntVals = data_config.Axis_Param[axisInd].intval
             for idx,val in enumerate(AxisParamIntVals):
@@ -984,7 +997,9 @@ def run_axis_scan(iotype: int, ind_target: int = None, axisInd: int = None):
                         display = Type_AxisParam_Map["intval"][idx_name]["display"]
                         origin = Type_AxisParam_Map["intval"][idx_name]["origin"]
                         axis_name = get_axis_name(Ind=axisInd)
-                        print(f"{origin.format(axisInd, axis_name)}\t→\t{display}")
+                        txt = f"{origin.format(axisInd, axis_name)}\t→\t{display}"
+                        _return.append(txt)
+                        print(txt)
         if iotype == IO_RI:
             AxisParamIntVals = data_config.Axis_Param[axisInd].intval
             for idx, val in enumerate(AxisParamIntVals):
@@ -995,15 +1010,22 @@ def run_axis_scan(iotype: int, ind_target: int = None, axisInd: int = None):
                         display = Type_AxisParam_Map["intval"][idx_name]["display"]
                         origin = Type_AxisParam_Map["intval"][idx_name]["origin"]
                         axis_name = get_axis_name(Ind=axisInd)
-                        print(f"{origin.format(axisInd, axis_name)}\t→\t{display}")
+                        txt = f"{origin.format(axisInd, axis_name)}\t→\t{display}"
+                        _return.append(txt)
+                        print(txt)
+        return _return
     else:
+        _return = []
         for i in range(0, MAX_ASSE):
-            run_axis_scan(iotype=iotype, ind_target=ind_target, axisInd=i)
+            found = run_axis_scan(iotype=iotype, ind_target=ind_target, axisInd=i)
+            if found:
+                _return.extend(found)
     if axisInd is None:
         logging.debug('OUT: run_axis_scan')
+    return _return
 
 
-def run_input_scan(iotype: int, ind_target: int = None, inputInd: int = None):
+def run_input_scan(iotype: int, ind_target: int = None, inputInd: int = None) -> List[str]:
     if inputInd is None:
         logging.debug('IN: run_input_scan')
     """
@@ -1012,6 +1034,7 @@ def run_input_scan(iotype: int, ind_target: int = None, inputInd: int = None):
     InputInd: input dove cercarlo
     """
     if inputInd is not None:
+        _return = []
         if iotype == IO_DI:
             InputParamIntVals = data_config.Input_Param[inputInd].intval
             for idx,val in enumerate(InputParamIntVals):
@@ -1021,7 +1044,9 @@ def run_input_scan(iotype: int, ind_target: int = None, inputInd: int = None):
                     if val == ind_target:
                         display = Type_InputParam_Map["intval"][idx_name]["display"]
                         origin = Type_InputParam_Map["intval"][idx_name]["origin"]
-                        print(f"{origin.format(inputInd)}\t→\t{display}")
+                        txt = f"{origin.format(inputInd)}\t→\t{display}"
+                        _return.append(txt)
+                        print(txt)
         if iotype == IO_AI:
             InputParamIntVals = data_config.Input_Param[inputInd].intval
             for idx,val in enumerate(InputParamIntVals):
@@ -1031,15 +1056,22 @@ def run_input_scan(iotype: int, ind_target: int = None, inputInd: int = None):
                     if val == ind_target:
                         display = Type_InputParam_Map["intval"][idx_name]["display"]
                         origin = Type_InputParam_Map["intval"][idx_name]["origin"]
-                        print(f"{origin.format(inputInd)}\t→\t{display}")
+                        txt = f"{origin.format(inputInd)}\t→\t{display}"
+                        _return.append(txt)
+                        print(txt)
+        return _return
     else:
+        _return = []
         for i in range(0, MAX_INPUT):
-            run_input_scan(iotype=iotype, ind_target=ind_target, inputInd=i)
+            found = run_input_scan(iotype=iotype, ind_target=ind_target, inputInd=i)
+            if found:
+                _return.extend(found)
     if inputInd is None:
         logging.debug('OUT: run_input_scan')
+    return _return
 
 
-def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None):
+def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None) -> List[str]:
     if outputInd is None:
         logging.debug('IN: run_output_scan')
     """
@@ -1048,6 +1080,7 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None):
     outputInd: output dove cercarlo
     """
     if outputInd is not None:
+        _return = []
         if iotype == IO_DI:
             OutputParamIntVals = data_config.Output_Param[outputInd].intval
             custom_params = {
@@ -1061,7 +1094,9 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None):
                 if idx is not None:
                     if OutputParamIntVals[idx] == ind_target:
                         origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
-                        print(f"{origin.format(outputInd)}\t→\t{display}")
+                        txt = f"{origin.format(outputInd)}\t→\t{display}"
+                        _return.append(txt)
+                        print(txt)
                 else:
                     logging.warning(f'{idx_name} non definito')
         elif iotype == IO_DO:
@@ -1074,7 +1109,9 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None):
                         if val == ind_target:
                             display = Type_OutputParam_Map["intval"][idx_name]["display"]
                             origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
-                            print(f"{origin.format(idx)}\t→\t{display}")
+                            txt = f"{origin.format(idx)}\t→\t{display}"
+                            _return.append(txt)
+                            print(txt)
             elif OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_ADV:
                 custom_params = {
                     "OUTPUT_INT_ANA2IND": "ADV START",
@@ -1088,7 +1125,9 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None):
                     if idx is not None:
                         if OutputParamIntVals[idx] == ind_target:
                             origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
-                            print(f"{origin.format(outputInd)}\t→\t{display}")
+                            txt = f"{origin.format(outputInd)}\t→\t{display}"
+                            _return.append(txt)
+                            print(txt)
                     else:
                         logging.warning(f'{idx_name} non definito')
             elif OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_PSLCAN:
@@ -1103,7 +1142,9 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None):
                     if idx is not None:
                         if OutputParamIntVals[idx] == ind_target:
                             origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
-                            print(f"{origin.format(outputInd)}\t→\t{display}")
+                            txt = f"{origin.format(outputInd)}\t→\t{display}"
+                            _return.append(txt)
+                            print(txt)
                     else:
                         logging.warning(f'{idx_name} non definito')
             if OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_SELSLOW:
@@ -1116,7 +1157,9 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None):
                     if idx is not None:
                         if OutputParamIntVals[idx] == ind_target:
                             origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
-                            print(f"{origin.format(outputInd)}\t→\t{display}")
+                            txt = f"{origin.format(outputInd)}\t→\t{display}"
+                            _return.append(txt)
+                            print(txt)
                     else:
                         logging.warning(f'{idx_name} non definito')
         elif iotype == IO_AI:
@@ -1140,7 +1183,9 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None):
                     if idx is not None:
                         if OutputParamIntVals[idx] == ind_target:
                             origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
-                            print(f"{origin.format(outputInd)}\t→\t{display}")
+                            txt = f"{origin.format(outputInd)}\t→\t{display}"
+                            _return.append(txt)
+                            print(txt)
                     else:
                         logging.warning(f'{idx_name} non definito')
         elif iotype == IO_AO:
@@ -1166,18 +1211,24 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None):
                     if idx is not None:
                         if OutputParamIntVals[idx] == ind_target:
                             origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
-                            print(f"{origin.format(outputInd)}\t→\t{display}")
+                            txt = f"{origin.format(outputInd)}\t→\t{display}"
+                            _return.append(txt)
+                            print(txt)
                     else:
                         logging.warning(f'{idx_name} non definito')
 
     else:
+        _return = []
         for i in range(0, MAX_OUTPUT):
-            run_output_scan(iotype=iotype, ind_target=ind_target, outputInd=i)
+            found = run_output_scan(iotype=iotype, ind_target=ind_target, outputInd=i)
+            if found:
+                _return.extend(found)
     if outputInd is None:
         logging.debug('OUT: run_output_scan')
+    return _return
 
 
-def run_feedback_scan(iotype: int, ind_target: int = None, feedbackInd: int = None):
+def run_feedback_scan(iotype: int, ind_target: int = None, feedbackInd: int = None) -> List[str]:
     if feedbackInd is None:
         logging.debug('IN: run_feedback_scan')
     """
@@ -1186,33 +1237,45 @@ def run_feedback_scan(iotype: int, ind_target: int = None, feedbackInd: int = No
     feedbackInd: output dove cercarlo
     """
     if feedbackInd is not None:
+        _return = []
         if iotype == IO_DI:
             FeedbackParamIntVals = data_config.Feedback_Param[feedbackInd].intval
             if FeedbackParamIntVals[FB_INT_RESETIND] == ind_target:
                 origin = Type_FeedbackParam_Map["intval"]["FB_INT_RESETIND"]["origin"]
                 display = Type_FeedbackParam_Map["intval"]["FB_INT_RESETIND"]["display"]
-                print(f"{origin.format(feedbackInd)}\t→\t{display}")
+                txt = f"{origin.format(feedbackInd)}\t→\t{display}"
+                _return.append(txt)
+                print(txt)
             if FeedbackParamIntVals[FB_INT_TIPO] == FB_DI:
                 if FeedbackParamIntVals[FB_INT_ININD] == ind_target:
                     origin = Type_FeedbackParam_Map["intval"]["FB_INT_ININD"]["origin"]
                     display = Type_FeedbackParam_Map["intval"]["FB_INT_ININD"]["display"]
-                    print(f"{origin.format(feedbackInd)}\t→\t{display}")
+                    txt = f"{origin.format(feedbackInd)}\t→\t{display}"
+                    _return.append(txt)
+                    print(txt)
         elif iotype == IO_AI:
             FeedbackParamIntVals = data_config.Feedback_Param[feedbackInd].intval
             if FeedbackParamIntVals[FB_INT_TIPO] in [FB_AI, FB_AHSC, FB_AI2]: # TODO: quello a ritenzione di analogico come si chiama?
                 if FeedbackParamIntVals[FB_INT_ININD] == ind_target:
                     origin = Type_FeedbackParam_Map["intval"]["FB_INT_ININD"]["origin"]
                     display = Type_FeedbackParam_Map["intval"]["FB_INT_ININD"]["display"]
-                    print(f"{origin.format(feedbackInd)}\t→\t{display}")
+                    txt = f"{origin.format(feedbackInd)}\t→\t{display}"
+                    _return.append(txt)
+                    print(txt)
     else:
+        _return = []
         for i in range(0, MAX_FEEDBACK):
-            run_feedback_scan(iotype=iotype, ind_target=ind_target, feedbackInd=i)
+            found = run_feedback_scan(iotype=iotype, ind_target=ind_target, feedbackInd=i)
+            if found:
+                _return.extend(found)
     if feedbackInd is None:
         logging.debug('OUT: run_feedback_scan')
+    return _return
 
 
-def run_io_expr_scan(iotype: int, ind_target: int = None):
+def run_io_expr_scan(iotype: int, ind_target: int = None) -> List[str]:
     logger.debug('IN: run_io_expr_scan')
+    _return = []
     if iotype == IO_DI:
         for Ind in range(0, len(data_config.IO_DI_List)):
             if data_config.IO_DI_List[Ind].intval[IO_INT_ADDRTYPE] == IO_TYPE_CALC:
@@ -1229,7 +1292,9 @@ def run_io_expr_scan(iotype: int, ind_target: int = None):
                     if not_val in [IO_EXPR_NONE, IO_EXPR_VAL, IO_EXPR_NOTVAL]:
                         group_num = ((i - 1) // 3)  # + 1
                         if opnd_val == ind_target:
-                            print(f"IO\t→\tDI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}")
+                            txt = f"IO\t→\tDI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}"
+                            _return.append(txt)
+                            print(txt)
     elif iotype == IO_AI:
         # EXPR DI
         for Ind in range(0, len(data_config.IO_DI_List)):
@@ -1248,7 +1313,9 @@ def run_io_expr_scan(iotype: int, ind_target: int = None):
                                    IO_EXPR_AIGE0, IO_EXPR_AILT0, IO_EXPR_AILE0]:
                         group_num = ((i - 1) // 3)  # + 1
                         if opnd_val == ind_target:
-                            print(f"IO\t→\tDI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}")
+                            txt = f"IO\t→\tDI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}"
+                            _return.append(txt)
+                            print(txt)
         # EXPR RI
         for Ind in range(0, len(data_config.IO_RI_List)):
             if data_config.IO_RI_List[Ind].intval[IO_INT_ADDRTYPE] == IO_TYPE_CALC:
@@ -1265,7 +1332,9 @@ def run_io_expr_scan(iotype: int, ind_target: int = None):
                     if not_val in [IO_EXPR_AI, IO_EXPR_ABSAI]:
                         group_num = ((i - 1) // 3)  # + 1
                         if opnd_val == ind_target:
-                            print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}")
+                            txt = f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}"
+                            _return.append(txt)
+                            print(txt)
     elif iotype == IO_RI:
         # EXPR DI
         for Ind in range(0, len(data_config.IO_DI_List)):
@@ -1284,7 +1353,9 @@ def run_io_expr_scan(iotype: int, ind_target: int = None):
                                    IO_EXPR_RIGE0, IO_EXPR_RILT0, IO_EXPR_RILE0]:
                         group_num = ((i - 1) // 3)  # + 1
                         if opnd_val == ind_target:
-                            print(f"IO\t→\tDI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}")
+                            txt = f"IO\t→\tDI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}"
+                            _return.append(txt)
+                            print(txt)
         # EXPR RI
         for Ind in range(0, len(data_config.IO_RI_List)):
             if data_config.IO_RI_List[Ind].intval[IO_INT_ADDRTYPE] == IO_TYPE_CALC:
@@ -1301,12 +1372,16 @@ def run_io_expr_scan(iotype: int, ind_target: int = None):
                     if not_val in [IO_EXPR_RI, IO_EXPR_ABSRI]:
                         group_num = ((i - 1) // 3)  # + 1
                         if opnd_val == ind_target:
-                            print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}")
+                            txt = f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}"
+                            _return.append(txt)
+                            print(txt)
     logger.debug('OUT: run_io_expr_scan')
+    return _return
 
 
-def run_io_scan(iotype: int, ind_target: int = None):
+def run_io_scan(iotype: int, ind_target: int = None) -> List[str]:
     logging.debug('IN: run_io_scan')
+    _return = []
     if iotype == IO_DI:
         for Ind in range(0, len(data_config.IO_DI_List)):
             if data_config.IO_DI_List[Ind].intval[IO_INT_ADDRTYPE] == IO_TYPE_CALC:
@@ -1315,14 +1390,19 @@ def run_io_scan(iotype: int, ind_target: int = None):
                 # campo In del DI
                 delay_di = data_config.IO_DI_List[Ind].intval[IO_INT_ININD]
                 if delay_di and delay_di == ind_target:
-                    print(f"IO\t→\tDI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tIn")
-        run_io_expr_scan(iotype=IO_DI, ind_target=ind_target)
+                    txt = f"IO\t→\tDI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tIn"
+                    _return.append(txt)
+                    print(txt)
+        found = run_io_expr_scan(iotype=IO_DI, ind_target=ind_target)
+        if found:
+            _return.extend(found)
 
         # campo In del DO
         for Ind in range(0, len(data_config.IO_DO_List)):
             if data_config.IO_DO_List[Ind].intval[IO_INT_ININD] == ind_target:
-                print(f"IO\t→\tDO\t→\t[{Ind}] {get_io_name(iotype=IO_DO, Ind=Ind)}\t→\tIn")
-
+                txt = f"IO\t→\tDI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tIn"
+                _return.append(txt)
+                print(txt)
         for Ind in range(0, len(data_config.IO_RI_List)):
             if data_config.IO_RI_List[Ind].intval[IO_INT_ADDRTYPE] in [IO_TYPE_FUNC_TOT, IO_TYPE_FUNC_TOTAUTO,
                                                                        IO_TYPE_FUNC_TOTMAN, IO_TYPE_FUNC_DTOT,
@@ -1332,11 +1412,17 @@ def run_io_scan(iotype: int, ind_target: int = None):
                                                                        IO_TYPE_FUNC_DTIMEAUTO, IO_TYPE_FUNC_DTIMEMAN]:
                 if data_config.IO_RI_List[Ind].intval[IO_INT_ADDR1] == IO_DI:
                     if data_config.IO_RI_List[Ind].intval[IO_INT_ADDR2] == ind_target:
-                        print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tAddress")
+                        txt = f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tAddress"
+                        _return.append(txt)
+                        print(txt)
             if data_config.IO_RI_List[Ind].intval[IO_INT_NBYTES] == ind_target:
-                print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tEnabled")
+                txt = f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tEnabled"
+                _return.append(txt)
+                print(txt)
             if data_config.IO_RI_List[Ind].intval[IO_INT_TIMEOUT] == ind_target:
-                print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tReset")
+                txt = f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tReset"
+                _return.append(txt)
+                print(txt)
     elif iotype == IO_DO:
         for Ind in range(0, len(data_config.IO_RI_List)):
             if data_config.IO_RI_List[Ind].intval[IO_INT_ADDRTYPE] in [IO_TYPE_FUNC_TOT, IO_TYPE_FUNC_TOTAUTO,
@@ -1347,14 +1433,20 @@ def run_io_scan(iotype: int, ind_target: int = None):
                                                                        IO_TYPE_FUNC_DTIMEAUTO, IO_TYPE_FUNC_DTIMEMAN]:
                 if data_config.IO_RI_List[Ind].intval[IO_INT_ADDR1] == IO_DO:
                     if data_config.IO_RI_List[Ind].intval[IO_INT_ADDR2] == ind_target:
-                        print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tAddress")
+                        txt = f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tAddress"
+                        _return.append(txt)
+                        print(txt)
     elif iotype == IO_AI:
         # campo In dei AO
         for Ind in range(0, len(data_config.IO_AO_List)):
             if data_config.IO_AO_List[Ind].intval[IO_INT_ININD] == ind_target:
-                print(f"IO\t→\tAO\t→\t[{Ind}] {get_io_name(iotype=IO_AI, Ind=Ind)}\t→\tIn")
+                txt = f"IO\t→\tAO\t→\t[{Ind}] {get_io_name(iotype=IO_AI, Ind=Ind)}\t→\tIn"
+                _return.append(txt)
+                print(txt)
 
-        run_io_expr_scan(iotype=IO_AI, ind_target=ind_target)
+        found = run_io_expr_scan(iotype=IO_AI, ind_target=ind_target)
+        if found:
+            _return.extend(found)
 
         for Ind in range(0, len(data_config.IO_RI_List)):
             if data_config.IO_RI_List[Ind].intval[IO_INT_ADDRTYPE] in [IO_TYPE_FUNC_TOT, IO_TYPE_FUNC_TOTAUTO,
@@ -1365,11 +1457,15 @@ def run_io_scan(iotype: int, ind_target: int = None):
                                                                        IO_TYPE_FUNC_DTIMEAUTO, IO_TYPE_FUNC_DTIMEMAN]:
                 if data_config.IO_RI_List[Ind].intval[IO_INT_ADDR1] == IO_AI:
                     if data_config.IO_RI_List[Ind].intval[IO_INT_ADDR2] == ind_target:
-                        print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tAddress")
+                        txt = f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tAddress"
+                        _return.append(txt)
+                        print(txt)
     elif iotype == IO_AO:
         for Ind in range(0, len(data_config.IO_AO_List)):
             if data_config.IO_AO_List[Ind].intval[IO_INT_TIMEOUT] == ind_target:
-                print(f"IO\t→\tAO\t→\t[{Ind}] {get_io_name(iotype=IO_AO, Ind=Ind)}\t→\tAO Dual")
+                txt = f"IO\t→\tAO\t→\t[{Ind}] {get_io_name(iotype=IO_AO, Ind=Ind)}\t→\tAO Dual"
+                _return.append(txt)
+                print(txt)
         for Ind in range(0, len(data_config.IO_RI_List)):
             if data_config.IO_RI_List[Ind].intval[IO_INT_ADDRTYPE] in [IO_TYPE_FUNC_TOT, IO_TYPE_FUNC_TOTAUTO,
                                                                        IO_TYPE_FUNC_TOTMAN, IO_TYPE_FUNC_DTOT,
@@ -1379,11 +1475,15 @@ def run_io_scan(iotype: int, ind_target: int = None):
                                                                        IO_TYPE_FUNC_DTIMEAUTO, IO_TYPE_FUNC_DTIMEMAN]:
                 if data_config.IO_RI_List[Ind].intval[IO_INT_ADDR1] == IO_AO:
                     if data_config.IO_RI_List[Ind].intval[IO_INT_ADDR2] == ind_target:
-                        print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tAddress")
+                        txt = f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tAddress"
+                        _return.append(txt)
+                        print(txt)
     elif iotype == IO_RI:
         for Ind in range(0, len(data_config.IO_RI_List)):
             if data_config.IO_RI_List[Ind].intval[IO_INT_ININD] == ind_target:
-                print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tIn")
+                txt = f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tIn"
+                _return.append(txt)
+                print(txt)
             if data_config.IO_RI_List[Ind].intval[IO_INT_ADDRTYPE] in [IO_TYPE_FUNC_TOT, IO_TYPE_FUNC_TOTAUTO,
                                                                        IO_TYPE_FUNC_TOTMAN, IO_TYPE_FUNC_DTOT,
                                                                        IO_TYPE_FUNC_DTOTAUTO, IO_TYPE_FUNC_DTOTMAN,
@@ -1392,13 +1492,17 @@ def run_io_scan(iotype: int, ind_target: int = None):
                                                                        IO_TYPE_FUNC_DTIMEAUTO, IO_TYPE_FUNC_DTIMEMAN]:
                 if data_config.IO_RI_List[Ind].intval[IO_INT_ADDR1] == IO_RI:
                     if data_config.IO_RI_List[Ind].intval[IO_INT_ADDR2] == ind_target:
-                        print(f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tAddress")
+                        txt = f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tAddress"
+                        _return.append(txt)
+                        print(txt)
         run_io_expr_scan(iotype=IO_RI, ind_target=ind_target)
     logging.debug('OUT: run_io_scan')
+    return _return
 
 
-def run_alarm_scan(iotype: int, ind_target: int = None):
+def run_alarm_scan(iotype: int, ind_target: int = None) -> List[str]:
     logging.debug('IN: run_alarm_scan')
+    _return = []
     if iotype == IO_DI:
         AlarmParams = data_config.Alarm_Param
         for idx, AlarmParam in enumerate(AlarmParams):
@@ -1410,7 +1514,9 @@ def run_alarm_scan(iotype: int, ind_target: int = None):
                         display = Type_AlarmParam_Map["intval"][idx_name]["display"]
                         origin = Type_AlarmParam_Map["intval"][idx_name]["origin"]
                         alarm_name = AlarmParam.name
-                        print(f"{origin.format(idx, alarm_name)}\t→\t{display}")
+                        txt = f"{origin.format(idx, alarm_name)}\t→\t{display}"
+                        _return.append(txt)
+                        print(txt)
     elif iotype == IO_DO:
         AlarmParams = data_config.Alarm_Param
         for idx, AlarmParam in enumerate(AlarmParams):
@@ -1422,41 +1528,67 @@ def run_alarm_scan(iotype: int, ind_target: int = None):
                         display = Type_AlarmParam_Map["intval"][idx_name]["display"]
                         origin = Type_AlarmParam_Map["intval"][idx_name]["origin"]
                         alarm_name = AlarmParam.name
-                        print(f"{origin.format(idx, alarm_name)}\t→\t{display}")
+                        txt = f"{origin.format(idx, alarm_name)}\t→\t{display}"
+                        _return.append(txt)
+                        print(txt)
     logging.debug('OUT: run_alarm_scan')
+    return _return
 
 
 def run_motor_scan(iotype: int, ind_target: int = None):
     logging.debug('IN: run_motor_scan')
+    _return = []
     if iotype == IO_DI:
         for Ind in range(0, MAX_MOTORE):
             if data_config.Motor_LSInd[Ind] == ind_target:
-                print(f"Motor\t→\t{Ind + 1}\t→\tLS - STOP")
+                txt = f"Motor\t→\t{Ind + 1}\t→\tLS - STOP"
+                _return.append(txt)
+                print(txt)
             if data_config.Motor_LS2Ind[Ind] == ind_target:
-                print(f"Motor\t→\t{Ind + 1}\t→\tLS2 - START")
+                txt = f"Motor\t→\t{Ind + 1}\t→\tLS2 - START"
+                _return.append(txt)
+                print(txt)
             if data_config.Motor_TRInd[Ind] == ind_target:
-                print(f"Motor\t→\t{Ind + 1}\t→\tTR")
+                txt = f"Motor\t→\t{Ind + 1}\t→\tTR"
+                _return.append(txt)
+                print(txt)
             if data_config.Motor_TR2Ind[Ind] == ind_target:
-                print(f"Motor\t→\t{Ind + 1}\t→\tTR2")
+                txt = f"Motor\t→\t{Ind + 1}\t→\tTR2"
+                _return.append(txt)
+                print(txt)
             if data_config.Motor_StatInd[Ind] == ind_target:
-                print(f"Motor\t→\t{Ind + 1}\t→\tSTAT")
+                txt = f"Motor\t→\t{Ind + 1}\t→\tSTAT"
+                _return.append(txt)
+                print(txt)
             if data_config.Motor_StartingInd[Ind] == ind_target:
-                print(f"Motor\t→\t{Ind + 1}\t→\tSTARTING")
+                txt = f"Motor\t→\t{Ind + 1}\t→\tSTARTING"
+                _return.append(txt)
+                print(txt)
     elif iotype == IO_DO:
         for Ind in range(0, MAX_MOTORE):
             if data_config.Motor_CmdInd[Ind] == ind_target:
-                print(f"Motor\t→\t{Ind + 1}\t→\tCMD")
+                txt = f"Motor\t→\t{Ind + 1}\t→\tCMD"
+                _return.append(txt)
+                print(txt)
             if data_config.Motor_Cmd1Ind[Ind] == ind_target:
-                print(f"Motor\t→\t{Ind + 1}\t→\tCMD1")
+                txt = f"Motor\t→\t{Ind + 1}\t→\tCMD1"
+                _return.append(txt)
+                print(txt)
             if data_config.Motor_Cmd2Ind[Ind] == ind_target:
-                print(f"Motor\t→\t{Ind + 1}\t→\tCMD2")
+                txt = f"Motor\t→\t{Ind + 1}\t→\tCMD2"
+                _return.append(txt)
+                print(txt)
             if data_config.Motor_Cmd3Ind[Ind] == ind_target:
-                print(f"Motor\t→\t{Ind + 1}\t→\tCMD3")
+                txt = f"Motor\t→\t{Ind + 1}\t→\tCMD3"
+                _return.append(txt)
+                print(txt)
     logging.debug('OUT: run_motor_scan')
+    return _return
 
 
-def run_maintenance_scan(iotype: int, ind_target: int = None):
+def run_maintenance_scan(iotype: int, ind_target: int = None) -> List[str]:
     logging.debug('IN: run_maintenance_scan')
+    _return = []
     if iotype == IO_DI:
         MaintParams = data_config.Maint_Param
         for idx, MaintParam in enumerate(MaintParams):
@@ -1468,18 +1600,29 @@ def run_maintenance_scan(iotype: int, ind_target: int = None):
                         display = Type_MaintParam_Map["intval"][idx_name]["display"]
                         origin = Type_MaintParam_Map["intval"][idx_name]["origin"]
                         maint_name = MaintParam.name
-                        print(f"{origin.format(idx, maint_name)}\t→\t{display}")
+                        txt = f"{origin.format(idx, maint_name)}\t→\t{display}"
+                        _return.append(txt)
+                        print(txt)
     elif iotype == IO_DO:
         for Ind in range(0, MAX_MAINT):
             if data_config.Motor_CmdInd[Ind] == ind_target:
-                print(f"Motor\t→\t{Ind + 1}\t→\tCMD")
+                txt = f"Motor\t→\t{Ind + 1}\t→\tCMD"
+                _return.append(txt)
+                print(txt)
             if data_config.Motor_Cmd1Ind[Ind] == ind_target:
-                print(f"Motor\t→\t{Ind + 1}\t→\tCMD1")
+                txt = f"Motor\t→\t{Ind + 1}\t→\tCMD1"
+                _return.append(txt)
+                print(txt)
             if data_config.Motor_Cmd2Ind[Ind] == ind_target:
-                print(f"Motor\t→\t{Ind + 1}\t→\tCMD2")
+                txt = f"Motor\t→\t{Ind + 1}\t→\tCMD2"
+                _return.append(txt)
+                print(txt)
             if data_config.Motor_Cmd3Ind[Ind] == ind_target:
-                print(f"Motor\t→\t{Ind + 1}\t→\tCMD3")
+                txt = f"Motor\t→\t{Ind + 1}\t→\tCMD3"
+                _return.append(txt)
+                print(txt)
     logging.debug('OUT: run_maintenance_scan')
+    return _return
 
 
 def decode_sys_addr(ind_target: int):

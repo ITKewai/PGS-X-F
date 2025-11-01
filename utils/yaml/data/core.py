@@ -36,8 +36,8 @@ def make_alarm_sys_addr(group: str, alarm_index: int) -> int:
     g = group.strip().upper()
     if g not in ALARM_GROUP_BASE:
         raise KeyError(f"Gruppo ALARM sconosciuto: {group}")
-    if not (0 <= alarm_index <= ALARM_MAX_INDEX):  # 0..191
-        raise ValueError(f"alarm_index fuori range (0..{ALARM_MAX_INDEX}): {alarm_index}")
+    if not (0 <= alarm_index <= MAX_ALARM):  # 0..191
+        raise ValueError(f"alarm_index fuori range (0..{MAX_ALARM}): {alarm_index}")
     return ALARM_GROUP_BASE[g] + alarm_index
 
 
@@ -49,7 +49,7 @@ def parse_alarm_sys_addr(addr: int) -> Optional[Tuple[str, int]]:
         return None
     base = 16384 + group_idx * ALARM_GROUP_STEP
     alarm_index = addr - base
-    if not (0 <= alarm_index <= ALARM_MAX_INDEX):  # 0..191
+    if not (0 <= alarm_index <= MAX_ALARM):
         return None
     return ALARM_GROUPS_ORDER[group_idx], alarm_index
 
@@ -81,14 +81,14 @@ def validate_system_index(sys_type: str, index: int) -> None:
         if not (MOTOR_MIN_INDEX <= index <= MOTOR_MAX_INDEX):
             raise ValueError(f"MOTOR index fuori range ({MOTOR_MIN_INDEX}..{MOTOR_MAX_INDEX}): {index}")
     elif t == "TOOLSET":
-        if not (0 <= index <= TOOLSET_MAX_INDEX):
-            raise ValueError(f"TOOLSET index fuori range (0..{TOOLSET_MAX_INDEX}): {index}")
+        if not (0 <= index <= MAX_TOOLSET):
+            raise ValueError(f"TOOLSET index fuori range (0..{MAX_TOOLSET}): {index}")
     elif t == "ALARM":
-        if not (0 <= index <= ALARM_MAX_INDEX):
-            raise ValueError(f"ALARM index fuori range (0..{ALARM_MAX_INDEX}): {index}")
+        if not (0 <= index <= MAX_ALARM):
+            raise ValueError(f"ALARM index fuori range (0..{MAX_ALARM}): {index}")
     elif t == "MAINT":
-        if not (0 <= index <= MAINT_MAX_INDEX):
-            raise ValueError(f"MAINT index fuori range (0..{MAINT_MAX_INDEX}): {index}")
+        if not (0 <= index <= MAX_MAINT):
+            raise ValueError(f"MAINT index fuori range (0..{MAX_MAINT}): {index}")
     else:
         raise ValueError(f"Tipo di sistema sconosciuto: {sys_type}")
 

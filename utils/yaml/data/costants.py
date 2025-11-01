@@ -273,25 +273,8 @@ AXISREAL_MAX_INDEX = 47
 MOTOR_MIN_INDEX = 1
 MOTOR_MAX_INDEX = 7
 
-# Toolset 0..7
-TOOLSET_MAX_INDEX = 7
-
-# Allarmi 0..191
-ALARM_MAX_INDEX = 191
-
-# Manutenzioni 0..31
-MAINT_MAX_INDEX = 31
-
-# --- AXIS: gruppi bit con base + indice asse (0->axis[0], 1->axis[1], ...) ---
-# Ogni gruppo è distanziato di 64. Dentro al gruppo: base + axis_index
-# AXIS_GROUPS_ORDER = [
-#     "MOVING", "UP", "DOWN", "MAX", "MIN", "SUPLS", "INFLS",
-#     "HH", "H", "L", "LL", "H0", "L0", "SAF", "ALTFB", "BAD",
-#     "TILT", "P1UP", "P1DOWN", "P2UP", "P2DOWN", "SLOW", "FAST"
-# ]
-# AXIS_GROUP_BASE = {name: (2048 + i * 64) for i, name in enumerate(AXIS_GROUPS_ORDER)}
-AXIS_GROUP_STEP = 64  # numero max assi per gruppo
-BASE_AXIS = 2048
+AXIS_GROUP_STEP = 64  # numero max assi per gruppo DI_GET[FC100]
+BASE_AXIS = 2048  # DI_GET[FC100]
 
 
 def _build_axis_groups():

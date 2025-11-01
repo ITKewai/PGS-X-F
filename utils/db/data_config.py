@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any, List, Dict, Sequence, Optional
 
 from utils.exports.tia_constants_map import *
+from utils.yaml.data.costants import BASE_AXIS, AXIS_GROUP_STEP, ALARM_GROUP_STEP
 from utils.yaml.load import load_yaml
 from utils.exports.tia_constants import *  # noqa: F401,F403  (porta DATA_CONFIG, MAX_*, costanti simboliche, UDT, ecc.)
 
@@ -1488,18 +1489,18 @@ def decode_sys_addr(ind_target: int):
         2113 → (1, 1, 1, "AXIS[1].UP")
     Ritorna None se il valore non è un indirizzo SYS valido.
     """
-    if not isinstance(ind_target, int) or ind_target < 2048:
+    if not isinstance(ind_target, int) or ind_target < BASE_AXIS:
         return None
 
-    systyp = ind_target // 2048
-    objelemind = ind_target % 2048
+    systyp = ind_target // BASE_AXIS
+    objelemind = ind_target % BASE_AXIS
 
     if 1 <= systyp <= 7:  # TTTTT NNNNNN (Axis, Input, Output, ecc.)
-        objind = objelemind % 64
-        elemind = objelemind // 64
+        objind = objelemind % AXIS_GROUP_STEP
+        elemind = objelemind // AXIS_GROUP_STEP
     elif 8 <= systyp <= 10:  # TTT NNNNNNNN (Alarm, Maint, BoolSystem)
-        objind = objelemind % 256
-        elemind = objelemind // 256
+        objind = objelemind % ALARM_GROUP_STEP
+        elemind = objelemind // ALARM_GROUP_STEP
     else:
         return None
 

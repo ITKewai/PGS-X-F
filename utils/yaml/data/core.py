@@ -21,12 +21,12 @@ def make_axis_sys_addr(group: str, axis_index: int) -> int:
 
 
 def parse_axis_sys_addr(addr: int) -> Optional[Tuple[str, int]]:
-    if addr < 2048 or addr >= 2048 + AXIS_GROUP_STEP * len(AXIS_GROUPS_ORDER):
+    if addr < BASE_AXIS or addr >= BASE_AXIS + AXIS_GROUP_STEP * len(AXIS_GROUPS_ORDER):
         return None
-    group_idx = (addr - 2048) // AXIS_GROUP_STEP
+    group_idx = (addr - BASE_AXIS) // AXIS_GROUP_STEP
     if not (0 <= group_idx < len(AXIS_GROUPS_ORDER)):
         return None
-    base = 2048 + group_idx * AXIS_GROUP_STEP
+    base = BASE_AXIS + group_idx * AXIS_GROUP_STEP
     axis_index = addr - base
     if not (0 <= axis_index <= MAX_ASSE):
         return None
@@ -43,12 +43,12 @@ def make_alarm_sys_addr(group: str, alarm_index: int) -> int:
 
 
 def parse_alarm_sys_addr(addr: int) -> Optional[Tuple[str, int]]:
-    if addr < 16384 or addr >= 16384 + ALARM_GROUP_STEP * len(ALARM_GROUPS_ORDER):
+    if addr < BASE_ALARM or addr >= BASE_ALARM + ALARM_GROUP_STEP * len(ALARM_GROUPS_ORDER):
         return None
-    group_idx = (addr - 16384) // ALARM_GROUP_STEP
+    group_idx = (addr - BASE_ALARM) // ALARM_GROUP_STEP
     if not (0 <= group_idx < len(ALARM_GROUPS_ORDER)):
         return None
-    base = 16384 + group_idx * ALARM_GROUP_STEP
+    base = BASE_ALARM + group_idx * ALARM_GROUP_STEP
     alarm_index = addr - base
     if not (0 <= alarm_index <= MAX_ALARM):
         return None

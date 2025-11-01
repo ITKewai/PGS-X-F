@@ -7,7 +7,6 @@ from utils.yaml.data.costants import AXIS_GROUPS_ORDER, ALARM_GROUPS_ORDER
 from utils.yaml.download import *
 # from utils.yaml.data.params import *
 from utils.db.data_config import *
-from utils.yaml.data.functions import *
 
 
 def _pause_if_frozen():

@@ -78,8 +78,8 @@ def validate_system_index(sys_type: str, index: int) -> None:
         if not (0 <= index <= AXIS_MAX_INDEX):
             raise ValueError(f"{t} index fuori range (0..{AXIS_MAX_INDEX}): {index}")
     elif t == "MOTOR":
-        if not (MOTOR_MIN_INDEX <= index <= MOTOR_MAX_INDEX):
-            raise ValueError(f"MOTOR index fuori range ({MOTOR_MIN_INDEX}..{MOTOR_MAX_INDEX}): {index}")
+        if not (1 <= index <= MAX_MOTORE):
+            raise ValueError(f"MOTOR index fuori range ({1}..{MAX_MOTORE}): {index}")
     elif t == "TOOLSET":
         if not (0 <= index <= MAX_TOOLSET):
             raise ValueError(f"TOOLSET index fuori range (0..{MAX_TOOLSET}): {index}")

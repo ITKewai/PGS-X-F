@@ -5,10 +5,8 @@ NON POSSIBILI
 # TODO: veridicare che la variabile di sistema sia su "SI" il booleano in caso di assi se no non VA (L LL L0 EEC)
 
 POSSIBILI
-# TODO: controllo se c è un SYSTEM di usasse usato ma c'è il FLAG su NO
 # TODO: controllo safety interlock sgancio chiusura, non deve esserci Droll L (o la system)
-# TODO: ricarca Freee daindici sbagliati
-# TODO:  ricerca che negli assi non rimangono indici in opt param
+# TODO: ricerca che negli assi non rimangono indici in opt param
 # TODO: controllo che la quota H sia maggiore di HH nel pinzaggio se no non apri sgancio in automatico
 # TODO: controllare che sui rulli laterali MAN SP UP sia disattivo
 # TODO: controllo che tutti i system usati degli assi abbiamo "YES"al flag se no non vanno

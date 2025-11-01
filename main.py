@@ -178,7 +178,7 @@ def main():
 
             human = decode_sys_addr(number) or f"{sys_type}.{field}[{index}]"
             print(f"\nSYSTEM → {human}  => numero: {number}")
-            run_io_search(iotype=IO_DI, Ind=number)
+            run_io_search(iotype=IO_DI, Ind=number, verbose=True)
             continue
         # ==================== /SYSTEM ====================
 
@@ -212,13 +212,13 @@ def main():
 
                 print("-" * 60)
                 if tipo == 1:
-                    run_io_search(iotype=IO_DI, Ind=target_number)
+                    run_io_search(iotype=IO_DI, Ind=target_number, verbose=True)
                 elif tipo == 2:
-                    run_io_search(iotype=IO_AI, Ind=target_number)
+                    run_io_search(iotype=IO_AI, Ind=target_number, verbose=True)
                 elif tipo == 3:
-                    run_io_search(iotype=IO_DO, Ind=target_number)
+                    run_io_search(iotype=IO_DO, Ind=target_number, verbose=True)
                 elif tipo == 4:
-                    run_io_search(iotype=IO_AO, Ind=target_number)
+                    run_io_search(iotype=IO_AO, Ind=target_number, verbose=True)
             continue
 
 

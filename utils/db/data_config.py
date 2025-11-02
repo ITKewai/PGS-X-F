@@ -1831,7 +1831,6 @@ def custom_function():
     logger.info("IN: custom_function")
 
     def check_axis_flag() -> list[str]:
-        print('-'*60)
         print('Controllo flag')
         """
         Controlla limiti e flag per ogni asse.
@@ -1974,14 +1973,79 @@ def custom_function():
                         print(f"   ↳ {u}")
         return duplicates
 
+    def check_duplicate_obj_usage(verbose: bool = True) -> dict:
+        """
+        Controlla se input, output o feedback sono usati in più assi diversi.
+        Restituisce un dict con le duplicazioni trovate.
+        """
+        result = {
+            "feedback": {},
+            "input": {},
+            "output": {}
+        }
+
+        for axisInd in range(0, MAX_ASSE):
+            axis_name = data_config.Axis_Name[axisInd]
+
+            # --- FEEDBACK ---
+            fb_indices = [
+                data_config.Axis_Param[axisInd].intval[ASSE_INT_FEEDBACK],
+                data_config.Axis_Param[axisInd].intval[ASSE_INT_ALTFB]
+            ]
+            for fb in fb_indices:
+                if fb != -1:
+                    result["feedback"].setdefault(fb, []).append(f'[{axisInd}]{axis_name}')
+
+            # --- INPUT ---
+            input_indices = [
+                data_config.Axis_Param[axisInd].intval[ASSE_INT_INPUT],
+                data_config.Axis_Param[axisInd].intval[ASSE_INT_INPUT2],
+                data_config.Axis_Param[axisInd].intval[ASSE_INT_INPUT3],
+                data_config.Axis_Param[axisInd].intval[ASSE_INT_INPUT4],
+            ]
+            for inp in input_indices:
+                if inp != -1:
+                    result["input"].setdefault(inp, []).append(f'[{axisInd}]{axis_name}')
+
+            # --- OUTPUT ---
+            output_indices = [
+                data_config.Axis_Param[axisInd].intval[ASSE_INT_OUTPUT1],
+                data_config.Axis_Param[axisInd].intval[ASSE_INT_OUTPUT2],
+                data_config.Axis_Param[axisInd].intval[ASSE_INT_OUTPUT3],
+                data_config.Axis_Param[axisInd].intval[ASSE_INT_OUTPUT4],
+            ]
+            for outp in output_indices:
+                if outp != -1:
+                    result["output"].setdefault(outp, []).append(f'[{axisInd}]{axis_name}')
+
+        # --- Filtra solo duplicati (usati in più di un asse) ---
+        duplicates = {
+            "feedback": {k: v for k, v in result["feedback"].items() if len(v) > 1},
+            "input": {k: v for k, v in result["input"].items() if len(v) > 1},
+            "output": {k: v for k, v in result["output"].items() if len(v) > 1},
+        }
+
+        if verbose:
+            if any(duplicates.values()):
+                print("⚠️ Duplicazioni trovate:")
+                for cat, items in duplicates.items():
+                    for ind, axes in items.items():
+                        print(f" - {cat.upper()}[{ind}] usato in: {', '.join(axes)}")
+
+        return duplicates
+
     check_axis_flag()
+    print('-' * 60)
     check_duplicate_do_ao()
+    print('-' * 60)
+    check_duplicate_obj_usage()
+    print('-' * 60)
     logger.info("OUT: custom_function")
 
 
 if __name__ == "__main__":
     populate_from_yaml_file("../../config.yaml")
-    # custom_function()
+    custom_function()
     while True:
         print(", ".join([f"{name.replace('IO_', '')}={globals()[name]}" for name in ["IO_DI", "IO_AI", "IO_DO", "IO_AO", "IO_RI"]]))
         _type = input()

@@ -67,10 +67,23 @@ def download_file(url: str, dest_path: Path) -> None:
 
 def _download_to_config(url: str) -> Path:
     """
-    Scarica su <cwd>/config.yaml, setta last_url e ritorna il Path.
+    Scarica su <cwd>/config.yaml, facendo prima un backup in config_old.yaml.
+    Se config_old.yaml esiste già, viene sovrascritto con l'attuale config.yaml.
     """
     global last_url
     cfg_path = get_config_path("config.yaml", prefer_cwd=True)
+    backup_path = cfg_path.with_name("config_old.yaml")
+
+    # --- Backup automatico ---
+    if cfg_path.exists():
+        try:
+            # se esiste config_old.yaml, sovrascrivi
+            backup_path.write_bytes(cfg_path.read_bytes())
+            print(f"📦 Backup aggiornato: {backup_path}")
+        except Exception as e:
+            print(f"⚠️ Errore durante il backup: {e}")
+
+    # --- Download nuovo file ---
     download_file(url, cfg_path)
     last_url = url
     return cfg_path

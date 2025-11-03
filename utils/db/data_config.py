@@ -2229,6 +2229,41 @@ def custom_function():
         print("🔍 Fine controllo unità di misura assi.")
         return mismatches
 
+    def check_duplicate_funaxis() -> dict[int, list[int]]:
+        """
+        Controlla se lo stesso asse è assegnato a più Function Index (FunInd).
+
+        Cerca duplicati in data_config.AxisFunInd, ignorando i valori -1.
+        Restituisce un dict:
+            { axis_index: [funInd1, funInd2, ...], ... }
+        """
+        print("🔍 Avvio controllo duplicati AxisFunInd...")
+        duplicates: dict[int, list[int]] = {}
+        seen: dict[int, int] = {}
+
+        for funInd in range(0, MAX_ASSEFUNIND):
+            axisInd = data_config.AxisFunInd[funInd]
+            if axisInd == -1:
+                continue  # ignora slot vuoti
+
+            if axisInd in seen:
+                # trovato duplicato → aggiungi entrambi
+                if axisInd not in duplicates:
+                    duplicates[axisInd] = [seen[axisInd]]
+                duplicates[axisInd].append(funInd)
+            else:
+                seen[axisInd] = funInd
+
+        if duplicates:
+            print("\n⚠️  Duplicati trovati in AxisFunInd:")
+            for axisInd, fun_list in duplicates.items():
+                axis_name = getattr(data_config.Axis_Param[axisInd], "name", f"AXIS[{axisInd}]")
+                fun_str = ", ".join([f"{Type_AxisFunInd[fi]}" for fi in fun_list])
+                print(f"   → {axis_name:<20} (axis {axisInd}) usato in FunInd: {fun_str}")
+
+        print("🔍 Fine controllo duplicati AxisFunInd.")
+        return duplicates
+
     check_axis_flag()
     print('-' * 60)
     check_duplicate_do_ao_usage()
@@ -2240,6 +2275,8 @@ def custom_function():
     duplicate_io_address()
     print('-' * 60)
     check_axis_um()
+    print('-' * 60)
+    check_duplicate_funaxis()
     logger.info("OUT: custom_function")
 
 

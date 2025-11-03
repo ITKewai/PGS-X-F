@@ -2186,6 +2186,49 @@ def custom_function():
         print("🔍 Fine controllo indirizzi duplicati...")
         return duplicates
 
+    def check_axis_um() -> list[tuple[int, str, int, int, str]]:
+        """
+        Controlla che per ogni asse il tipo di misura (ASSE_INT_TIPOMISURA)
+        coincida con quello definito nel Feedback (FB_INT_TIPOMISURA).
+
+        Se diversi, li stampa e li aggiunge in lista.
+        Restituisce:
+            [(index, axis_name, tipo_asse, tipo_fb, fb_name), ...]
+        """
+        print("🔍 Avvio controllo unità di misura assi...")
+        mismatches: list[tuple[int, str, int, int, str]] = []
+
+        for axisInd in range(0, MAX_ASSE):
+            axis = data_config.Axis_Param[axisInd]
+            axis_name = data_config.Axis_Name[axisInd] or f"AXIS_{axisInd}"
+            tipo_asse = axis.intval[ASSE_INT_TIPOMISURA]
+
+            # --- Feedback principale ---
+            fb_ind = axis.intval[ASSE_INT_FEEDBACK]
+            if fb_ind != -1:
+                fb = data_config.Feedback_Param[fb_ind]
+                tipo_fb = fb.intval[FB_INT_TIPOMISURA]
+                if tipo_asse != tipo_fb:
+                    mismatches.append((axisInd, axis_name, tipo_asse, tipo_fb, fb_ind))
+
+            # --- Feedback alternativo ---
+            alt_fb_ind = axis.intval[ASSE_INT_ALTFB]
+            if alt_fb_ind != -1:
+                alt_fb = data_config.Feedback_Param[alt_fb_ind]
+                tipo_fb_alt = alt_fb.intval[FB_INT_TIPOMISURA]
+                if tipo_asse != tipo_fb_alt:
+                    mismatches.append((axisInd, axis_name, tipo_asse, tipo_fb_alt, fb_ind))
+
+        if mismatches:
+            print(f"\n⚠️  Assi con tipo misura diverso (ASSE_INT_TIPOMISURA ≠ FB_INT_TIPOMISURA):")
+            for idx, axis_name, t_ass, t_fb, fb_name in mismatches:
+                print(f"   → [{idx:02d}] {axis_name:<20} ASSE={t_ass:<3}  FB={t_fb:<3}  ({fb_name})")
+        else:
+            print("✅ Tutti gli assi hanno lo stesso tipo di misura tra ASSE e FB.")
+
+        print("🔍 Fine controllo unità di misura assi.")
+        return mismatches
+
     check_axis_flag()
     print('-' * 60)
     check_duplicate_do_ao_usage()
@@ -2195,6 +2238,8 @@ def custom_function():
     clean_di_axis_check()
     print('-' * 60)
     duplicate_io_address()
+    print('-' * 60)
+    check_axis_um()
     logger.info("OUT: custom_function")
 
 

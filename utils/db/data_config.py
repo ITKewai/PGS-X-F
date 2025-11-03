@@ -2119,7 +2119,7 @@ def custom_function():
     def duplicate_io_address(verbose: bool = True) -> dict[str, dict[tuple[str, int, int], list[tuple[int, str]]]]:
         """
         Cerca IO con indirizzi duplicati per ciascun tipo (DI, DO, AI, AO),
-        considerando anche il tipo di indirizzo (es. CALC, PNET, CAN...).
+        considerando anche il tipo logico (IO_TYPE_CALC, IO_TYPE_PNET, IO_TYPE_CAN...).
 
         Raggruppa i duplicati per chiave (tipo, addr1, addr2):
           {
@@ -2127,13 +2127,13 @@ def custom_function():
                 ("CALC", 3, 5): [(12,"SENSOR_UP_LIMIT"), (98,"SAFETY_INPUT_UP")],
                 ("PNET", 4, 1): [(15,"ENDSTOP_DOWN"), (34,"DOOR_SENS")]
             },
-            "AI": {...},
             ...
           }
         """
         print("🔍 Avvio controllo indirizzi duplicati...")
         duplicates: dict[str, dict[tuple[str, int, int], list[tuple[int, str]]]] = {}
 
+        # --- helper interno ---
         def _check(io_list, label: str):
             addr_map: dict[tuple[str, int, int], list[tuple[int, str]]] = {}
 
@@ -2144,24 +2144,24 @@ def custom_function():
                 # --- recupera indirizzi ---
                 addr1 = param.intval[IO_INT_ADDR1]
                 addr2 = param.intval[IO_INT_ADDR2]
+                addr_type_id = param.intval[IO_INT_ADDRTYPE] if len(param.intval) > IO_INT_ADDRTYPE else -1
 
-                # --- recupera tipo indirizzo ---
-                addr_type = None
-                if hasattr(param, "strval"):
-                    addr_type = param.strval[IO_INT_ADDRTYPE] if len(param.strval) > IO_INT_ADDRTYPE else None
-                if not addr_type and hasattr(param, "addr_type"):
-                    addr_type = param.addr_type
-                addr_type = (addr_type or "").strip().upper()
+                # --- converte in stringa tramite mappa ---
 
-                # --- recupera nome ---
                 name = (param.name or "").strip().upper()
 
+                # ignora IO vuoti o placeholder
+                if not name or name in ("FREE", "NONE", "-", "NULL"):
+                    continue
+                # ignora tipi
+                if addr_type_id not in [IO_TYPE_PNET, IO_TYPE_CAN, IO_TYPE_SW]:
+                    continue
                 # ignora indirizzi invalidi o liberi
-                if (addr1, addr2) in [(-1, -1), (0, 0)]:
+                if (addr1, addr2) in [(-1, -1), (0, 0)] or (addr1 in (-1, 0) and addr2 in (-1, 0)):
                     continue
 
                 # --- chiave completa (tipo + indirizzo) ---
-                key = (addr_type, addr1, addr2)
+                key = (addr_type_id, addr1, addr2)
                 addr_map.setdefault(key, []).append((i, name))
 
             # --- estrai solo duplicati ---
@@ -2170,9 +2170,10 @@ def custom_function():
                 duplicates[label] = dup_group
                 if verbose:
                     print(f"\n⚠️  Duplicati trovati in {label}:")
-                    for (tp, a1, a2), entries in dup_group.items():
+                    # ordina per tipo per renderlo più leggibile
+                    for (tp, a1, a2), entries in sorted(dup_group.items(), key=lambda x: x[0]):
                         joined = ", ".join([f"[{idx}] {nm}" for idx, nm in entries])
-                        print(f"   → {tp} {a1}.{a2:<3} → {joined}")
+                        print(f"   → {'PNET' if tp == IO_TYPE_PNET else 'CAN' if tp == IO_TYPE_CAN else 'SW'} {a1}.{a2:<3} → {joined}")
 
         _check(data_config.IO_DI_List, "DI")
         _check(data_config.IO_AI_List, "AI")

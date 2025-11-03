@@ -766,10 +766,10 @@ def _check_config_version(data: dict) -> tuple[int, int, int, int]:
     len_stato = len(stato_bool)
 
     # --- logica di deduzione versione ---
-    if len_alarms == 191:
-        v2 = 24
-    elif len_alarms == 223:
+    if len_alarms == 223:
         v2 = 25
+    elif len_alarms == 191:
+        v2 = 24
 
     if len_pbool == 71:
         v2, v3, v4 = 25, 42, 1

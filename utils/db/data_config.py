@@ -2116,50 +2116,53 @@ def custom_function():
                     print(f"⚠️ {origin.format(axisInd, axis_name)}\t→\t{display}\t[{AxisParamIntVals[idx]}] {get_io_name(iotype=IO_DI, Ind=AxisParamIntVals[idx])}")
         print("🔍 Fine controllo axis_flag_checks...")
 
-    def duplicate_io_address(verbose: bool = True) -> dict[str, list[tuple[int, str]]]:
+    def duplicate_io_address(verbose: bool = True) -> dict[str, dict[tuple[int, int], list[tuple[int, str]]]]:
         """
         Cerca IO con indirizzi duplicati per ciascun tipo (DI, DO, AI, AO).
-        Restituisce un dict con i duplicati trovati:
+        Raggruppa i duplicati per indirizzo.
+        Restituisce:
           {
-            "DI": [(indice1, nome1), (indice2, nome2), ...],
-            "AI": [...],
+            "DI": {
+                (3,5): [(12,"SENSOR_UP_LIMIT"), (98,"SAFETY_INPUT_UP")],
+                (4,1): [(15,"ENDSTOP_DOWN"), (34,"DOOR_SENS")]
+            },
+            "AI": {...},
             ...
           }
         """
-        duplicates = {}
+        duplicates: dict[str, dict[tuple[int, int], list[tuple[int, str]]]] = {}
 
         def _check(io_list, label: str):
-            addr_map = {}
-            dups = []
+            addr_map: dict[tuple[int, int], list[tuple[int, str]]] = {}
+
             for i, param in enumerate(io_list):
-                addr1 = getattr(param, "intval", [])[IO_INT_ADDR1] if hasattr(param, "intval") else None
-                addr2 = getattr(param, "intval", [])[IO_INT_ADDR2] if hasattr(param, "intval") else None
-                if addr1 is None or addr2 is None:
+                if not hasattr(param, "intval"):
                     continue
+                addr1 = param.intval[IO_INT_ADDR1]
+                addr2 = param.intval[IO_INT_ADDR2]
+                name = (param.name or "").strip().upper()
+
+                # ignora IO vuoti o placeholder
+                if not name or name in ("FREE", "NONE", "-", "NULL"):
+                    continue
+                # ignora indirizzi invalidi o liberi
                 if (addr1, addr2) in [(-1, -1), (0, 0)]:
                     continue
                 if addr1 in (-1, 0) and addr2 in (-1, 0):
                     continue
+
                 key = (addr1, addr2)
-                name = getattr(param, "name", f"{label}[{i}]")
-                if key in addr_map:
-                    dups.append((i, name))
-                    dups.append(addr_map[key])
-                else:
-                    addr_map[key] = (i, name)
-            # rimuove duplicati nella lista finale
-            unique_dups = []
-            seen = set()
-            for item in dups:
-                if item not in seen:
-                    seen.add(item)
-                    unique_dups.append(item)
-            if unique_dups:
-                duplicates[label] = unique_dups
+                addr_map.setdefault(key, []).append((i, name))
+
+            # estrai solo chi ha più di un IO per lo stesso indirizzo
+            dup_group = {k: v for k, v in addr_map.items() if len(v) > 1}
+            if dup_group:
+                duplicates[label] = dup_group
                 if verbose:
-                    print(f"⚠️  Duplicati trovati in {label}:")
-                    for ind, nm in unique_dups:
-                        print(f"   → [{ind}] {nm}")
+                    print(f"\n⚠️  Duplicati trovati in {label}:")
+                    for (a1, a2), entries in dup_group.items():
+                        joined = ", ".join([f"[{idx}] {nm}" for idx, nm in entries])
+                        print(f"   → {a1}.{a2} → {joined}")
 
         _check(data_config.IO_DI_List, "DI")
         _check(data_config.IO_AI_List, "AI")
@@ -2168,6 +2171,7 @@ def custom_function():
 
         if not duplicates and verbose:
             print("✅ Nessun duplicato di indirizzo trovato negli IO.")
+
         return duplicates
 
     check_axis_flag()

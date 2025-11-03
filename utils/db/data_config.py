@@ -2018,7 +2018,7 @@ def custom_function():
         logging.debug("OUT: check_axis_flag")
         return out_lines
 
-    def check_duplicate_do_ao():
+    def check_duplicate_do_ao_usage():
         """
         Controlla se una DO/AO è referenziata in più punti nel progetto.
         Usa run_io_scan per verificare dove viene utilizzata ogni uscita.
@@ -2116,13 +2116,69 @@ def custom_function():
                     print(f"⚠️ {origin.format(axisInd, axis_name)}\t→\t{display}\t[{AxisParamIntVals[idx]}] {get_io_name(iotype=IO_DI, Ind=AxisParamIntVals[idx])}")
         print("🔍 Fine controllo axis_flag_checks...")
 
+    def duplicate_io_address(verbose: bool = True) -> dict[str, list[tuple[int, str]]]:
+        """
+        Cerca IO con indirizzi duplicati per ciascun tipo (DI, DO, AI, AO).
+        Restituisce un dict con i duplicati trovati:
+          {
+            "DI": [(indice1, nome1), (indice2, nome2), ...],
+            "AI": [...],
+            ...
+          }
+        """
+        duplicates = {}
+
+        def _check(io_list, label: str):
+            addr_map = {}
+            dups = []
+            for i, param in enumerate(io_list):
+                addr1 = getattr(param, "intval", [])[IO_INT_ADDR1] if hasattr(param, "intval") else None
+                addr2 = getattr(param, "intval", [])[IO_INT_ADDR2] if hasattr(param, "intval") else None
+                if addr1 is None or addr2 is None:
+                    continue
+                if (addr1, addr2) in [(-1, -1), (0, 0)]:
+                    continue
+                if addr1 in (-1, 0) and addr2 in (-1, 0):
+                    continue
+                key = (addr1, addr2)
+                name = getattr(param, "name", f"{label}[{i}]")
+                if key in addr_map:
+                    dups.append((i, name))
+                    dups.append(addr_map[key])
+                else:
+                    addr_map[key] = (i, name)
+            # rimuove duplicati nella lista finale
+            unique_dups = []
+            seen = set()
+            for item in dups:
+                if item not in seen:
+                    seen.add(item)
+                    unique_dups.append(item)
+            if unique_dups:
+                duplicates[label] = unique_dups
+                if verbose:
+                    print(f"⚠️  Duplicati trovati in {label}:")
+                    for ind, nm in unique_dups:
+                        print(f"   → [{ind}] {nm}")
+
+        _check(data_config.IO_DI_List, "DI")
+        _check(data_config.IO_AI_List, "AI")
+        _check(data_config.IO_DO_List, "DO")
+        _check(data_config.IO_AO_List, "AO")
+
+        if not duplicates and verbose:
+            print("✅ Nessun duplicato di indirizzo trovato negli IO.")
+        return duplicates
+
     check_axis_flag()
     print('-' * 60)
-    check_duplicate_do_ao()
+    check_duplicate_do_ao_usage()
     print('-' * 60)
     check_duplicate_obj_usage()
     print('-' * 60)
     clean_di_axis_check()
+    print('-' * 60)
+    duplicate_io_address()
     logger.info("OUT: custom_function")
 
 

@@ -8,13 +8,17 @@ POSSIBILI
 # TODO: controllo che la quota H sia maggiore di HH nel pinzaggio se no non apri sgancio in automatico
 # TODO: controllare che sui rulli laterali MAN SP UP sia disattivo
 # TODO: notificare se le termiche sono state inserite nei motori (no resistanza)
-# TODO: tipo lunghezza asse uguale a lunghezza feedback
+
 # TODO: supporti laterali feedback in GRAD anche dentro asse  (e in params '-')
-# TODO: verifica che uso variabili system per motori
-# TODO: verifica che indirizzi KE1/KE4 non sono scritti
+
+
 # TODO: verificare che la velocità dei rulli sia ugale in control per master e slave
 # TODO: verificare che master mult sia 5 e vmin infeiriore  a 3
 # TODO: quota di reset maggiore a quota apertura sgancio
+
+# TODO: verifica che uso variabili system per motori
+# TODO: verifica che indirizzi KE1/KE4 non sono scritti
+
 # TODO: warning se expr calc e tipo non calc
 # TODO: verificare che input non ha seq imposto
 # TODO: verificare che un funaxis non siano indici su piu assi

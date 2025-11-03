@@ -1422,4 +1422,4 @@ Type_AxisFunInd = [
     "TABLE B LIFT",
 ]
 while len(Type_AxisFunInd) < MAX_ASSEFUNIND:
-    Type_AxisFunInd.append("FREE")
+    Type_AxisFunInd.append("??")

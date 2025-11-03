@@ -18,7 +18,7 @@ from utils.yaml.load import load_yaml
 from utils.exports.tia_constants import *  # noqa: F401,F403  (porta DATA_CONFIG, MAX_*, costanti simboliche, UDT, ecc.)
 
 logging.basicConfig(
-        level=logging.INFO,
+    level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
     datefmt="%H:%M:%S"  # <-- formato orario (solo ore:minuti:secondi)
 )
@@ -51,18 +51,18 @@ def populate_from_yaml_file(yaml_path: Path | str) -> None:
 def deserialize_config(data: Dict[str, Any]) -> None:
     logger.debug('IN: deserialize_config')
     _deserialize_header(data)
-    _deserialize_card_exc(data)            # card / exc
-    _deserialize_axind_in_out(data)        # axind / in / out (indici mapping rapidi)
-    _deserialize_io(data)                  # di / ai / do / ao / ri   (da data['io'])
-    _deserialize_obj_axis(data)            # axis/bool/int/real/type  (da data['obj']['axis'])
-    _deserialize_obj_input(data)           # input                    (da data['obj']['input'])
-    _deserialize_obj_output(data)          # output                   (da data['obj']['output'])
-    _deserialize_obj_fb(data)              # fb                       (da data['obj']['fb'])
-    _deserialize_obj_pid(data)             # pid                      (da data['obj']['pid'] se presente)
-    _deserialize_obj_mot(data)             # mot                      (da data['obj']['mot'])
-    _deserialize_obj_alarm(data)           # alarm                    (da data['obj']['alarm'])
-    _deserialize_obj_maint(data)           # maint                    (da data['obj']['maint'])
-    _deserialize_obj_toolset(data)         # toolset                  (da data['obj']['toolset'])
+    _deserialize_card_exc(data)  # card / exc
+    _deserialize_axind_in_out(data)  # axind / in / out (indici mapping rapidi)
+    _deserialize_io(data)  # di / ai / do / ao / ri   (da data['io'])
+    _deserialize_obj_axis(data)  # axis/bool/int/real/type  (da data['obj']['axis'])
+    _deserialize_obj_input(data)  # input                    (da data['obj']['input'])
+    _deserialize_obj_output(data)  # output                   (da data['obj']['output'])
+    _deserialize_obj_fb(data)  # fb                       (da data['obj']['fb'])
+    _deserialize_obj_pid(data)  # pid                      (da data['obj']['pid'] se presente)
+    _deserialize_obj_mot(data)  # mot                      (da data['obj']['mot'])
+    _deserialize_obj_alarm(data)  # alarm                    (da data['obj']['alarm'])
+    _deserialize_obj_maint(data)  # maint                    (da data['obj']['maint'])
+    _deserialize_obj_toolset(data)  # toolset                  (da data['obj']['toolset'])
     _finalize_config(data)
     _build_io_lists()
     logger.debug('OUT: deserialize_config')
@@ -130,10 +130,10 @@ def _deserialize_header(data: Dict[str, Any]) -> None:
 
     # Ora param è un dict come {"pstring": [...], "pbool": [...], ...}
     pstring = _as_list(param.get("pstring"))
-    pbool   = _as_list(param.get("pbool"))
-    pint    = _as_list(param.get("pint"))
-    preal   = _as_list(param.get("preal"))
-    ptype   = _as_list(param.get("ptype"))
+    pbool = _as_list(param.get("pbool"))
+    pint = _as_list(param.get("pint"))
+    preal = _as_list(param.get("preal"))
+    ptype = _as_list(param.get("ptype"))
 
     logger.debug(f"pstring: {pstring}")
     logger.debug(f"pbool: {pbool}")
@@ -369,6 +369,7 @@ def _build_io_lists():
             data_config.IO_RI_List.append(param)
     logger.debug(f'DI: {len(data_config.IO_DI_List)}, DO: {len(data_config.IO_DO_List)}, AI: {len(data_config.IO_AI_List)}, AO: {len(data_config.IO_AO_List)}, RI: {len(data_config.IO_RI_List)}, ')
 
+
 # ------------------ OBJ/AXIS ------------------
 def _deserialize_obj_axis(data: Dict[str, Any]) -> None:
     """
@@ -593,7 +594,7 @@ def _deserialize_obj_alarm(data: Dict[str, Any]) -> None:
 
     for ind, row in enumerate(rows):
         if ind >= len(data_config.Alarm_Name):
-            #print(ind >= len(data_config.Alarm_Name), len(data_config.Alarm_Name), ind)
+            # print(ind >= len(data_config.Alarm_Name), len(data_config.Alarm_Name), ind)
             print(f"allarme {ind} ignorato")  # TODO: se allarmi maggiori di 192 allora versione diversa
             continue
         if not isinstance(row, (list, tuple)) or len(row) == 0:
@@ -732,10 +733,72 @@ def _deserialize_obj_toolset(data: Dict[str, Any]) -> None:
 
 
 # ------------------ Finalize ------------------
+def _check_config_version(data: dict) -> tuple[int, int, int, int]:
+    """
+    Deduce la versione del file di configurazione basandosi
+    sulle dimensioni di sezioni chiave (alarm, param, in...).
+    Restituisce (PLCVersion1, PLCVersion2, PLCVersion3, PLCVersion4).
+    """
+    v1 = v2 = v3 = v4 = 0
+
+    # --- estrazione sicura dei blocchi ---
+    obj = data.get("obj", {})
+    alarms = _as_list(obj.get("alarm"))
+    stato_bool = _as_list(data.get("in"))
+
+    # --- gestione 'param' compatibile con lista o dict ---
+    raw_param = data.get("param", {})
+    params = {}
+    if isinstance(raw_param, list):
+        for entry in raw_param:
+            if isinstance(entry, dict):
+                params.update(entry)
+    elif isinstance(raw_param, dict):
+        params = raw_param
+
+    pbool = _as_list(params.get("pbool"))
+    pint = _as_list(params.get("pint"))
+
+    # --- calcoli lunghezze ---
+    len_alarms = len(alarms)
+    len_pbool = len(pbool)
+    len_pint = len(pint)
+    len_stato = len(stato_bool)
+
+    # --- logica di deduzione versione ---
+    if len_alarms == 191:
+        v2 = 24
+    elif len_alarms == 223:
+        v2 = 25
+
+    if len_pbool == 71:
+        v2, v3, v4 = 25, 42, 1
+    elif len_pbool == 63:
+        v2, v3 = 25, 28
+
+    if len_stato == 151:
+        v2, v3, v4 = 25, 42, 1
+    elif len_stato == 135:
+        v2, v3 = 25, 42
+    elif len_stato == 127:
+        v2 = 18
+
+    if len_pint == 72:
+        v2 = 18
+    # fallback nel caso non riconosca nulla
+    if v2 == 0:
+        v2 = 25 if len_alarms > 0 else 0
+
+    return v1, v2, v3, v4
+
+
 def _finalize_config(data: Dict[str, Any]) -> None:
     """ Allineamenti finali a EOF """
     data_config.Config_Header[HEADER_SN] = data_config.ParamInt[INT_SN]
     data_config.Config_Header[HEADER_TYPEVERSION] = data_config.CFGVersion
+    data_config.PLCVersion1, data_config.PLCVersion2, data_config.PLCVersion3, data_config.PLCVersion4 = _check_config_version(data)
+    data_config.CFGVersion = data_config.PLCVersion1 * 100 + data_config.PLCVersion2
+    # print(f"*CFG v{data_config.PLCVersion1}.{data_config.PLCVersion2}.{data_config.PLCVersion3}.{data_config.PLCVersion4}")
     # essendo script based non c è modo di reperirlo dal config
 
 
@@ -998,7 +1061,7 @@ def run_axis_scan(iotype: int, ind_target: int = None, axisInd: int = None, verb
         _return = []
         if iotype == IO_DI:
             AxisParamIntVals = data_config.Axis_Param[axisInd].intval
-            for idx,val in enumerate(AxisParamIntVals):
+            for idx, val in enumerate(AxisParamIntVals):
                 idx_name = Type_AxisParam_Map["_intval"][idx]
                 axis_Type = Type_AxisParam_Map["intval"][idx_name].get("type", [])
                 if iotype in axis_Type:
@@ -1048,7 +1111,7 @@ def run_input_scan(iotype: int, ind_target: int = None, inputInd: int = None, ve
         _return = []
         if iotype == IO_DI:
             InputParamIntVals = data_config.Input_Param[inputInd].intval
-            for idx,val in enumerate(InputParamIntVals):
+            for idx, val in enumerate(InputParamIntVals):
                 idx_name = Type_InputParam_Map["_intval"][idx]
                 input_Type = Type_InputParam_Map["intval"][idx_name].get("type", [])
                 if iotype in input_Type:
@@ -1061,7 +1124,7 @@ def run_input_scan(iotype: int, ind_target: int = None, inputInd: int = None, ve
                             print(txt)
         if iotype == IO_AI:
             InputParamIntVals = data_config.Input_Param[inputInd].intval
-            for idx,val in enumerate(InputParamIntVals):
+            for idx, val in enumerate(InputParamIntVals):
                 idx_name = Type_InputParam_Map["_intval"][idx]
                 input_Type = Type_InputParam_Map["intval"][idx_name].get("type", [])
                 if iotype in input_Type:
@@ -1279,7 +1342,7 @@ def run_feedback_scan(iotype: int, ind_target: int = None, feedbackInd: int = No
                         print(txt)
         elif iotype == IO_AI:
             FeedbackParamIntVals = data_config.Feedback_Param[feedbackInd].intval
-            if FeedbackParamIntVals[FB_INT_TIPO] in [FB_AI, FB_AHSC, FB_AI2]: # TODO: quello a ritenzione di analogico come si chiama?
+            if FeedbackParamIntVals[FB_INT_TIPO] in [FB_AI, FB_AHSC, FB_AI2]:  # TODO: quello a ritenzione di analogico come si chiama?
                 if FeedbackParamIntVals[FB_INT_ININD] == ind_target:
                     origin = Type_FeedbackParam_Map["intval"]["FB_INT_ININD"]["origin"]
                     display = Type_FeedbackParam_Map["intval"]["FB_INT_ININD"]["display"]
@@ -1960,7 +2023,7 @@ def custom_function():
         Controlla se una DO/AO è referenziata in più punti nel progetto.
         Usa run_io_scan per verificare dove viene utilizzata ogni uscita.
         """
-        print('-'*60)
+        print('-' * 60)
         print('Controllo duplicati output')
         duplicates = {}
 
@@ -2043,7 +2106,7 @@ def custom_function():
         for axisInd in range(0, MAX_ASSE):
             AxisParamIntVals = data_config.Axis_Param[axisInd].intval
             to_check = [ASSE_INT_INDSHH, ASSE_INT_INDSH, ASSE_INT_INDSL, ASSE_INT_INDSLL, ASSE_INT_INDSH0, ASSE_INT_INDSL0]
-            to_check.extend([ASSE_INT_FREE_71, ASSE_INT_FREE_72, ASSE_INT_OPTPARAM1IND, ASSE_INT_OPTPARAM2IND,ASSE_INT_OPTPARAM3IND])
+            to_check.extend([ASSE_INT_FREE_71, ASSE_INT_FREE_72, ASSE_INT_OPTPARAM1IND, ASSE_INT_OPTPARAM2IND, ASSE_INT_OPTPARAM3IND])
             for idx in to_check:
                 idx_name = Type_AxisParam_Map["_intval"][idx]
                 if AxisParamIntVals[idx] != -1:
@@ -2075,5 +2138,5 @@ if __name__ == "__main__":
             _target = int(_target)
         except:
             continue
-        
+
         run_io_search(_type, _target, verbose=True)

@@ -2116,53 +2116,63 @@ def custom_function():
                     print(f"⚠️ {origin.format(axisInd, axis_name)}\t→\t{display}\t[{AxisParamIntVals[idx]}] {get_io_name(iotype=IO_DI, Ind=AxisParamIntVals[idx])}")
         print("🔍 Fine controllo axis_flag_checks...")
 
-    def duplicate_io_address(verbose: bool = True) -> dict[str, dict[tuple[int, int], list[tuple[int, str]]]]:
+    def duplicate_io_address(verbose: bool = True) -> dict[str, dict[tuple[str, int, int], list[tuple[int, str]]]]:
         """
-        Cerca IO con indirizzi duplicati per ciascun tipo (DI, DO, AI, AO).
-        Raggruppa i duplicati per indirizzo.
-        Restituisce:
+        Cerca IO con indirizzi duplicati per ciascun tipo (DI, DO, AI, AO),
+        considerando anche il tipo di indirizzo (es. CALC, PNET, CAN...).
+
+        Raggruppa i duplicati per chiave (tipo, addr1, addr2):
           {
             "DI": {
-                (3,5): [(12,"SENSOR_UP_LIMIT"), (98,"SAFETY_INPUT_UP")],
-                (4,1): [(15,"ENDSTOP_DOWN"), (34,"DOOR_SENS")]
+                ("CALC", 3, 5): [(12,"SENSOR_UP_LIMIT"), (98,"SAFETY_INPUT_UP")],
+                ("PNET", 4, 1): [(15,"ENDSTOP_DOWN"), (34,"DOOR_SENS")]
             },
             "AI": {...},
             ...
           }
         """
-        duplicates: dict[str, dict[tuple[int, int], list[tuple[int, str]]]] = {}
+        print("🔍 Avvio controllo indirizzi duplicati...")
+        duplicates: dict[str, dict[tuple[str, int, int], list[tuple[int, str]]]] = {}
 
         def _check(io_list, label: str):
-            addr_map: dict[tuple[int, int], list[tuple[int, str]]] = {}
+            addr_map: dict[tuple[str, int, int], list[tuple[int, str]]] = {}
 
             for i, param in enumerate(io_list):
                 if not hasattr(param, "intval"):
                     continue
+
+                # --- recupera indirizzi ---
                 addr1 = param.intval[IO_INT_ADDR1]
                 addr2 = param.intval[IO_INT_ADDR2]
+
+                # --- recupera tipo indirizzo ---
+                addr_type = None
+                if hasattr(param, "strval"):
+                    addr_type = param.strval[IO_INT_ADDRTYPE] if len(param.strval) > IO_INT_ADDRTYPE else None
+                if not addr_type and hasattr(param, "addr_type"):
+                    addr_type = param.addr_type
+                addr_type = (addr_type or "").strip().upper()
+
+                # --- recupera nome ---
                 name = (param.name or "").strip().upper()
 
-                # ignora IO vuoti o placeholder
-                if not name or name in ("FREE", "NONE", "-", "NULL"):
-                    continue
                 # ignora indirizzi invalidi o liberi
                 if (addr1, addr2) in [(-1, -1), (0, 0)]:
                     continue
-                if addr1 in (-1, 0) and addr2 in (-1, 0):
-                    continue
 
-                key = (addr1, addr2)
+                # --- chiave completa (tipo + indirizzo) ---
+                key = (addr_type, addr1, addr2)
                 addr_map.setdefault(key, []).append((i, name))
 
-            # estrai solo chi ha più di un IO per lo stesso indirizzo
+            # --- estrai solo duplicati ---
             dup_group = {k: v for k, v in addr_map.items() if len(v) > 1}
             if dup_group:
                 duplicates[label] = dup_group
                 if verbose:
                     print(f"\n⚠️  Duplicati trovati in {label}:")
-                    for (a1, a2), entries in dup_group.items():
+                    for (tp, a1, a2), entries in dup_group.items():
                         joined = ", ".join([f"[{idx}] {nm}" for idx, nm in entries])
-                        print(f"   → {a1}.{a2} → {joined}")
+                        print(f"   → {tp} {a1}.{a2:<3} → {joined}")
 
         _check(data_config.IO_DI_List, "DI")
         _check(data_config.IO_AI_List, "AI")
@@ -2172,6 +2182,7 @@ def custom_function():
         if not duplicates and verbose:
             print("✅ Nessun duplicato di indirizzo trovato negli IO.")
 
+        print("🔍 Fine controllo indirizzi duplicati...")
         return duplicates
 
     check_axis_flag()

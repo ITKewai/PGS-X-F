@@ -2038,12 +2038,27 @@ def custom_function():
 
         return duplicates
 
+    def axis_flag_checks() -> None:
+        print("🔍 Avvio controllo axis_flag_checks...")
+        for axisInd in range(0, MAX_ASSE):
+            AxisParamIntVals = data_config.Axis_Param[axisInd].intval
+            to_check = [ASSE_INT_INDSHH, ASSE_INT_INDSH, ASSE_INT_INDSL, ASSE_INT_INDSLL, ASSE_INT_INDSH0, ASSE_INT_INDSL0]
+            for idx in to_check:
+                idx_name = Type_AxisParam_Map["_intval"][idx]
+                if AxisParamIntVals[idx] != -1:
+                    display = Type_AxisParam_Map["intval"][idx_name]["display"]
+                    origin = Type_AxisParam_Map["intval"][idx_name]["origin"]
+                    axis_name = get_axis_name(Ind=axisInd)
+                    print(f"⚠️ {origin.format(axisInd, axis_name)}\t→\t{display}\t[{AxisParamIntVals[idx]}] {get_io_name(iotype=IO_DI, Ind=AxisParamIntVals[idx])}")
+        print("🔍 Fine controllo axis_flag_checks...")
+
     check_axis_flag()
     print('-' * 60)
     check_duplicate_do_ao()
     print('-' * 60)
     check_duplicate_obj_usage()
     print('-' * 60)
+    axis_flag_checks()
     logger.info("OUT: custom_function")
 
 

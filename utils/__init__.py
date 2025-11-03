@@ -21,7 +21,6 @@ POSSIBILI
 
 # TODO: warning se expr calc e tipo non calc
 # TODO: verificare che input non ha seq imposto
-# TODO: verificare che un funaxis non siano indici su piu assi
 
 # TODO: rendere questo programma un server web anche cosi si integra nell'hmi ,fare vedere allarmi a lato cliccabili per errori console
 

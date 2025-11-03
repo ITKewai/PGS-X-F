@@ -1401,7 +1401,7 @@ def run_io_expr_scan(iotype: int, ind_target: int = None, verbose: bool = False)
                     if not_val in [IO_EXPR_RI, IO_EXPR_ABSRI]:
                         group_num = ((i - 1) // 3)  # + 1
                         if opnd_val == ind_target:
-                            txt = f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}"
+                            txt = f"IO\t→\tRI [{Ind}]\t→\t{get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}"
                             _return.append(txt)
                             if verbose:
                                 print(txt)

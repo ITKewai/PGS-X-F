@@ -2261,6 +2261,26 @@ def custom_function():
         print("🔍 Fine controllo duplicati AxisFunInd.")
         return duplicates
 
+    def check_lat_sup() -> None:
+        print("🔍 Avvio controllo supporti laterali")
+        foo = [FUN_AXIS_PRESIDESUPP, FUN_AXIS_BENDSIDESUPP]
+        for i in foo:
+            if data_config.AxisFunInd[i] == -1:
+                print("Indice non configurato in Params > Functions")
+                continue
+            axis = data_config.Axis_Param[data_config.AxisFunInd[i]]
+            axis_name = data_config.Axis_Name[data_config.AxisFunInd[i]] or f"AXIS_{data_config.AxisFunInd[i]}"
+            tipo_asse = axis.intval[ASSE_INT_TIPOMISURA]
+            if tipo_asse != MISURA_GRAD:
+                print(f"⚠️ {axis_name} non ha il tipo di misura GRAD")
+            if data_config.Axis_Param[i].intval[ASSE_INT_FEEDBACK] == -1:
+                continue
+            axis_feedback = data_config.Feedback_Param[data_config.Axis_Param[i].intval[ASSE_INT_FEEDBACK]]
+            tipo_feedback = axis_feedback.intval[FB_INT_TIPOMISURA]
+            if tipo_feedback != MISURA_GRAD:
+                print(f"⚠️ Il feedback di {axis_name} non ha il tipo di misura GRAD")
+        print("🔍 Fine controllo tipomisura supporti...")
+
     check_axis_flag()
     print('-' * 60)
     check_duplicate_do_ao_usage()
@@ -2274,6 +2294,8 @@ def custom_function():
     check_axis_um()
     print('-' * 60)
     check_duplicate_funaxis()
+    print('-' * 60)
+    check_lat_sup()
     logger.info("OUT: custom_function")
 
 

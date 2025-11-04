@@ -2131,10 +2131,10 @@ def custom_function():
           }
         """
         print("🔍 Avvio controllo indirizzi duplicati...")
-        duplicates: dict[str, dict[tuple[str, int, int], list[tuple[int, str]]]] = {}
 
         # --- helper interno ---
         def _check(io_list, label: str):
+            duplicates: dict[str, dict[tuple[str, int, int], list[tuple[int, str]]]] = {}
             addr_map: dict[tuple[str, int, int], list[tuple[int, str]]] = {}
 
             for i, param in enumerate(io_list):
@@ -2174,17 +2174,14 @@ def custom_function():
                     for (tp, a1, a2), entries in sorted(dup_group.items(), key=lambda x: x[0]):
                         joined = ", ".join([f"[{idx}] {nm}" for idx, nm in entries])
                         print(f"   → {'PNET' if tp == IO_TYPE_PNET else 'CAN' if tp == IO_TYPE_CAN else 'SW'} {a1}.{a2:<3} → {joined}")
+            if not duplicates and verbose:
+                print("✅ Nessun duplicato di indirizzo trovato negli IO.")
 
         _check(data_config.IO_DI_List, "DI")
         _check(data_config.IO_AI_List, "AI")
         _check(data_config.IO_DO_List, "DO")
         _check(data_config.IO_AO_List, "AO")
-
-        if not duplicates and verbose:
-            print("✅ Nessun duplicato di indirizzo trovato negli IO.")
-
         print("🔍 Fine controllo indirizzi duplicati...")
-        return duplicates
 
     def check_axis_um() -> list[tuple[int, str, int, int, str]]:
         """

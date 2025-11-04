@@ -11,6 +11,7 @@ POSSIBILI
 
 # TODO: supporti laterali feedback in GRAD anche dentro asse  (e in params '-')
 
+# TODO: controllo geomatria, width deve essere coerente con modello macchina, anche diametro
 
 # TODO: verificare che la velocità dei rulli sia ugale in control per master e slave
 # TODO: verificare che master mult sia 5 e vmin infeiriore  a 3

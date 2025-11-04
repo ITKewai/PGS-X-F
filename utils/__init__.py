@@ -6,10 +6,7 @@ NON POSSIBILI
 POSSIBILI
 # TODO: controllo safety interlock sgancio chiusura, non deve esserci Droll L (o la system)
 # TODO: controllo che la quota H sia maggiore di HH nel pinzaggio se no non apri sgancio in automatico
-# TODO: controllare che sui rulli laterali MAN SP UP sia disattivo
 # TODO: notificare se le termiche sono state inserite nei motori (no resistanza)
-
-# TODO: supporti laterali feedback in GRAD anche dentro asse  (e in params '-')
 
 # TODO: controllo geomatria, width deve essere coerente con modello macchina, anche diametro
 

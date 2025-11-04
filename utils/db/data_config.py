@@ -2272,13 +2272,25 @@ def custom_function():
                 axis_name = data_config.Axis_Name[data_config.AxisFunInd[i]] or f"AXIS_{data_config.AxisFunInd[i]}"
                 tipo_asse = axis.intval[ASSE_INT_TIPOMISURA]
                 if tipo_asse != MISURA_GRAD:
-                    print(f"⚠️ {axis_name} non ha il tipo di misura GRAD")
+                    print(f"⚠️ [{data_config.AxisFunInd[i]}]{axis_name} non ha il tipo di misura GRAD")
                 if data_config.Axis_Param[i].intval[ASSE_INT_FEEDBACK] != -1:
                     axis_feedback = data_config.Feedback_Param[data_config.Axis_Param[i].intval[ASSE_INT_FEEDBACK]]
                     tipo_feedback = axis_feedback.intval[FB_INT_TIPOMISURA]
                     if tipo_feedback != MISURA_GRAD:
-                        print(f"⚠️ Il feedback di {axis_name} non ha il tipo di misura GRAD")
-        print("🔍 Fine controllo tipomisura supporti...")
+                        print(f"⚠️ [{data_config.AxisFunInd[i]}]{axis_name} il feedback non ha il tipo di misura GRAD")
+                if axis.boolval[ASSE_BOOL_MANSPDOWN]:
+                    print(f"⚠️ [{data_config.AxisFunInd[i]}]{axis_name} ha il flag MANSPDOWN attivo!")
+        foo = {
+            "REAL_LATSUPQ0": REAL_LATSUPQ0,
+            "REAL_LATSUPQ1": REAL_LATSUPQ1,
+            "REAL_LATSUPQ2": REAL_LATSUPQ2,
+            "REAL_LATSUPQ3": REAL_LATSUPQ3,
+            "REAL_LATSUPQ4": REAL_LATSUPQ4,
+        }
+        for label, idx in foo.items():
+            if data_config.ParamRealType[idx] != -1:
+                print(f"⚠️ Config\t→\tLat\t→\t{label.replace('REAL_', '')} deve essere impostato -")
+        print("🔍 Fine controllo supporti laterali...")
 
     check_axis_flag()
     print('-' * 60)

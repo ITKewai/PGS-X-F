@@ -13,7 +13,8 @@ from pathlib import Path
 from typing import Any, List, Dict, Sequence, Optional
 
 from utils.exports.tia_constants_map import *
-from utils.yaml.data.costants import BASE_AXIS, AXIS_GROUP_STEP, ALARM_GROUP_STEP
+from utils.yaml.data.core import make_axis_sys_addr
+from utils.yaml.data.costants import BASE_AXIS, AXIS_GROUP_STEP, ALARM_GROUP_STEP, AXIS_GROUPS_ORDER
 from utils.yaml.load import load_yaml
 from utils.exports.tia_constants import *  # noqa: F401,F403  (porta DATA_CONFIG, MAX_*, costanti simboliche, UDT, ecc.)
 
@@ -2317,23 +2318,38 @@ def custom_function():
                     print(f'now:{axis.typval[i]} shoudbe:{foo[i]} id: {i}')
         print("🔍 Fine controllo olio...")
 
-    check_axis_flag()
-    print('-' * 60)
-    check_duplicate_do_ao_usage()
-    print('-' * 60)
-    check_duplicate_obj_usage()
-    print('-' * 60)
-    clean_di_axis_check()
-    print('-' * 60)
-    duplicate_io_address()
-    print('-' * 60)
-    check_axis_um()
-    print('-' * 60)
-    check_duplicate_funaxis()
-    print('-' * 60)
-    check_lat_sup()
-    print('-' * 60)
-    check_oil_temp()
+    def check_release() -> None:
+        print("🔍 Inizio controllo sgancio...")
+        if data_config.AxisFunInd[FUN_AXIS_DE] == -1:
+            print("Indice DE non configurato in Params > Functions")
+            return
+        if data_config.AxisFunInd[FUN_AXIS_PINCH] == -1:
+            print("Indice B non configurato in Params > Functions")
+            return
+        pinchName = f"[{data_config.AxisFunInd[FUN_AXIS_PINCH]}]{data_config.Axis_Name[data_config.AxisFunInd[FUN_AXIS_PINCH]] or f'AXIS_{data_config.AxisFunInd[FUN_AXIS_DE]}'}"
+        safetyDown = [
+            ASSE_INT_SAFETYDOWNIND1, ASSE_INT_SAFETYDOWNIND2, ASSE_INT_SAFETYDOWNIND3,
+            ASSE_INT_SAFETYDOWNIND4, ASSE_INT_SAFETYDOWNIND5, ASSE_INT_SAFETYDOWNIND6
+        ]
+        if not any(make_axis_sys_addr(AXIS_GROUPS_ORDER[IO_SYSAXIS_L], data_config.AxisFunInd[FUN_AXIS_PINCH]) == data_config.Axis_Param[FUN_AXIS_DE].intval[x] for x in safetyDown):
+            print(f"⚠️ {pinchName}.L non è presente negli interlock down direttamente va aggiunto!")
+        safetyUp = [
+            ASSE_INT_SAFETYUPIND1, ASSE_INT_SAFETYUPIND1, ASSE_INT_SAFETYUPIND1,
+            ASSE_INT_SAFETYUPIND1, ASSE_INT_SAFETYUPIND1, ASSE_INT_SAFETYUPIND1
+        ]
+        if any(make_axis_sys_addr(AXIS_GROUPS_ORDER[IO_SYSAXIS_L], data_config.AxisFunInd[FUN_AXIS_PINCH]) == data_config.Axis_Param[FUN_AXIS_DE].intval[x] for x in safetyUp):
+            print(f"⚠️ {pinchName}.L è presente negli interlock up va rimosso!")
+        # conrtollo flag
+
+        # controllo quota apertura sgancio
+        if data_config.Axis_Param[data_config.AxisFunInd[FUN_AXIS_PINCH]].realval[ASSE_REAL_SHH] <= data_config.Axis_Param[data_config.AxisFunInd[FUN_AXIS_PINCH]].realval[ASSE_REAL_SL]:
+            print(f"⚠️ {pinchName}.HH è minore o uguale a {pinchName}.L quota reset automatico")
+        print("🔍 Fine controllo sgancio...")
+    foo = [check_axis_flag, check_duplicate_do_ao_usage, check_duplicate_obj_usage, clean_di_axis_check, duplicate_io_address,
+           check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release]
+    for i in foo:
+        print('-' * 60)
+        i()
     logger.info("OUT: custom_function")
 
 

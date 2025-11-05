@@ -2292,6 +2292,31 @@ def custom_function():
                 print(f"⚠️ Config\t→\tLat\t→\t{label.replace('REAL_', '')} deve essere impostato -")
         print("🔍 Fine controllo supporti laterali...")
 
+    def check_oil_temp() -> None:
+        print("🔍 Inizio controllo olio...")
+        foo = {
+            ASSE_REAL_DSMAXDOWN: -1,
+            ASSE_REAL_DSMAXUP: -1,
+            ASSE_REAL_SMAX: 2,
+            ASSE_REAL_SMIN: 2,
+            ASSE_REAL_TILTMAX: -1,
+            ASSE_REAL_MASTERMULT: -1,
+            ASSE_REAL_FREE_39: 2,
+            ASSE_REAL_DELTAMOVINGUP: 2,
+            ASSE_REAL_DELTAMOVINGSUPUP: -1,
+            ASSE_REAL_DELTAMOVINGINFUP: -1,
+            ASSE_REAL_DELTAMOVINGSUPDOWN: -1,
+            ASSE_REAL_DELTAMOVINGINFDOWN: -1,
+            ASSE_REAL_DELTAAUTO: -1,
+            ASSE_REAL_BWACCMAX: -1
+        }
+        if data_config.AxisFunInd[FUN_AXIS_OILTEMP] != -1:
+            axis = data_config.Axis_Param[data_config.AxisFunInd[data_config.AxisFunInd[FUN_AXIS_OILTEMP]]]
+            for i, value in foo.items():
+                if axis.typval[i] != value:
+                    print(f'now:{axis.typval[i]} shoudbe:{foo[i]} id: {i}')
+        print("🔍 Fine controllo olio...")
+
     check_axis_flag()
     print('-' * 60)
     check_duplicate_do_ao_usage()
@@ -2307,6 +2332,8 @@ def custom_function():
     check_duplicate_funaxis()
     print('-' * 60)
     check_lat_sup()
+    print('-' * 60)
+    check_oil_temp()
     logger.info("OUT: custom_function")
 
 

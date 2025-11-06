@@ -3,3 +3,5 @@ tia_exports/tia_constants.py
 __pycache__
 build
 dist/PSG-X-Finder.exe
+.github/copilot-instructions.md
+/.vscode

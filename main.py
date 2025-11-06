@@ -8,6 +8,8 @@ from utils.yaml.download import *
 # from utils.yaml.data.params import *
 from utils.db.data_config import *
 
+sn = ''
+
 
 def _pause_if_frozen():
     if getattr(sys, "frozen", False):  # eseguibile PyInstaller
@@ -18,9 +20,10 @@ def _pause_if_frozen():
 
 
 def main():
+    global sn
     print(get_version_info())
     # 1) Carico una volta il config
-    cfg_path = choose_and_prepare_config()
+    cfg_path = choose_and_prepare_config(sn)
 
     try:
         # data = load_yaml(str(cfg_path))
@@ -29,7 +32,7 @@ def main():
         print(f"Errore nel parsing YAML: {e}")
         _pause_if_frozen()
         return
-
+    sn = data_config.Config_Header[HEADER_SN]
     print(f"Caricato config della commessa: {data_config.Config_Header[HEADER_SN]}")
 
     # 2) Loop interattivo: ripeti la domanda dopo ogni ricerca
@@ -40,7 +43,7 @@ def main():
         # Invio -> torna al menu precedente (scelta config) e ricarica il YAML
         if tipo_raw == "":
             print("-" * 60)
-            cfg_path = choose_and_prepare_config()
+            cfg_path = choose_and_prepare_config(sn)
             try:
                 # data = load_yaml(str(cfg_path))
                 populate_from_yaml_file(cfg_path)
@@ -48,7 +51,7 @@ def main():
                 print(f"Errore nel parsing YAML: {e}")
                 _pause_if_frozen()
                 return
-
+            sn = data_config.Config_Header[HEADER_SN]
             print(f"Caricato config della commessa: {data_config.Config_Header[HEADER_SN]}")
             # torna al menu dei tipi
             continue

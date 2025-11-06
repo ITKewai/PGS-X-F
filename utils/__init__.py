@@ -20,6 +20,7 @@ POSSIBILI
 
 # TODO: rendere questo programma un server web anche cosi si integra nell'hmi ,fare vedere allarmi a lato cliccabili per errori console
 #TODO: controllo che rotazione H SIA 500.000 E L -500
+# TODO: controllo safety in "int"
 INCERTI:
 # TODO: va in errore se cerco system si patcha separando la ricerca
 #TODO: TEST FINALE RICERCA IN OGNI CAMPO VISIBILE

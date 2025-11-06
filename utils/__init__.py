@@ -4,8 +4,6 @@ NON POSSIBILI
 
 
 POSSIBILI
-# TODO: controllo safety interlock sgancio chiusura, non deve esserci Droll L (o la system)
-# TODO: controllo che la quota H sia maggiore di HH nel pinzaggio se no non apri sgancio in automatico
 # TODO: notificare se le termiche sono state inserite nei motori (no resistanza)
 
 # TODO: controllo geomatria, width deve essere coerente con modello macchina, anche diametro
@@ -13,7 +11,6 @@ POSSIBILI
 # TODO: controllare che allarmi siano safetystop
 # TODO: verificare che la velocità dei rulli sia ugale in control per master e slave
 # TODO: verificare che master mult sia 5 e vmin infeiriore  a 3
-# TODO: quota di reset maggiore a quota apertura sgancio
 
 # TODO: verifica che uso variabili system per motori
 # TODO: verifica che indirizzi KE1/KE4 non sono scritti

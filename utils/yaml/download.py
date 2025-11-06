@@ -6,6 +6,8 @@ Compatibile con i percorsi e le logiche di PSG-X-FindIndex.
 """
 
 from __future__ import annotations
+
+import datetime
 from pathlib import Path
 import requests
 import warnings as _warnings
@@ -89,13 +91,12 @@ def _download_to_config(url: str) -> Path:
     return cfg_path
 
 
-def choose_and_prepare_config() -> Path:
+def choose_and_prepare_config(sn: str = None) -> Path:
     """
     Chiede all'utente se usare il config locale o scaricarlo.
     Ritorna il percorso finale del file pronto.
     """
     global last_url
-
     cfg_path = get_config_path("config.yaml", prefer_cwd=True)
 
     while True:
@@ -104,7 +105,8 @@ def choose_and_prepare_config() -> Path:
         print("  [2] Scarica file da rete")
         if last_url:
             print("  [3] Aggiorna file da rete (ultimo URL)")
-
+        if sn:
+            print("  [4] Save")
         choice = input("Scelta: ").strip()
 
         if choice == "2":
@@ -125,11 +127,16 @@ def choose_and_prepare_config() -> Path:
                 return cfg_path
             print(f"❌ File locale non trovato o corrotto: {cfg_path}\n")
             continue
-
         elif choice == "3" and last_url:
             res = fetch_again()
             if res is not None:
                 return res
+        elif choice == "4" and sn:
+            if not cfg_path.exists():
+                print(f"❌ File locale non trovato o corrotto: {cfg_path}\n")
+            ver = input("Versione progetto: ")
+            save_version(sn=sn, ver=ver, date=str(datetime.datetime.now().strftime("%Y%m%d")))
+            return cfg_path
         else:
             print("Opzione non valida\n")
 
@@ -150,3 +157,19 @@ def fetch_again(again: bool = False) -> Path | None:
     except Exception as e:
         print(f"❌ Errore durante il refresh")
         return None
+
+
+def save_version(sn: str, ver:str, date: str) -> bool:
+    cfg_path = get_config_path("config.yaml", prefer_cwd=True)
+    backup_path = cfg_path.with_name(f"config {sn} {ver} {date}.yaml")
+
+    # --- Backup automatico ---
+    if cfg_path.exists():
+        try:
+            # se esiste config_old.yaml, sovrascrivi
+            backup_path.write_bytes(cfg_path.read_bytes())
+            print(f"📦 Backup effettuato: {backup_path}")
+            return True
+        except Exception as e:
+            print(f"⚠️ Errore durante il salvataggio: {e}")
+            return False

@@ -2345,8 +2345,31 @@ def custom_function():
         if data_config.Axis_Param[data_config.AxisFunInd[FUN_AXIS_PINCH]].realval[ASSE_REAL_SHH] <= data_config.Axis_Param[data_config.AxisFunInd[FUN_AXIS_PINCH]].realval[ASSE_REAL_SL]:
             print(f"⚠️ {pinchName}.HH è minore o uguale a {pinchName}.L quota reset automatico")
         print("🔍 Fine controllo sgancio...")
+
+    def check_safety() -> None:
+        if data_config.ParamInt[INT_HOLDTORUNTYPE] != SAFETY_INT:
+            print("⚠️ Hold to run non impostato su INT")
+    
+    def check_rotation() -> None:
+        print("🔍 Inizio controllo rotazione...")
+        axisInd = data_config.AxisFunInd[FUN_AXIS_ROT]
+        if axisInd != -1:
+            axis = data_config.Axis_Param[axisInd]
+            axis_name = data_config.Axis_Name[axisInd] or f"AXIS_{axisInd}"
+            for i in [ASSE_REAL_SMAX, ASSE_REAL_SHH]:
+                if axis.realval[i] != 999999:
+                    print(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][i]]['display']} non impostato a +999999.0 ma a {axis.realval[i]}")
+            for i in [ASSE_REAL_SMIN, ASSE_REAL_SLL]:
+                if axis.realval[i] != -999999:
+                    print(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][i]]['display']} non impostato a -999999.0 ma a {axis.realval[i]}")
+            if axis.realval[ASSE_REAL_SH] != 500:
+                print(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SH]]['display']} non impostato a 500.0 ma a {axis.realval[ASSE_REAL_SH]}")
+            if axis.realval[ASSE_REAL_SL] != -500:
+                print(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SL]]['display']} non impostato a -500.0 ma a {axis.realval[ASSE_REAL_SL]}")
+        print("🔍 Fine controllo rotazione...")
+
     foo = [check_axis_flag, check_duplicate_do_ao_usage, check_duplicate_obj_usage, clean_di_axis_check, duplicate_io_address,
-           check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release]
+           check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release, check_safety, check_rotation]
     for i in foo:
         print('-' * 60)
         i()

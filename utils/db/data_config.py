@@ -2368,11 +2368,54 @@ def custom_function():
                 print(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SL]]['display']} non impostato a -500.0 ma a {axis.realval[ASSE_REAL_SL]}")
         print("🔍 Fine controllo rotazione...")
 
+    def geometry_check() -> None:
+        print("🔍 Inizio controllo geometria...")
+        model = data_config.ParamString[0][-4:]
+        model_width = model[:2] + '00'
+        top_roll_diameter = model[2:] + '0'
+        try:
+            model_width = int(model_width)
+        except ValueError:
+            print("Modello non rilevato")
+            return
+
+        if model_width > data_config.ParamReal[REAL_WIDTH]:
+            print(f"⚠️ Modello macchina {model}, lunghezza tavola in geometria più piccolo: {data_config.ParamReal[REAL_WIDTH]}")
+
+        try:
+            top_roll_diameter = int(top_roll_diameter)
+        except ValueError:
+            print("Diametro rullo non rilevato")
+            return
+
+        if top_roll_diameter > data_config.ParamReal[REAL_TROUTERDIAM]:
+            print(f"⚠️ Modello macchina {model}, diametro rullo superiore maggiore di quello in geo: {data_config.ParamReal[REAL_TROUTERDIAM]}")
+        elif top_roll_diameter < data_config.ParamReal[REAL_TROUTERDIAM]:
+            print(f"⚠️ Modello macchina {model}, diametro rullo superiore minore di quello in geo: {data_config.ParamReal[REAL_TROUTERDIAM]}")
+        print("🔍 Fine controllo geometria...")
+
+    def check_axis_speed_master_slave() -> None:
+        print("🔍 Inizio controllo velocità master/slave..")
+        for i in range(0, MAX_ASSE):
+            slaveAxis = data_config.Axis_Param[i]
+            slaveAxisName = get_axis_name(i)
+            if slaveAxis.boolval[ASSE_BOOL_CONFIG]:
+                if slaveAxis.intval[ASSE_INT_MASTER] != -1:
+                    masterAxisInd = slaveAxis.intval[ASSE_INT_MASTER]
+                    masterAxis = data_config.Axis_Param[masterAxisInd]
+                    masterAxisName = get_axis_name(slaveAxis.intval[ASSE_INT_MASTER])
+                    _ = [ASSE_REAL_FWVMAX, ASSE_REAL_BWVMAX]
+                    for x in _:
+                        if int(masterAxis.realval[x]) != int(slaveAxis.realval[x]):
+                            print(f"⚠️ [{i}]{slaveAxisName} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][x]]['display']} diverso da [{masterAxisInd}]{masterAxisName}")
+        print("🔍 Fine controllo velocità master/slave...")
+
     foo = [check_axis_flag, check_duplicate_do_ao_usage, check_duplicate_obj_usage, clean_di_axis_check, duplicate_io_address,
-           check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release, check_safety, check_rotation]
-    for i in foo:
+           check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release, check_safety, check_rotation,
+           geometry_check, check_axis_speed_master_slave]
+    for func in foo:
         print('-' * 60)
-        i()
+        func()
     logger.info("OUT: custom_function")
 
 

@@ -2184,6 +2184,59 @@ def custom_function():
         _check(data_config.IO_AO_List, "AO")
         print("🔍 Fine controllo indirizzi duplicati...")
 
+    def check_forbidden_ao_do_usage() -> None:
+        print("🔍 Avvio controllo indirizzi safety...")
+        fAddresses = []
+
+        def build_forbidden_addresses(start: int, next_address: int, modules: int) -> list[str]:
+            """
+            Costruisce la lista degli indirizzi proibiti per AO/DO safety.
+            Ogni indirizzo rappresenta 1 byte (.0..7).
+            - start: indirizzo iniziale
+            - next_address: numero di indirizzi per modulo
+            - modules: quanti moduli totali generare
+            """
+            total_addresses = next_address * modules
+            blocco = [f"{addr}" for addr in range(start, start + total_addresses)]
+            fAddresses.extend(blocco)
+            return blocco
+
+        build_forbidden_addresses(1100, 5, 2)  # A_SF
+        for Ind in range(0, len(data_config.IO_DI_List)):
+            if data_config.IO_DI_List[Ind].intval[IO_INT_ADDRTYPE] == IO_TYPE_PNET:
+                addr1 = data_config.IO_DI_List[Ind].intval[IO_INT_ADDR1]
+                # addr2 = data_config.IO_DI_List[Ind].intval[IO_INT_ADDR2]
+                addr_str = f"{addr1}" # {addr2}"
+                if addr_str in fAddresses:
+                    io_name = get_io_name(iotype=IO_DI, Ind=Ind)
+                    print(f"⚠️ Safety non permesso in DI [{Ind}] {io_name} at address {addr_str}")
+        for Ind in range(0, len(data_config.IO_AI_List)):
+            if data_config.IO_AI_List[Ind].intval[IO_INT_ADDRTYPE] == IO_TYPE_PNET:
+                addr1 = data_config.IO_AI_List[Ind].intval[IO_INT_ADDR1]
+                # addr2 = data_config.IO_AI_List[Ind].intval[IO_INT_ADDR2]
+                addr_str = f"{addr1}" # {addr2}"
+                if addr_str in fAddresses:
+                    io_name = get_io_name(iotype=IO_AI, Ind=Ind)
+                    print(f"⚠️  Safety non permesso in AI [{Ind}] {io_name} at address {addr_str}")
+        for Ind in range(0, len(data_config.IO_DO_List)):
+            if data_config.IO_DO_List[Ind].intval[IO_INT_ADDRTYPE] == IO_TYPE_PNET:
+                addr1 = data_config.IO_DO_List[Ind].intval[IO_INT_ADDR1]
+                # addr2 = data_config.IO_DO_List[Ind].intval[IO_INT_ADDR2]
+                addr_str = f"{addr1}" # {addr2}"
+                if addr_str in fAddresses:
+                    io_name = get_io_name(iotype=IO_DO, Ind=Ind)
+                    print(f"⚠️ Safety non permesso in DO [{Ind}] {io_name} at address {addr_str}")
+        for Ind in range(0, len(data_config.IO_AO_List)):
+            if data_config.IO_AO_List[Ind].intval[IO_INT_ADDRTYPE] == IO_TYPE_PNET:
+                addr1 = data_config.IO_AO_List[Ind].intval[IO_INT_ADDR1]
+                # addr2 = data_config.IO_AO_List[Ind].intval[IO_INT_ADDR2]
+                addr_str = f"{addr1}" # {addr2}"
+                if addr_str in fAddresses:
+                    io_name = get_io_name(iotype=IO_AO, Ind=Ind)
+                    print(f"⚠️ Safety non permesso in AO [{Ind}] {io_name} at address {addr_str}")
+        print("🔍 Fine controllo indirizzi safety...")
+
+
     def check_axis_um() -> list[tuple[int, str, int, int, str]]:
         """
         Controlla che per ogni asse il tipo di misura (ASSE_INT_TIPOMISURA)
@@ -2412,7 +2465,7 @@ def custom_function():
 
     foo = [check_axis_flag, check_duplicate_do_ao_usage, check_duplicate_obj_usage, clean_di_axis_check, duplicate_io_address,
            check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release, check_safety, check_rotation,
-           geometry_check, check_axis_speed_master_slave]
+           geometry_check, check_axis_speed_master_slave, check_forbidden_ao_do_usage]
     for func in foo:
         print('-' * 60)
         func()
@@ -2421,7 +2474,8 @@ def custom_function():
 
 if __name__ == "__main__":
     populate_from_yaml_file("../../config.yaml")
-    custom_function()
+    #custom_function()
+    run_io_search(IO_DI, 2506, verbose=True)
     while True:
         print(", ".join([f"{name.replace('IO_', '')}={globals()[name]}" for name in ["IO_DI", "IO_AI", "IO_DO", "IO_AO", "IO_RI"]]))
         _type = input()

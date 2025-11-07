@@ -21,7 +21,7 @@ INCERTI:
 A TEMPO PERSO:
 # TODO: in base a indirizzo ip scheda rete imposta ip plc e scarica config
 # TODO: verifiche (verificare che per i reset pressostati si scende solo con il joystick, se ci sono digitali nel fb_err)
-
+# TODO: creazione file json con flag per attivare o disattivare parti dei controlli
 # TODO: [ASSE 10] TILT
 #   ⚠️  Flag HH disattivo ma HH=SYS è impostato/usato
 #     ↳ Axes	→	[10]TILT	→	HH

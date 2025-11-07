@@ -2046,6 +2046,7 @@ def custom_function():
         Controlla se input, output o feedback sono usati in più assi diversi.
         Restituisce un dict con le duplicazioni trovate.
         """
+        print(f'🔍Avvio controllo duplicati Input/Output/Feedback...')
         result = {
             "feedback": {},
             "input": {},
@@ -2099,7 +2100,7 @@ def custom_function():
                 for cat, items in duplicates.items():
                     for ind, axes in items.items():
                         print(f" - {cat.upper()}[{ind}] usato in: {', '.join(axes)}")
-
+        print('🔍 Fine controllo duplicati Input/Output/Feedback.')
         return duplicates
 
     def clean_di_axis_check() -> None:

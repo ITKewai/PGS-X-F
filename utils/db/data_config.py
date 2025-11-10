@@ -2374,12 +2374,15 @@ def custom_function():
             ASSE_REAL_SLL: 2,
             ASSE_REAL_TILTMAX: -1,
         }
-
+        diff = False
         if data_config.AxisFunInd[FUN_AXIS_OILTEMP] != -1:
             axisOil = data_config.Axis_Param[data_config.AxisFunInd[FUN_AXIS_OILTEMP]]
             for i, value in _.items():
                 if axisOil.typval[i] != value:
                     print(f'now:{axisOil.typval[i]} shoudbe:{_[i]} id: {i}')
+                    diff = True
+            if diff:
+                print("  type: [-1,-1,-1,-1,1,1,1,1,1,1,1,1,1,1,10,-1,-1,10,2,2,2,2,10,2,2,2,2,-1,-1,-1,-1,-1,-1,-1,-1,-1,2,2,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]")
         print("🔍 Fine controllo olio...")
 
     def check_release() -> None:

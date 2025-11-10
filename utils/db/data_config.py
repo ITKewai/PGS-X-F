@@ -423,24 +423,18 @@ def _deserialize_obj_axis(data: Dict[str, Any]) -> None:
             data_config.Axis_Param[ind].realvalcfg[j] = fv
             data_config.Axis_Param[ind].realval[j] = fv
 
-            # Tipologia, FC e offset: prendiamo da UM (unità di misura) se disponibile
-            try:
-                MISURA_LUNGH = getattr(data_config, "MISURA_LUNGH")
-                data_config.Axis_Param[ind].typval[j] = MISURA_LUNGH
-                data_config.Axis_Param[ind].fcval[j] = data_config.UM_FC[MISURA_LUNGH]
-                data_config.Axis_Param[ind].offsetval[j] = data_config.UM_Offset[MISURA_LUNGH]
-            except Exception:
-                data_config.Axis_Param[ind].typval[j] = 0
-                data_config.Axis_Param[ind].fcval[j] = 1.0
-                data_config.Axis_Param[ind].offsetval[j] = 0.0
+        type_list = _as_list(block.get("type"))
+        for j in range(min(len(type_list), MAX_ASSEREAL + 1)):
+            data_config.Axis_Param[ind].typval[j] = type_list[j]
 
-        # Se ci sono meno valori real → completa con 0.0
-        for j in range(len(real_list), MAX_ASSEREAL + 1):
-            data_config.Axis_Param[ind].realvalcfg[j] = 0.0
-            data_config.Axis_Param[ind].realval[j] = 0.0
-            data_config.Axis_Param[ind].typval[j] = 0
-            data_config.Axis_Param[ind].fcval[j] = 1.0
-            data_config.Axis_Param[ind].offsetval[j] = 0.0
+        # TODO: controllare
+        # # Se ci sono meno valori real → completa con 0.0
+        # for j in range(len(real_list), MAX_ASSEREAL + 1):
+        #     data_config.Axis_Param[ind].realvalcfg[j] = 0.0
+        #     data_config.Axis_Param[ind].realval[j] = 0.0
+        #     data_config.Axis_Param[ind].typval[j] = 0
+        #     data_config.Axis_Param[ind].fcval[j] = 1.0
+        #     data_config.Axis_Param[ind].offsetval[j] = 0.0
 
 
 # ------------------ INPUT / OUTPUT / FB / PID / MOT / ALARM / MAINT / TOOLSET ------------------
@@ -2311,7 +2305,7 @@ def custom_function():
             for axisInd, fun_list in duplicates.items():
                 axis_name = getattr(data_config.Axis_Param[axisInd], "name", f"AXIS[{axisInd}]")
                 fun_str = ", ".join([f"{Type_AxisFunInd[fi]}" for fi in fun_list])
-                print(f"   → {axis_name:<20} (axis {axisInd}) usato in FunInd: {fun_str}")
+                print(f"   → {axis_name:<20} (axisOil {axisInd}) usato in FunInd: {fun_str}")
 
         print("🔍 Fine controllo duplicati AxisFunInd.")
         return duplicates
@@ -2349,27 +2343,43 @@ def custom_function():
 
     def check_oil_temp() -> None:
         print("🔍 Inizio controllo olio...")
-        foo = {
+        # il numero rappresenta il tipo di dato MISURA_*
+        _ = {
+            ASSE_REAL_SRTUP: -1,
+            ASSE_REAL_SRTDOWN: -1,
+            ASSE_REAL_COEFFUP: -1,
+            ASSE_REAL_COEFFDOWN: -1,
+            ASSE_REAL_P1UP: 1,
+            ASSE_REAL_P1DOWN: 1,
+            ASSE_REAL_P2UP: 1,
+            ASSE_REAL_P2DOWN: 1,
+            ASSE_REAL_SYSPRESSUP1: 1,
+            ASSE_REAL_SYSPRESSDOWN1: 1,
+            ASSE_REAL_SYSPRESSUP2: 1,
+            ASSE_REAL_SYSPRESSDOWN2: 1,
+            ASSE_REAL_SYSPRESSUP3: 1,
+            ASSE_REAL_SYSPRESSDOWN3: 1,
+            ASSE_REAL_BWVMAX: 10,
             ASSE_REAL_DSMAXDOWN: -1,
             ASSE_REAL_DSMAXUP: -1,
+            ASSE_REAL_FWVMAX: 10,
             ASSE_REAL_SMAX: 2,
             ASSE_REAL_SMIN: 2,
+            ASSE_REAL_SSUP: 2,
+            ASSE_REAL_SINF: 2,
+            ASSE_REAL_VMINSTARTED: 10,
+            ASSE_REAL_SHH: 2,
+            ASSE_REAL_SH: 2,
+            ASSE_REAL_SL: 2,
+            ASSE_REAL_SLL: 2,
             ASSE_REAL_TILTMAX: -1,
-            ASSE_REAL_MASTERMULT: -1,
-            ASSE_REAL_FREE_39: 2,
-            ASSE_REAL_DELTAMOVINGUP: 2,
-            ASSE_REAL_DELTAMOVINGSUPUP: -1,
-            ASSE_REAL_DELTAMOVINGINFUP: -1,
-            ASSE_REAL_DELTAMOVINGSUPDOWN: -1,
-            ASSE_REAL_DELTAMOVINGINFDOWN: -1,
-            ASSE_REAL_DELTAAUTO: -1,
-            ASSE_REAL_BWACCMAX: -1
         }
+
         if data_config.AxisFunInd[FUN_AXIS_OILTEMP] != -1:
-            axis = data_config.Axis_Param[data_config.AxisFunInd[data_config.AxisFunInd[FUN_AXIS_OILTEMP]]]
-            for i, value in foo.items():
-                if axis.typval[i] != value:
-                    print(f'now:{axis.typval[i]} shoudbe:{foo[i]} id: {i}')
+            axisOil = data_config.Axis_Param[data_config.AxisFunInd[FUN_AXIS_OILTEMP]]
+            for i, value in _.items():
+                if axisOil.typval[i] != value:
+                    print(f'now:{axisOil.typval[i]} shoudbe:{_[i]} id: {i}')
         print("🔍 Fine controllo olio...")
 
     def check_release() -> None:

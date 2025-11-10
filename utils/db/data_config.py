@@ -8,6 +8,7 @@ verso l'istanza DATA_CONFIG, seguendo la logica SCL.
 """
 from __future__ import annotations
 import logging
+import sys
 
 from pathlib import Path
 from typing import Any, List, Dict, Sequence, Optional
@@ -18,14 +19,43 @@ from utils.yaml.data.costants import BASE_AXIS, AXIS_GROUP_STEP, ALARM_GROUP_STE
 from utils.yaml.load import load_yaml
 from utils.exports.tia_constants import *  # noqa: F401,F403  (porta DATA_CONFIG, MAX_*, costanti simboliche, UDT, ecc.)
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%H:%M:%S"  # <-- formato orario (solo ore:minuti:secondi)
-)
+# 🎨 Codici colore ANSI
+RESET = "\033[0m"
+GRAY = "\033[90m"
+GREEN = "\033[92m"
+YELLOW = "\033[93m"
+RED = "\033[91m"
+BOLD_RED = "\033[1;91m"
+
+class ColorFormatter(logging.Formatter):
+    COLORS = {
+        logging.DEBUG: GRAY,
+        logging.INFO: RESET,        # INFO resta normale
+        logging.WARNING: YELLOW,
+        logging.ERROR: RED,
+        logging.CRITICAL: BOLD_RED
+    }
+
+    def format(self, record):
+        color = self.COLORS.get(record.levelno, RESET)
+        msg = super().format(record)
+        return f"{color}{msg}{RESET}"
+
+
+# ⚙️ Configurazione handler con formatter colorato
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(ColorFormatter("%(asctime)s [%(levelname)s] %(message)s", "%H:%M:%S"))
+
+logging.basicConfig(level=logging.DEBUG, handlers=[handler])
+
 
 logger = logging.getLogger(__name__)  # crea un logger con il nome del file
 
+# logging.debug("Messaggio di debug (non verrà mostrato)")
+# logging.info("Avvio programma")
+# logging.warning("Attenzione: parametro mancante")
+# logging.error("Errore di connessione")
+# logging.critical("Errore critico! Arresto immediato")
 # Istanza globale popolata dalla deserializzazione
 logger.debug('IN: building data_config class')
 data_config: DATA_CONFIG = DATA_CONFIG()  # type: ignore[name-defined]
@@ -589,8 +619,8 @@ def _deserialize_obj_alarm(data: Dict[str, Any]) -> None:
 
     for ind, row in enumerate(rows):
         if ind >= len(data_config.Alarm_Name):
-            # print(ind >= len(data_config.Alarm_Name), len(data_config.Alarm_Name), ind)
-            print(f"allarme {ind} ignorato")  # TODO: se allarmi maggiori di 192 allora versione diversa
+            # logging.info(ind >= len(data_config.Alarm_Name), len(data_config.Alarm_Name), ind)
+            logging.info(f"allarme {ind} ignorato")  # TODO: se allarmi maggiori di 192 allora versione diversa
             continue
         if not isinstance(row, (list, tuple)) or len(row) == 0:
             continue
@@ -793,7 +823,7 @@ def _finalize_config(data: Dict[str, Any]) -> None:
     data_config.Config_Header[HEADER_TYPEVERSION] = data_config.CFGVersion
     data_config.PLCVersion1, data_config.PLCVersion2, data_config.PLCVersion3, data_config.PLCVersion4 = _check_config_version(data)
     data_config.CFGVersion = data_config.PLCVersion1 * 100 + data_config.PLCVersion2
-    # print(f"*CFG v{data_config.PLCVersion1}.{data_config.PLCVersion2}.{data_config.PLCVersion3}.{data_config.PLCVersion4}")
+    # logging.info(f"*CFG v{data_config.PLCVersion1}.{data_config.PLCVersion2}.{data_config.PLCVersion3}.{data_config.PLCVersion4}")
     # essendo script based non c è modo di reperirlo dal config
 
 
@@ -905,7 +935,7 @@ def _debug_intval(iotype: int = None):
             origin = Type_AxisParam_Map["intval"][idx_name]["origin"].format(0, axis_name)
         except:
             pass
-        print(f'{idx}\t{display}\t-\tx{val}\t-\t{origin}')
+        logging.info(f'{idx}\t{display}\t-\tx{val}\t-\t{origin}')
 
 
 def _debug_realval(iotype: int = None):
@@ -926,7 +956,7 @@ def _debug_realval(iotype: int = None):
             origin = Type_AxisParam_Map["realval"][idx_name]["origin"].format(0, axis_name)
         except:
             pass
-        print(f'{idx}\t{display}\t-\tx{val}\t-\t{origin}')
+        logging.info(f'{idx}\t{display}\t-\tx{val}\t-\t{origin}')
 
 
 def _debug_boolval(iotype: int = None):
@@ -947,20 +977,20 @@ def _debug_boolval(iotype: int = None):
             origin = Type_AxisParam_Map["boolval"][idx_name]["origin"].format(0, axis_name)
         except:
             pass
-        print(f'{idx}\t{display}\t-\tx{val}\t-\t{origin}')
+        logging.info(f'{idx}\t{display}\t-\tx{val}\t-\t{origin}')
 
 
 def _debug_ioparam(iotype: int, Ind: int = 0):
     if iotype == IO_DI:
-        print(f'[{Ind}] - "{get_io_name(iotype=iotype, Ind=Ind)}"\t{data_config.IO_DI_List[Ind]}')
+        logging.info(f'[{Ind}] - "{get_io_name(iotype=iotype, Ind=Ind)}"\t{data_config.IO_DI_List[Ind]}')
     elif iotype == IO_DO:
-        print(f'[{Ind}] - "{get_io_name(iotype=iotype, Ind=Ind)}"\t{data_config.IO_DO_List[Ind]}')
+        logging.info(f'[{Ind}] - "{get_io_name(iotype=iotype, Ind=Ind)}"\t{data_config.IO_DO_List[Ind]}')
     elif iotype == IO_AI:
-        print(f'[{Ind}] - "{get_io_name(iotype=iotype, Ind=Ind)}"\t{data_config.IO_AI_List[Ind]}')
+        logging.info(f'[{Ind}] - "{get_io_name(iotype=iotype, Ind=Ind)}"\t{data_config.IO_AI_List[Ind]}')
     elif iotype == IO_AO:
-        print(f'[{Ind}] - "{get_io_name(iotype=iotype, Ind=Ind)}"\t{data_config.IO_AO_List[Ind]}')
+        logging.info(f'[{Ind}] - "{get_io_name(iotype=iotype, Ind=Ind)}"\t{data_config.IO_AO_List[Ind]}')
     elif iotype == IO_RI:
-        print(f'[{Ind}] - "{get_io_name(iotype=iotype, Ind=Ind)}"\t{data_config.IO_RI_List[Ind]}')
+        logging.info(f'[{Ind}] - "{get_io_name(iotype=iotype, Ind=Ind)}"\t{data_config.IO_RI_List[Ind]}')
 
 
 def run_params_scan(iotype: int, ind_target: int, verbose: bool = False) -> List[str]:
@@ -977,7 +1007,7 @@ def run_params_scan(iotype: int, ind_target: int, verbose: bool = False) -> List
                     txt = f'{origin}\t→\t{display}'
                     _return.append(txt)
                     if verbose:
-                        print(txt)
+                        logging.info(txt)
 
         for idx, val in enumerate(data_config.ParamInt):
             if idx not in Config_Map["_ParamInt"]:
@@ -994,7 +1024,7 @@ def run_params_scan(iotype: int, ind_target: int, verbose: bool = False) -> List
                     txt = f'{origin}\t→\t{display}'
                     _return.append(txt)
                     if verbose:
-                        print(txt)
+                        logging.info(txt)
     elif iotype == IO_DO:
         for pid, val in enumerate(data_config.OutInd):
             if val == ind_target:
@@ -1006,7 +1036,7 @@ def run_params_scan(iotype: int, ind_target: int, verbose: bool = False) -> List
                     txt = f'{origin}\t→\t{display}'
                     _return.append(txt)
                     if verbose:
-                        print(txt)
+                        logging.info(txt)
 
         for idx, val in enumerate(data_config.ParamInt):
             if idx not in Config_Map["_ParamInt"]:
@@ -1023,7 +1053,7 @@ def run_params_scan(iotype: int, ind_target: int, verbose: bool = False) -> List
                     txt = f'{origin}\t→\t{display}'
                     _return.append(txt)
                     if verbose:
-                        print(txt)
+                        logging.info(txt)
     elif iotype == IO_AI:
         for idx, val in enumerate(data_config.ParamInt):
             if idx not in Config_Map["_ParamInt"]:
@@ -1040,7 +1070,7 @@ def run_params_scan(iotype: int, ind_target: int, verbose: bool = False) -> List
                     txt = f'{origin}\t→\t{display}'
                     _return.append(txt)
                     if verbose:
-                        print(txt)
+                        logging.info(txt)
     return _return
 
 
@@ -1067,7 +1097,7 @@ def run_axis_scan(iotype: int, ind_target: int = None, axisInd: int = None, verb
                         txt = f"{origin.format(axisInd, axis_name)}\t→\t{display}"
                         _return.append(txt)
                         if verbose:
-                            print(txt)
+                            logging.info(txt)
         if iotype == IO_RI:
             AxisParamIntVals = data_config.Axis_Param[axisInd].intval
             for idx, val in enumerate(AxisParamIntVals):
@@ -1081,7 +1111,7 @@ def run_axis_scan(iotype: int, ind_target: int = None, axisInd: int = None, verb
                         txt = f"{origin.format(axisInd, axis_name)}\t→\t{display}"
                         _return.append(txt)
                         if verbose:
-                            print(txt)
+                            logging.info(txt)
         return _return
     else:
         _return = []
@@ -1116,7 +1146,7 @@ def run_input_scan(iotype: int, ind_target: int = None, inputInd: int = None, ve
                         txt = f"{origin.format(inputInd)}\t→\t{display}"
                         _return.append(txt)
                         if verbose:
-                            print(txt)
+                            logging.info(txt)
         if iotype == IO_AI:
             InputParamIntVals = data_config.Input_Param[inputInd].intval
             for idx, val in enumerate(InputParamIntVals):
@@ -1129,7 +1159,7 @@ def run_input_scan(iotype: int, ind_target: int = None, inputInd: int = None, ve
                         txt = f"{origin.format(inputInd)}\t→\t{display}"
                         _return.append(txt)
                         if verbose:
-                            print(txt)
+                            logging.info(txt)
         return _return
     else:
         _return = []
@@ -1168,7 +1198,7 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None, 
                         txt = f"{origin.format(outputInd)}\t→\t{display}"
                         _return.append(txt)
                         if verbose:
-                            print(txt)
+                            logging.info(txt)
                 else:
                     logging.warning(f'{idx_name} non definito')
         elif iotype == IO_DO:
@@ -1184,7 +1214,7 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None, 
                             txt = f"{origin.format(idx)}\t→\t{display}"
                             _return.append(txt)
                             if verbose:
-                                print(txt)
+                                logging.info(txt)
             elif OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_ADV:
                 custom_params = {
                     "OUTPUT_INT_ANA2IND": "ADV START",
@@ -1201,7 +1231,7 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None, 
                             txt = f"{origin.format(outputInd)}\t→\t{display}"
                             _return.append(txt)
                             if verbose:
-                                print(txt)
+                                logging.info(txt)
                     else:
                         logging.warning(f'{idx_name} non definito')
             elif OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_PSLCAN:
@@ -1219,7 +1249,7 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None, 
                             txt = f"{origin.format(outputInd)}\t→\t{display}"
                             _return.append(txt)
                             if verbose:
-                                print(txt)
+                                logging.info(txt)
                     else:
                         logging.warning(f'{idx_name} non definito')
             if OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_SELSLOW:
@@ -1235,7 +1265,7 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None, 
                             txt = f"{origin.format(outputInd)}\t→\t{display}"
                             _return.append(txt)
                             if verbose:
-                                print(txt)
+                                logging.info(txt)
                     else:
                         logging.warning(f'{idx_name} non definito')
         elif iotype == IO_AI:
@@ -1249,7 +1279,7 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None, 
                             display = Type_OutputParam_Map["intval"][idx_name]["display"]
                             origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
                             if verbose:
-                                print(f"{origin.format(idx)}\t→\t{display}")
+                                logging.info(f"{origin.format(idx)}\t→\t{display}")
             if OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_PSLCAN:
                 custom_params = {
                     "OUTPUT_INT_ADDPARAM2": "STATUS1 PSLCAN",
@@ -1263,7 +1293,7 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None, 
                             txt = f"{origin.format(outputInd)}\t→\t{display}"
                             _return.append(txt)
                             if verbose:
-                                print(txt)
+                                logging.info(txt)
                     else:
                         logging.warning(f'{idx_name} non definito')
         elif iotype == IO_AO:
@@ -1277,7 +1307,7 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None, 
                             display = Type_OutputParam_Map["intval"][idx_name]["display"]
                             origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
                             if verbose:
-                                print(f"{origin.format(idx)}\t→\t{display}")
+                                logging.info(f"{origin.format(idx)}\t→\t{display}")
             if OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_PSLCAN:
                 custom_params = {
                     "OUTPUT_INT_ANA1IND": "ANA1",
@@ -1293,7 +1323,7 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None, 
                             txt = f"{origin.format(outputInd)}\t→\t{display}"
                             _return.append(txt)
                             if verbose:
-                                print(txt)
+                                logging.info(txt)
                     else:
                         logging.warning(f'{idx_name} non definito')
 
@@ -1326,7 +1356,7 @@ def run_feedback_scan(iotype: int, ind_target: int = None, feedbackInd: int = No
                 txt = f"{origin.format(feedbackInd)}\t→\t{display}"
                 _return.append(txt)
                 if verbose:
-                    print(txt)
+                    logging.info(txt)
             if FeedbackParamIntVals[FB_INT_TIPO] == FB_DI:
                 if FeedbackParamIntVals[FB_INT_ININD] == ind_target:
                     origin = Type_FeedbackParam_Map["intval"]["FB_INT_ININD"]["origin"]
@@ -1334,7 +1364,7 @@ def run_feedback_scan(iotype: int, ind_target: int = None, feedbackInd: int = No
                     txt = f"{origin.format(feedbackInd)}\t→\t{display}"
                     _return.append(txt)
                     if verbose:
-                        print(txt)
+                        logging.info(txt)
         elif iotype == IO_AI:
             FeedbackParamIntVals = data_config.Feedback_Param[feedbackInd].intval
             if FeedbackParamIntVals[FB_INT_TIPO] in [FB_AI, FB_AHSC, FB_AI2]:  # TODO: quello a ritenzione di analogico come si chiama?
@@ -1344,7 +1374,7 @@ def run_feedback_scan(iotype: int, ind_target: int = None, feedbackInd: int = No
                     txt = f"{origin.format(feedbackInd)}\t→\t{display}"
                     _return.append(txt)
                     if verbose:
-                        print(txt)
+                        logging.info(txt)
     else:
         _return = []
         for i in range(0, MAX_FEEDBACK):
@@ -1369,7 +1399,7 @@ def run_io_expr_scan(iotype: int, ind_target: int = None, verbose: bool = False)
                 for i in range(1, len(data_config.IO_DI_List[Ind].exprintval), 3):
                     if i + 2 >= len(data_config.IO_DI_List[Ind].exprintval):
                         if DEBUG_DEBUG_DEBUG:
-                            print('xERR_001')
+                            logging.info('xERR_001')
                         continue
                     not_val, opnd_val, oper_val = data_config.IO_DI_List[Ind].exprintval[i:i + 3]
                     if not_val in [IO_EXPR_NONE, IO_EXPR_VAL, IO_EXPR_NOTVAL]:
@@ -1378,7 +1408,7 @@ def run_io_expr_scan(iotype: int, ind_target: int = None, verbose: bool = False)
                             txt = f"IO\t→\tDI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}"
                             _return.append(txt)
                             if verbose:
-                                print(txt)
+                                logging.info(txt)
     elif iotype == IO_AI:
         # EXPR DI
         for Ind in range(0, len(data_config.IO_DI_List)):
@@ -1390,7 +1420,7 @@ def run_io_expr_scan(iotype: int, ind_target: int = None, verbose: bool = False)
                 for i in range(1, len(data_config.IO_DI_List[Ind].exprintval), 3):
                     if i + 2 >= len(data_config.IO_DI_List[Ind].exprintval):
                         if DEBUG_DEBUG_DEBUG:
-                            print('xERR_001')
+                            logging.info('xERR_001')
                         continue
                     not_val, opnd_val, oper_val = data_config.IO_DI_List[Ind].exprintval[i:i + 3]
                     if not_val in [IO_EXPR_AIEQ0, IO_EXPR_AINE0, IO_EXPR_AIGT0,
@@ -1400,7 +1430,7 @@ def run_io_expr_scan(iotype: int, ind_target: int = None, verbose: bool = False)
                             txt = f"IO\t→\tDI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}"
                             _return.append(txt)
                             if verbose:
-                                print(txt)
+                                logging.info(txt)
         # EXPR RI
         for Ind in range(0, len(data_config.IO_RI_List)):
             if data_config.IO_RI_List[Ind].intval[IO_INT_ADDRTYPE] == IO_TYPE_CALC:
@@ -1411,7 +1441,7 @@ def run_io_expr_scan(iotype: int, ind_target: int = None, verbose: bool = False)
                 for i in range(1, len(data_config.IO_RI_List[Ind].exprintval), 3):
                     if i + 2 >= len(data_config.IO_RI_List[Ind].exprintval):
                         if DEBUG_DEBUG_DEBUG:
-                            print('xERR_001')
+                            logging.info('xERR_001')
                         continue
                     not_val, opnd_val, oper_val = data_config.IO_RI_List[Ind].exprintval[i:i + 3]
                     if not_val in [IO_EXPR_AI, IO_EXPR_ABSAI]:
@@ -1420,7 +1450,7 @@ def run_io_expr_scan(iotype: int, ind_target: int = None, verbose: bool = False)
                             txt = f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}"
                             _return.append(txt)
                             if verbose:
-                                print(txt)
+                                logging.info(txt)
     elif iotype == IO_RI:
         # EXPR DI
         for Ind in range(0, len(data_config.IO_DI_List)):
@@ -1432,7 +1462,7 @@ def run_io_expr_scan(iotype: int, ind_target: int = None, verbose: bool = False)
                 for i in range(1, len(data_config.IO_DI_List[Ind].exprintval), 3):
                     if i + 2 >= len(data_config.IO_DI_List[Ind].exprintval):
                         if DEBUG_DEBUG_DEBUG:
-                            print('xERR_001')
+                            logging.info('xERR_001')
                         continue
                     not_val, opnd_val, oper_val = data_config.IO_DI_List[Ind].exprintval[i:i + 3]
                     if not_val in [IO_EXPR_RIEQ0, IO_EXPR_RINE0, IO_EXPR_RIGT0,
@@ -1442,7 +1472,7 @@ def run_io_expr_scan(iotype: int, ind_target: int = None, verbose: bool = False)
                             txt = f"IO\t→\tDI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}"
                             _return.append(txt)
                             if verbose:
-                                print(txt)
+                                logging.info(txt)
         # EXPR RI
         for Ind in range(0, len(data_config.IO_RI_List)):
             if data_config.IO_RI_List[Ind].intval[IO_INT_ADDRTYPE] == IO_TYPE_CALC:
@@ -1453,7 +1483,7 @@ def run_io_expr_scan(iotype: int, ind_target: int = None, verbose: bool = False)
                 for i in range(1, len(data_config.IO_RI_List[Ind].exprintval), 3):
                     if i + 2 >= len(data_config.IO_RI_List[Ind].exprintval):
                         if DEBUG_DEBUG_DEBUG:
-                            print('xERR_001')
+                            logging.info('xERR_001')
                         continue
                     not_val, opnd_val, oper_val = data_config.IO_RI_List[Ind].exprintval[i:i + 3]
                     if not_val in [IO_EXPR_RI, IO_EXPR_ABSRI]:
@@ -1462,7 +1492,7 @@ def run_io_expr_scan(iotype: int, ind_target: int = None, verbose: bool = False)
                             txt = f"IO\t→\tRI [{Ind}]\t→\t{get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tExpr\t→\tN{group_num}"
                             _return.append(txt)
                             if verbose:
-                                print(txt)
+                                logging.info(txt)
     logger.debug('OUT: run_io_expr_scan')
     return _return
 
@@ -1481,7 +1511,7 @@ def run_io_scan(iotype: int, ind_target: int = None, verbose: bool = False) -> L
                     txt = f"IO\t→\tDI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tIn"
                     _return.append(txt)
                     if verbose:
-                        print(txt)
+                        logging.info(txt)
         found = run_io_expr_scan(iotype=IO_DI, ind_target=ind_target, verbose=verbose)
         if found:
             _return.extend(found)
@@ -1492,7 +1522,7 @@ def run_io_scan(iotype: int, ind_target: int = None, verbose: bool = False) -> L
                 txt = f"IO\t→\tDI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tIn"
                 _return.append(txt)
                 if verbose:
-                    print(txt)
+                    logging.info(txt)
         for Ind in range(0, len(data_config.IO_RI_List)):
             if data_config.IO_RI_List[Ind].intval[IO_INT_ADDRTYPE] in [IO_TYPE_FUNC_TOT, IO_TYPE_FUNC_TOTAUTO,
                                                                        IO_TYPE_FUNC_TOTMAN, IO_TYPE_FUNC_DTOT,
@@ -1505,17 +1535,17 @@ def run_io_scan(iotype: int, ind_target: int = None, verbose: bool = False) -> L
                         txt = f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tAddress"
                         _return.append(txt)
                         if verbose:
-                            print(txt)
+                            logging.info(txt)
             if data_config.IO_RI_List[Ind].intval[IO_INT_NBYTES] == ind_target:
                 txt = f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tEnabled"
                 _return.append(txt)
                 if verbose:
-                    print(txt)
+                    logging.info(txt)
             if data_config.IO_RI_List[Ind].intval[IO_INT_TIMEOUT] == ind_target:
                 txt = f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tReset"
                 _return.append(txt)
                 if verbose:
-                    print(txt)
+                    logging.info(txt)
     elif iotype == IO_DO:
         for Ind in range(0, len(data_config.IO_RI_List)):
             if data_config.IO_RI_List[Ind].intval[IO_INT_ADDRTYPE] in [IO_TYPE_FUNC_TOT, IO_TYPE_FUNC_TOTAUTO,
@@ -1529,7 +1559,7 @@ def run_io_scan(iotype: int, ind_target: int = None, verbose: bool = False) -> L
                         txt = f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tAddress"
                         _return.append(txt)
                         if verbose:
-                            print(txt)
+                            logging.info(txt)
     elif iotype == IO_AI:
         # campo In dei AO
         for Ind in range(0, len(data_config.IO_AO_List)):
@@ -1537,7 +1567,7 @@ def run_io_scan(iotype: int, ind_target: int = None, verbose: bool = False) -> L
                 txt = f"IO\t→\tAO\t→\t[{Ind}] {get_io_name(iotype=IO_AI, Ind=Ind)}\t→\tIn"
                 _return.append(txt)
                 if verbose:
-                    print(txt)
+                    logging.info(txt)
 
         found = run_io_expr_scan(iotype=IO_AI, ind_target=ind_target)
         if found:
@@ -1555,14 +1585,14 @@ def run_io_scan(iotype: int, ind_target: int = None, verbose: bool = False) -> L
                         txt = f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tAddress"
                         _return.append(txt)
                         if verbose:
-                            print(txt)
+                            logging.info(txt)
     elif iotype == IO_AO:
         for Ind in range(0, len(data_config.IO_AO_List)):
             if data_config.IO_AO_List[Ind].intval[IO_INT_TIMEOUT] == ind_target:
                 txt = f"IO\t→\tAO\t→\t[{Ind}] {get_io_name(iotype=IO_AO, Ind=Ind)}\t→\tAO Dual"
                 _return.append(txt)
                 if verbose:
-                    print(txt)
+                    logging.info(txt)
         for Ind in range(0, len(data_config.IO_RI_List)):
             if data_config.IO_RI_List[Ind].intval[IO_INT_ADDRTYPE] in [IO_TYPE_FUNC_TOT, IO_TYPE_FUNC_TOTAUTO,
                                                                        IO_TYPE_FUNC_TOTMAN, IO_TYPE_FUNC_DTOT,
@@ -1575,14 +1605,14 @@ def run_io_scan(iotype: int, ind_target: int = None, verbose: bool = False) -> L
                         txt = f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tAddress"
                         _return.append(txt)
                         if verbose:
-                            print(txt)
+                            logging.info(txt)
     elif iotype == IO_RI:
         for Ind in range(0, len(data_config.IO_RI_List)):
             if data_config.IO_RI_List[Ind].intval[IO_INT_ININD] == ind_target:
                 txt = f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tIn"
                 _return.append(txt)
                 if verbose:
-                    print(txt)
+                    logging.info(txt)
             if data_config.IO_RI_List[Ind].intval[IO_INT_ADDRTYPE] in [IO_TYPE_FUNC_TOT, IO_TYPE_FUNC_TOTAUTO,
                                                                        IO_TYPE_FUNC_TOTMAN, IO_TYPE_FUNC_DTOT,
                                                                        IO_TYPE_FUNC_DTOTAUTO, IO_TYPE_FUNC_DTOTMAN,
@@ -1594,7 +1624,7 @@ def run_io_scan(iotype: int, ind_target: int = None, verbose: bool = False) -> L
                         txt = f"IO\t→\tRI\t→\t[{Ind}] {get_io_name(iotype=IO_RI, Ind=Ind)}\t→\tAddress"
                         _return.append(txt)
                         if verbose:
-                            print(txt)
+                            logging.info(txt)
         run_io_expr_scan(iotype=IO_RI, ind_target=ind_target)
     logging.debug('OUT: run_io_scan')
     return _return
@@ -1617,7 +1647,7 @@ def run_alarm_scan(iotype: int, ind_target: int = None, verbose: bool = False) -
                         txt = f"{origin.format(idx, alarm_name)}\t→\t{display}"
                         _return.append(txt)
                         if verbose:
-                            print(txt)
+                            logging.info(txt)
     elif iotype == IO_DO:
         AlarmParams = data_config.Alarm_Param
         for idx, AlarmParam in enumerate(AlarmParams):
@@ -1632,7 +1662,7 @@ def run_alarm_scan(iotype: int, ind_target: int = None, verbose: bool = False) -
                         txt = f"{origin.format(idx, alarm_name)}\t→\t{display}"
                         _return.append(txt)
                         if verbose:
-                            print(txt)
+                            logging.info(txt)
     logging.debug('OUT: run_alarm_scan')
     return _return
 
@@ -1646,54 +1676,54 @@ def run_motor_scan(iotype: int, ind_target: int = None, verbose: bool = False):
                 txt = f"Motor\t→\t{Ind + 1}\t→\tLS - STOP"
                 _return.append(txt)
                 if verbose:
-                    print(txt)
+                    logging.info(txt)
             if data_config.Motor_LS2Ind[Ind] == ind_target:
                 txt = f"Motor\t→\t{Ind + 1}\t→\tLS2 - START"
                 _return.append(txt)
                 if verbose:
-                    print(txt)
+                    logging.info(txt)
             if data_config.Motor_TRInd[Ind] == ind_target:
                 txt = f"Motor\t→\t{Ind + 1}\t→\tTR"
                 _return.append(txt)
                 if verbose:
-                    print(txt)
+                    logging.info(txt)
             if data_config.Motor_TR2Ind[Ind] == ind_target:
                 txt = f"Motor\t→\t{Ind + 1}\t→\tTR2"
                 _return.append(txt)
                 if verbose:
-                    print(txt)
+                    logging.info(txt)
             if data_config.Motor_StatInd[Ind] == ind_target:
                 txt = f"Motor\t→\t{Ind + 1}\t→\tSTAT"
                 _return.append(txt)
                 if verbose:
-                    print(txt)
+                    logging.info(txt)
             if data_config.Motor_StartingInd[Ind] == ind_target:
                 txt = f"Motor\t→\t{Ind + 1}\t→\tSTARTING"
                 _return.append(txt)
                 if verbose:
-                    print(txt)
+                    logging.info(txt)
     elif iotype == IO_DO:
         for Ind in range(0, MAX_MOTORE):
             if data_config.Motor_CmdInd[Ind] == ind_target:
                 txt = f"Motor\t→\t{Ind + 1}\t→\tCMD"
                 _return.append(txt)
                 if verbose:
-                    print(txt)
+                    logging.info(txt)
             if data_config.Motor_Cmd1Ind[Ind] == ind_target:
                 txt = f"Motor\t→\t{Ind + 1}\t→\tCMD1"
                 _return.append(txt)
                 if verbose:
-                    print(txt)
+                    logging.info(txt)
             if data_config.Motor_Cmd2Ind[Ind] == ind_target:
                 txt = f"Motor\t→\t{Ind + 1}\t→\tCMD2"
                 _return.append(txt)
                 if verbose:
-                    print(txt)
+                    logging.info(txt)
             if data_config.Motor_Cmd3Ind[Ind] == ind_target:
                 txt = f"Motor\t→\t{Ind + 1}\t→\tCMD3"
                 _return.append(txt)
                 if verbose:
-                    print(txt)
+                    logging.info(txt)
     logging.debug('OUT: run_motor_scan')
     return _return
 
@@ -1715,29 +1745,29 @@ def run_maintenance_scan(iotype: int, ind_target: int = None, verbose: bool = Fa
                         txt = f"{origin.format(idx, maint_name)}\t→\t{display}"
                         _return.append(txt)
                         if verbose:
-                            print(txt)
+                            logging.info(txt)
     elif iotype == IO_DO:
         for Ind in range(0, MAX_MAINT):
             if data_config.Motor_CmdInd[Ind] == ind_target:
                 txt = f"Motor\t→\t{Ind + 1}\t→\tCMD"
                 _return.append(txt)
                 if verbose:
-                    print(txt)
+                    logging.info(txt)
             if data_config.Motor_Cmd1Ind[Ind] == ind_target:
                 txt = f"Motor\t→\t{Ind + 1}\t→\tCMD1"
                 _return.append(txt)
                 if verbose:
-                    print(txt)
+                    logging.info(txt)
             if data_config.Motor_Cmd2Ind[Ind] == ind_target:
                 txt = f"Motor\t→\t{Ind + 1}\t→\tCMD2"
                 _return.append(txt)
                 if verbose:
-                    print(txt)
+                    logging.info(txt)
             if data_config.Motor_Cmd3Ind[Ind] == ind_target:
                 txt = f"Motor\t→\t{Ind + 1}\t→\tCMD3"
                 _return.append(txt)
                 if verbose:
-                    print(txt)
+                    logging.info(txt)
     logging.debug('OUT: run_maintenance_scan')
     return _return
 
@@ -1819,11 +1849,11 @@ def run_free_scan(iotype: int):
         io_list = data_config.IO_RI_List
         label = "RI"
     else:
-        print(f"[ERRORE] Tipo IO sconosciuto: {iotype}")
+        logging.info(f"[ERRORE] Tipo IO sconosciuto: {iotype}")
         return
 
     if not io_list:
-        print(f"Nessun {label} trovato nel data_config.")
+        logging.info(f"Nessun {label} trovato nel data_config.")
         return
 
     for i, param in enumerate(io_list):
@@ -1893,7 +1923,7 @@ def custom_function():
     logger.info("IN: custom_function")
 
     def check_axis_flag() -> list[str]:
-        print('Controllo flag')
+        logging.info('Controllo flag')
         """
         Controlla limiti e flag per ogni asse.
         Stampa warning prima del gruppo di riferimenti.
@@ -2005,8 +2035,8 @@ def custom_function():
                         local_buf.append(f"        ↳ {ref}")
 
             if local_buf:
-                print(f"\n[ASSE {axisInd:02d}] {axis_name}")
-                print("\n".join(local_buf))
+                logging.info(f"\n[ASSE {axisInd:02d}] {axis_name}")
+                logging.info("\n".join(local_buf))
                 out_lines.append(f"[ASSE {axisInd:02d}] {axis_name}")
                 out_lines.extend(local_buf)
 
@@ -2018,8 +2048,8 @@ def custom_function():
         Controlla se una DO/AO è referenziata in più punti nel progetto.
         Usa run_io_scan per verificare dove viene utilizzata ogni uscita.
         """
-        print('-' * 60)
-        print('Controllo duplicati output')
+        logging.info('-' * 60)
+        logging.info('Controllo duplicati output')
         duplicates = {}
 
         for iotype, label in [(IO_DO, "DO"), (IO_AO, "AO")]:
@@ -2030,9 +2060,9 @@ def custom_function():
                 if len(used_in) > 1:
                     io_name = get_io_name(iotype=iotype, Ind=idx)
                     duplicates[io_name or f"{label}[{idx}]"] = used_in
-                    print(f"⚠️ {label}[{idx}] {io_name or ''} usato in più punti:")
+                    logging.info(f"⚠️ {label}[{idx}] {io_name or ''} usato in più punti:")
                     for u in used_in:
-                        print(f"   ↳ {u}")
+                        logging.info(f"   ↳ {u}")
         return duplicates
 
     def check_duplicate_obj_usage(verbose: bool = True) -> dict:
@@ -2040,7 +2070,7 @@ def custom_function():
         Controlla se input, output o feedback sono usati in più assi diversi.
         Restituisce un dict con le duplicazioni trovate.
         """
-        print(f'🔍Avvio controllo duplicati Input/Output/Feedback...')
+        logging.info(f'🔍Avvio controllo duplicati Input/Output/Feedback...')
         result = {
             "feedback": {},
             "input": {},
@@ -2090,15 +2120,15 @@ def custom_function():
 
         if verbose:
             if any(duplicates.values()):
-                print("⚠️ Duplicazioni trovate:")
+                logging.info("⚠️ Duplicazioni trovate:")
                 for cat, items in duplicates.items():
                     for ind, axes in items.items():
-                        print(f" - {cat.upper()}[{ind}] usato in: {', '.join(axes)}")
-        print('🔍 Fine controllo duplicati Input/Output/Feedback.')
+                        logging.info(f" - {cat.upper()}[{ind}] usato in: {', '.join(axes)}")
+        logging.info('🔍 Fine controllo duplicati Input/Output/Feedback.')
         return duplicates
 
     def clean_di_axis_check() -> None:
-        print("🔍 Avvio controllo axis_flag_checks...")
+        logging.info("🔍 Avvio controllo axis_flag_checks...")
         for axisInd in range(0, MAX_ASSE):
             AxisParamIntVals = data_config.Axis_Param[axisInd].intval
             to_check = [ASSE_INT_INDSHH, ASSE_INT_INDSH, ASSE_INT_INDSL, ASSE_INT_INDSLL, ASSE_INT_INDSH0, ASSE_INT_INDSL0]
@@ -2109,8 +2139,8 @@ def custom_function():
                     display = Type_AxisParam_Map["intval"][idx_name]["display"]
                     origin = Type_AxisParam_Map["intval"][idx_name]["origin"]
                     axis_name = get_axis_name(Ind=axisInd)
-                    print(f"⚠️ {origin.format(axisInd, axis_name)}\t→\t{display}\t[{AxisParamIntVals[idx]}] {get_io_name(iotype=IO_DI, Ind=AxisParamIntVals[idx])}")
-        print("🔍 Fine controllo axis_flag_checks...")
+                    logging.info(f"⚠️ {origin.format(axisInd, axis_name)}\t→\t{display}\t[{AxisParamIntVals[idx]}] {get_io_name(iotype=IO_DI, Ind=AxisParamIntVals[idx])}")
+        logging.info("🔍 Fine controllo axis_flag_checks...")
 
     def duplicate_io_address(verbose: bool = True) -> dict[str, dict[tuple[str, int, int], list[tuple[int, str]]]]:
         """
@@ -2126,7 +2156,7 @@ def custom_function():
             ...
           }
         """
-        print("🔍 Avvio controllo indirizzi duplicati...")
+        logging.info("🔍 Avvio controllo indirizzi duplicati...")
 
         # --- helper interno ---
         def _check(io_list, label: str):
@@ -2165,22 +2195,22 @@ def custom_function():
             if dup_group:
                 duplicates[label] = dup_group
                 if verbose:
-                    print(f"\n⚠️  Duplicati trovati in {label}:")
+                    logging.info(f"\n⚠️  Duplicati trovati in {label}:")
                     # ordina per tipo per renderlo più leggibile
                     for (tp, a1, a2), entries in sorted(dup_group.items(), key=lambda x: x[0]):
                         joined = ", ".join([f"[{idx}] {nm}" for idx, nm in entries])
-                        print(f"   → {'PNET' if tp == IO_TYPE_PNET else 'CAN' if tp == IO_TYPE_CAN else 'SW'} {a1}.{a2:<3} → {joined}")
+                        logging.info(f"   → {'PNET' if tp == IO_TYPE_PNET else 'CAN' if tp == IO_TYPE_CAN else 'SW'} {a1}.{a2:<3} → {joined}")
             if not duplicates and verbose:
-                print("✅ Nessun duplicato di indirizzo trovato negli IO.")
+                logging.info("✅ Nessun duplicato di indirizzo trovato negli IO.")
 
         _check(data_config.IO_DI_List, "DI")
         _check(data_config.IO_AI_List, "AI")
         _check(data_config.IO_DO_List, "DO")
         _check(data_config.IO_AO_List, "AO")
-        print("🔍 Fine controllo indirizzi duplicati...")
+        logging.info("🔍 Fine controllo indirizzi duplicati...")
 
     def check_forbidden_ao_do_usage() -> None:
-        print("🔍 Avvio controllo indirizzi safety...")
+        logging.info("🔍 Avvio controllo indirizzi safety...")
         fAddresses = []
 
         def build_forbidden_addresses(start: int, next_address: int, modules: int) -> list[str]:
@@ -2204,7 +2234,7 @@ def custom_function():
                 addr_str = f"{addr1}" # {addr2}"
                 if addr_str in fAddresses:
                     io_name = get_io_name(iotype=IO_DI, Ind=Ind)
-                    print(f"⚠️ Safety non permesso in DI [{Ind}] {io_name} at address {addr_str}")
+                    logging.info(f"⚠️ Safety non permesso in DI [{Ind}] {io_name} at address {addr_str}")
         for Ind in range(0, len(data_config.IO_AI_List)):
             if data_config.IO_AI_List[Ind].intval[IO_INT_ADDRTYPE] == IO_TYPE_PNET:
                 addr1 = data_config.IO_AI_List[Ind].intval[IO_INT_ADDR1]
@@ -2212,7 +2242,7 @@ def custom_function():
                 addr_str = f"{addr1}" # {addr2}"
                 if addr_str in fAddresses:
                     io_name = get_io_name(iotype=IO_AI, Ind=Ind)
-                    print(f"⚠️  Safety non permesso in AI [{Ind}] {io_name} at address {addr_str}")
+                    logging.info(f"⚠️  Safety non permesso in AI [{Ind}] {io_name} at address {addr_str}")
         for Ind in range(0, len(data_config.IO_DO_List)):
             if data_config.IO_DO_List[Ind].intval[IO_INT_ADDRTYPE] == IO_TYPE_PNET:
                 addr1 = data_config.IO_DO_List[Ind].intval[IO_INT_ADDR1]
@@ -2220,7 +2250,7 @@ def custom_function():
                 addr_str = f"{addr1}" # {addr2}"
                 if addr_str in fAddresses:
                     io_name = get_io_name(iotype=IO_DO, Ind=Ind)
-                    print(f"⚠️ Safety non permesso in DO [{Ind}] {io_name} at address {addr_str}")
+                    logging.info(f"⚠️ Safety non permesso in DO [{Ind}] {io_name} at address {addr_str}")
         for Ind in range(0, len(data_config.IO_AO_List)):
             if data_config.IO_AO_List[Ind].intval[IO_INT_ADDRTYPE] == IO_TYPE_PNET:
                 addr1 = data_config.IO_AO_List[Ind].intval[IO_INT_ADDR1]
@@ -2228,8 +2258,8 @@ def custom_function():
                 addr_str = f"{addr1}" # {addr2}"
                 if addr_str in fAddresses:
                     io_name = get_io_name(iotype=IO_AO, Ind=Ind)
-                    print(f"⚠️ Safety non permesso in AO [{Ind}] {io_name} at address {addr_str}")
-        print("🔍 Fine controllo indirizzi safety...")
+                    logging.info(f"⚠️ Safety non permesso in AO [{Ind}] {io_name} at address {addr_str}")
+        logging.info("🔍 Fine controllo indirizzi safety...")
 
 
     def check_axis_um() -> list[tuple[int, str, int, int, str]]:
@@ -2241,7 +2271,7 @@ def custom_function():
         Restituisce:
             [(index, axis_name, tipo_asse, tipo_fb, fb_name), ...]
         """
-        print("🔍 Avvio controllo unità di misura assi...")
+        logging.info("🔍 Avvio controllo unità di misura assi...")
         mismatches: list[tuple[int, str, int, int, str]] = []
 
         for axisInd in range(0, MAX_ASSE):
@@ -2266,13 +2296,13 @@ def custom_function():
                     mismatches.append((axisInd, axis_name, tipo_asse, tipo_fb_alt, fb_ind))
 
         if mismatches:
-            print(f"\n⚠️  Assi con tipo misura diverso (ASSE_INT_TIPOMISURA ≠ FB_INT_TIPOMISURA):")
+            logging.info(f"\n⚠️  Assi con tipo misura diverso (ASSE_INT_TIPOMISURA ≠ FB_INT_TIPOMISURA):")
             for idx, axis_name, t_ass, t_fb, fb_name in mismatches:
-                print(f"   → [{idx:02d}] {axis_name:<20} ASSE={t_ass:<3}  FB={t_fb:<3}  ({fb_name})")
+                logging.info(f"   → [{idx:02d}] {axis_name:<20} ASSE={t_ass:<3}  FB={t_fb:<3}  ({fb_name})")
         else:
-            print("✅ Tutti gli assi hanno lo stesso tipo di misura tra ASSE e FB.")
+            logging.info("✅ Tutti gli assi hanno lo stesso tipo di misura tra ASSE e FB.")
 
-        print("🔍 Fine controllo unità di misura assi.")
+        logging.info("🔍 Fine controllo unità di misura assi.")
         return mismatches
 
     def check_duplicate_funaxis() -> dict[int, list[int]]:
@@ -2283,7 +2313,7 @@ def custom_function():
         Restituisce un dict:
             { axis_index: [funInd1, funInd2, ...], ... }
         """
-        print("🔍 Avvio controllo duplicati AxisFunInd...")
+        logging.info("🔍 Avvio controllo duplicati AxisFunInd...")
         duplicates: dict[int, list[int]] = {}
         seen: dict[int, int] = {}
 
@@ -2301,34 +2331,34 @@ def custom_function():
                 seen[axisInd] = funInd
 
         if duplicates:
-            print("\n⚠️  Duplicati trovati in AxisFunInd:")
+            logging.info("\n⚠️  Duplicati trovati in AxisFunInd:")
             for axisInd, fun_list in duplicates.items():
                 axis_name = getattr(data_config.Axis_Param[axisInd], "name", f"AXIS[{axisInd}]")
                 fun_str = ", ".join([f"{Type_AxisFunInd[fi]}" for fi in fun_list])
-                print(f"   → {axis_name:<20} (axisOil {axisInd}) usato in FunInd: {fun_str}")
+                logging.info(f"   → {axis_name:<20} (axisOil {axisInd}) usato in FunInd: {fun_str}")
 
-        print("🔍 Fine controllo duplicati AxisFunInd.")
+        logging.info("🔍 Fine controllo duplicati AxisFunInd.")
         return duplicates
 
     def check_lat_sup() -> None:
-        print("🔍 Avvio controllo supporti laterali")
+        logging.info("🔍 Avvio controllo supporti laterali")
         foo = [FUN_AXIS_PRESIDESUPP, FUN_AXIS_BENDSIDESUPP]
         for i in foo:
             if data_config.AxisFunInd[i] == -1:
-                print("Indice non configurato in Params > Functions")
+                logging.info("Indice non configurato in Params > Functions")
             else:
                 axis = data_config.Axis_Param[data_config.AxisFunInd[i]]
                 axis_name = data_config.Axis_Name[data_config.AxisFunInd[i]] or f"AXIS_{data_config.AxisFunInd[i]}"
                 tipo_asse = axis.intval[ASSE_INT_TIPOMISURA]
                 if tipo_asse != MISURA_GRAD:
-                    print(f"⚠️ [{data_config.AxisFunInd[i]}]{axis_name} non ha il tipo di misura GRAD")
+                    logging.info(f"⚠️ [{data_config.AxisFunInd[i]}]{axis_name} non ha il tipo di misura GRAD")
                 if data_config.Axis_Param[i].intval[ASSE_INT_FEEDBACK] != -1:
                     axis_feedback = data_config.Feedback_Param[data_config.Axis_Param[i].intval[ASSE_INT_FEEDBACK]]
                     tipo_feedback = axis_feedback.intval[FB_INT_TIPOMISURA]
                     if tipo_feedback != MISURA_GRAD:
-                        print(f"⚠️ [{data_config.AxisFunInd[i]}]{axis_name} il feedback non ha il tipo di misura GRAD")
+                        logging.info(f"⚠️ [{data_config.AxisFunInd[i]}]{axis_name} il feedback non ha il tipo di misura GRAD")
                 if axis.boolval[ASSE_BOOL_MANSPDOWN]:
-                    print(f"⚠️ [{data_config.AxisFunInd[i]}]{axis_name} ha il flag MANSPDOWN attivo!")
+                    logging.info(f"⚠️ [{data_config.AxisFunInd[i]}]{axis_name} ha il flag MANSPDOWN attivo!")
         foo = {
             "REAL_LATSUPQ0": REAL_LATSUPQ0,
             "REAL_LATSUPQ1": REAL_LATSUPQ1,
@@ -2338,11 +2368,11 @@ def custom_function():
         }
         for label, idx in foo.items():
             if data_config.ParamRealType[idx] != -1:
-                print(f"⚠️ Config\t→\tLat\t→\t{label.replace('REAL_', '')} deve essere impostato -")
-        print("🔍 Fine controllo supporti laterali...")
+                logging.info(f"⚠️ Config\t→\tLat\t→\t{label.replace('REAL_', '')} deve essere impostato -")
+        logging.info("🔍 Fine controllo supporti laterali...")
 
     def check_oil_temp() -> None:
-        print("🔍 Inizio controllo olio...")
+        logging.info("🔍 Inizio controllo olio...")
         # il numero rappresenta il tipo di dato MISURA_*
         _ = {
             ASSE_REAL_SRTUP: -1,
@@ -2379,19 +2409,19 @@ def custom_function():
             axisOil = data_config.Axis_Param[data_config.AxisFunInd[FUN_AXIS_OILTEMP]]
             for i, value in _.items():
                 if axisOil.typval[i] != value:
-                    print(f'now:{axisOil.typval[i]} shoudbe:{_[i]} id: {i}')
+                    logging.info(f'now:{axisOil.typval[i]} shoudbe:{_[i]} id: {i}')
                     diff = True
             if diff:
-                print("  type: [-1,-1,-1,-1,1,1,1,1,1,1,1,1,1,1,10,-1,-1,10,2,2,2,2,10,2,2,2,2,-1,-1,-1,-1,-1,-1,-1,-1,-1,2,2,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]")
-        print("🔍 Fine controllo olio...")
+                logging.info("  type: [-1,-1,-1,-1,1,1,1,1,1,1,1,1,1,1,10,-1,-1,10,2,2,2,2,10,2,2,2,2,-1,-1,-1,-1,-1,-1,-1,-1,-1,2,2,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]")
+        logging.info("🔍 Fine controllo olio...")
 
     def check_release() -> None:
-        print("🔍 Inizio controllo sgancio...")
+        logging.info("🔍 Inizio controllo sgancio...")
         if data_config.AxisFunInd[FUN_AXIS_DE] == -1:
-            print("Indice DE non configurato in Params > Functions")
+            logging.info("Indice DE non configurato in Params > Functions")
             return
         if data_config.AxisFunInd[FUN_AXIS_PINCH] == -1:
-            print("Indice B non configurato in Params > Functions")
+            logging.info("Indice B non configurato in Params > Functions")
             return
         pinchName = f"[{data_config.AxisFunInd[FUN_AXIS_PINCH]}]{data_config.Axis_Name[data_config.AxisFunInd[FUN_AXIS_PINCH]] or f'AXIS_{data_config.AxisFunInd[FUN_AXIS_DE]}'}"
         safetyDown = [
@@ -2399,70 +2429,70 @@ def custom_function():
             ASSE_INT_SAFETYDOWNIND4, ASSE_INT_SAFETYDOWNIND5, ASSE_INT_SAFETYDOWNIND6
         ]
         if not any(make_axis_sys_addr(AXIS_GROUPS_ORDER[IO_SYSAXIS_L], data_config.AxisFunInd[FUN_AXIS_PINCH]) == data_config.Axis_Param[FUN_AXIS_DE].intval[x] for x in safetyDown):
-            print(f"⚠️ {pinchName}.L non è presente negli interlock down direttamente va aggiunto!")
+            logging.info(f"⚠️ {pinchName}.L non è presente negli interlock down direttamente va aggiunto!")
         safetyUp = [
             ASSE_INT_SAFETYUPIND1, ASSE_INT_SAFETYUPIND1, ASSE_INT_SAFETYUPIND1,
             ASSE_INT_SAFETYUPIND1, ASSE_INT_SAFETYUPIND1, ASSE_INT_SAFETYUPIND1
         ]
         if any(make_axis_sys_addr(AXIS_GROUPS_ORDER[IO_SYSAXIS_L], data_config.AxisFunInd[FUN_AXIS_PINCH]) == data_config.Axis_Param[FUN_AXIS_DE].intval[x] for x in safetyUp):
-            print(f"⚠️ {pinchName}.L è presente negli interlock up va rimosso!")
+            logging.info(f"⚠️ {pinchName}.L è presente negli interlock up va rimosso!")
         # conrtollo flag
 
         # controllo quota apertura sgancio
         if data_config.Axis_Param[data_config.AxisFunInd[FUN_AXIS_PINCH]].realval[ASSE_REAL_SHH] <= data_config.Axis_Param[data_config.AxisFunInd[FUN_AXIS_PINCH]].realval[ASSE_REAL_SL]:
-            print(f"⚠️ {pinchName}.HH è minore o uguale a {pinchName}.L quota reset automatico")
-        print("🔍 Fine controllo sgancio...")
+            logging.info(f"⚠️ {pinchName}.HH è minore o uguale a {pinchName}.L quota reset automatico")
+        logging.info("🔍 Fine controllo sgancio...")
 
     def check_safety() -> None:
         if data_config.ParamInt[INT_HOLDTORUNTYPE] != SAFETY_INT:
-            print("⚠️ Hold to run non impostato su INT")
+            logging.info("⚠️ Hold to run non impostato su INT")
     
     def check_rotation() -> None:
-        print("🔍 Inizio controllo rotazione...")
+        logging.info("🔍 Inizio controllo rotazione...")
         axisInd = data_config.AxisFunInd[FUN_AXIS_ROT]
         if axisInd != -1:
             axis = data_config.Axis_Param[axisInd]
             axis_name = data_config.Axis_Name[axisInd] or f"AXIS_{axisInd}"
             for i in [ASSE_REAL_SMAX, ASSE_REAL_SHH]:
                 if axis.realval[i] != 999999:
-                    print(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][i]]['display']} non impostato a +999999.0 ma a {axis.realval[i]}")
+                    logging.info(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][i]]['display']} non impostato a +999999.0 ma a {axis.realval[i]}")
             for i in [ASSE_REAL_SMIN, ASSE_REAL_SLL]:
                 if axis.realval[i] != -999999:
-                    print(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][i]]['display']} non impostato a -999999.0 ma a {axis.realval[i]}")
+                    logging.info(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][i]]['display']} non impostato a -999999.0 ma a {axis.realval[i]}")
             if axis.realval[ASSE_REAL_SH] != 500:
-                print(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SH]]['display']} non impostato a 500.0 ma a {axis.realval[ASSE_REAL_SH]}")
+                logging.info(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SH]]['display']} non impostato a 500.0 ma a {axis.realval[ASSE_REAL_SH]}")
             if axis.realval[ASSE_REAL_SL] != -500:
-                print(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SL]]['display']} non impostato a -500.0 ma a {axis.realval[ASSE_REAL_SL]}")
-        print("🔍 Fine controllo rotazione...")
+                logging.info(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SL]]['display']} non impostato a -500.0 ma a {axis.realval[ASSE_REAL_SL]}")
+        logging.info("🔍 Fine controllo rotazione...")
 
     def geometry_check() -> None:
-        print("🔍 Inizio controllo geometria...")
+        logging.info("🔍 Inizio controllo geometria...")
         model = data_config.ParamString[0][-4:]
         model_width = model[:2] + '00'
         top_roll_diameter = model[2:] + '0'
         try:
             model_width = int(model_width)
         except ValueError:
-            print("Modello non rilevato")
+            logging.info("Modello non rilevato")
             return
 
         if model_width > data_config.ParamReal[REAL_WIDTH]:
-            print(f"⚠️ Modello macchina {model}, lunghezza tavola in geometria più piccolo: {data_config.ParamReal[REAL_WIDTH]}")
+            logging.info(f"⚠️ Modello macchina {model}, lunghezza tavola in geometria più piccolo: {data_config.ParamReal[REAL_WIDTH]}")
 
         try:
             top_roll_diameter = int(top_roll_diameter)
         except ValueError:
-            print("Diametro rullo non rilevato")
+            logging.info("Diametro rullo non rilevato")
             return
 
         if top_roll_diameter > data_config.ParamReal[REAL_TROUTERDIAM]:
-            print(f"⚠️ Modello macchina {model}, diametro rullo superiore maggiore di quello in geo: {data_config.ParamReal[REAL_TROUTERDIAM]}")
+            logging.info(f"⚠️ Modello macchina {model}, diametro rullo superiore maggiore di quello in geo: {data_config.ParamReal[REAL_TROUTERDIAM]}")
         elif top_roll_diameter < data_config.ParamReal[REAL_TROUTERDIAM]:
-            print(f"⚠️ Modello macchina {model}, diametro rullo superiore minore di quello in geo: {data_config.ParamReal[REAL_TROUTERDIAM]}")
-        print("🔍 Fine controllo geometria...")
+            logging.info(f"⚠️ Modello macchina {model}, diametro rullo superiore minore di quello in geo: {data_config.ParamReal[REAL_TROUTERDIAM]}")
+        logging.info("🔍 Fine controllo geometria...")
 
     def check_axis_speed_master_slave() -> None:
-        print("🔍 Inizio controllo velocità master/slave..")
+        logging.info("🔍 Inizio controllo velocità master/slave..")
         for i in range(0, MAX_ASSE):
             slaveAxis = data_config.Axis_Param[i]
             slaveAxisName = get_axis_name(i)
@@ -2474,28 +2504,29 @@ def custom_function():
                     _ = [ASSE_REAL_FWVMAX, ASSE_REAL_BWVMAX]
                     for x in _:
                         if int(masterAxis.realval[x]) != int(slaveAxis.realval[x]):
-                            print(f"⚠️ [{i}]{slaveAxisName} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][x]]['display']} diverso da [{masterAxisInd}]{masterAxisName}")
-        print("🔍 Fine controllo velocità master/slave...")
+                            logging.info(f"⚠️ [{i}]{slaveAxisName} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][x]]['display']} diverso da [{masterAxisInd}]{masterAxisName}")
+        logging.info("🔍 Fine controllo velocità master/slave...")
 
     foo = [check_axis_flag, check_duplicate_do_ao_usage, check_duplicate_obj_usage, clean_di_axis_check, duplicate_io_address,
            check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release, check_safety, check_rotation,
            geometry_check, check_axis_speed_master_slave, check_forbidden_ao_do_usage]
     for func in foo:
-        print('-' * 60)
+        logging.info('-' * 60)
         func()
     logger.info("OUT: custom_function")
 
 
 if __name__ == "__main__":
     populate_from_yaml_file("../../config.yaml")
-    #custom_function()
+    custom_function()
     run_io_search(IO_DI, 2506, verbose=True)
     while True:
-        print(", ".join([f"{name.replace('IO_', '')}={globals()[name]}" for name in ["IO_DI", "IO_AI", "IO_DO", "IO_AO", "IO_RI"]]))
+        logging.info(", ".join([f"{name.replace('IO_', '')}={globals()[name]}" for name in ["IO_DI", "IO_AI", "IO_DO", "IO_AO", "IO_RI"]]))
         _type = input()
         _target = input('Target:')
 
         try:
+            _type = int(_type)
             _target = int(_target)
         except:
             continue

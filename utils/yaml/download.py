@@ -8,6 +8,7 @@ Compatibile con i percorsi e le logiche di PSG-X-FindIndex.
 from __future__ import annotations
 
 import datetime
+import logging
 from pathlib import Path
 import requests
 import warnings as _warnings
@@ -44,7 +45,7 @@ def download_file(url: str, dest_path: Path) -> None:
     Scarica il file da un URL e lo salva in dest_path.
     Se HTTPS fallisce, prova HTTP in fallback.
     """
-    print("🌐 Download in corso...")
+    logging.info("🌐 Download in corso...")
     dest_path.parent.mkdir(parents=True, exist_ok=True)
 
     try:
@@ -64,7 +65,7 @@ def download_file(url: str, dest_path: Path) -> None:
         except Exception as e_http:
             raise RuntimeError(f"Errore nel download:\nHTTPS: {e_https}\nHTTP: {e_http}") from e_http
 
-    print(f"✅ File salvato in: {dest_path}")
+    logging.info(f"✅ File salvato in: {dest_path}")
 
 
 def _download_to_config(url: str) -> Path:
@@ -81,9 +82,9 @@ def _download_to_config(url: str) -> Path:
         try:
             # se esiste config_old.yaml, sovrascrivi
             backup_path.write_bytes(cfg_path.read_bytes())
-            print(f"📦 Backup aggiornato: {backup_path}")
+            logging.info(f"📦 Backup aggiornato: {backup_path}")
         except Exception as e:
-            print(f"⚠️ Errore durante il backup: {e}")
+            logging.info(f"⚠️ Errore durante il backup: {e}")
 
     # --- Download nuovo file ---
     download_file(url, cfg_path)
@@ -100,32 +101,33 @@ def choose_and_prepare_config(sn: str = None) -> Path:
     cfg_path = get_config_path("config.yaml", prefer_cwd=True)
 
     while True:
-        print("\nSelezione sorgente file 'config.yaml'")
-        print("  [1] Usa file locale (cartella corrente)")
-        print("  [2] Scarica file da rete")
+        logging.info('')
+        logging.info("Selezione sorgente file 'config.yaml'")
+        logging.info("  [1] Usa file locale (cartella corrente)")
+        logging.info("  [2] Scarica file da rete")
         if last_url:
-            print("  [3] Aggiorna file da rete (ultimo URL)")
+            logging.info("  [3] Aggiorna file da rete (ultimo URL)")
         if sn:
-            print("  [4] Save")
+            logging.info("  [4] Save")
         choice = input("Scelta: ").strip()
 
         if choice == "2":
             base = input("Inserisci indirizzo/IP (es: 10.3.73.177): ").strip()
             if not base:
-                print("Indirizzo non valido.\n")
+                logging.info("Indirizzo non valido.\n")
                 continue
 
             url = _build_download_url(base)
             try:
                 return _download_to_config(url)
             except Exception:
-                print("❌ Errore nel download")
+                logging.info("❌ Errore nel download")
                 continue
 
         elif choice == "1":
             if cfg_path.exists():
                 return cfg_path
-            print(f"❌ File locale non trovato o corrotto: {cfg_path}\n")
+            logging.info(f"❌ File locale non trovato o corrotto: {cfg_path}\n")
             continue
         elif choice == "3" and last_url:
             res = fetch_again()
@@ -133,12 +135,12 @@ def choose_and_prepare_config(sn: str = None) -> Path:
                 return res
         elif choice == "4" and sn:
             if not cfg_path.exists():
-                print(f"❌ File locale non trovato o corrotto: {cfg_path}\n")
+                logging.info(f"❌ File locale non trovato o corrotto: {cfg_path}\n")
             ver = input("Versione progetto: ")
             save_version(sn=sn, ver=ver, date=str(datetime.datetime.now().strftime("%Y%m%d")))
             return cfg_path
         else:
-            print("Opzione non valida\n")
+            logging.info("Opzione non valida\n")
 
 
 def fetch_again(again: bool = False) -> Path | None:
@@ -148,14 +150,14 @@ def fetch_again(again: bool = False) -> Path | None:
     """
     global last_url
     if not last_url:
-        print("⚠️ Nessun URL precedente: usa l'opzione [2] almeno una volta.")
+        logging.info("⚠️ Nessun URL precedente: usa l'opzione [2] almeno una volta.")
         return None
 
     try:
-        print(f"🔁 Refresh da: {last_url}")
+        logging.info(f"🔁 Refresh da: {last_url}")
         return _download_to_config(last_url)
     except Exception as e:
-        print(f"❌ Errore durante il refresh")
+        logging.info(f"❌ Errore durante il refresh")
         return None
 
 
@@ -168,8 +170,8 @@ def save_version(sn: str, ver:str, date: str) -> bool:
         try:
             # se esiste config_old.yaml, sovrascrivi
             backup_path.write_bytes(cfg_path.read_bytes())
-            print(f"📦 Backup effettuato: {backup_path}")
+            logging.info(f"📦 Backup effettuato: {backup_path}")
             return True
         except Exception as e:
-            print(f"⚠️ Errore durante il salvataggio: {e}")
+            logging.info(f"⚠️ Errore durante il salvataggio: {e}")
             return False

@@ -8,6 +8,7 @@ verso l'istanza DATA_CONFIG, seguendo la logica SCL.
 """
 from __future__ import annotations
 import logging
+import os
 import sys
 
 from pathlib import Path
@@ -46,7 +47,10 @@ class ColorFormatter(logging.Formatter):
 handler = logging.StreamHandler(sys.stdout)
 handler.setFormatter(ColorFormatter("%(asctime)s [%(levelname)s] %(message)s", "%H:%M:%S"))
 
-logging.basicConfig(level=logging.DEBUG, handlers=[handler])
+log_level = logging.DEBUG if os.path.exists("debug.yaml") else logging.INFO
+
+
+logging.basicConfig(level=log_level, handlers=[handler])
 
 
 logger = logging.getLogger(__name__)  # crea un logger con il nome del file

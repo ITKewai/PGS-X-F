@@ -33,4 +33,6 @@ A TEMPO PERSO:
 ⚠️  Duplicati trovati in DI:
    → PNET 0.3   → [64] EMERGENCY RESET PB, [272] EMERGENCY RESET PB
    272 NON ESISTE
+
+# TODO: controllo pompe, master con slave e left con right
 """

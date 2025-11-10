@@ -145,10 +145,10 @@ def _deserialize_header(data: Dict[str, Any]) -> None:
     logger.debug(f"header: {header}")
 
     # Prepara Config_Header
-    max_len = getattr(data_config, "MAX_HEADER", len(header))
-    if len(data_config.Config_Header) <= max_len:
-        data_config.Config_Header = [0] * (max_len + 1)
-    for i in range(max_len + 1):
+    len(header) = getattr(data_config, "MAX_HEADER", len(header))
+    if len(data_config.Config_Header) <= len(header):
+        data_config.Config_Header = [0] * (len(header) + 1)
+    for i in range(len(header) + 1):
         data_config.Config_Header[i] = _to_int(header[i]) if i < len(header) else 0
 
     # --- Parsing 'param' (lista di dizionari nel tuo YAML) ---
@@ -177,41 +177,36 @@ def _deserialize_header(data: Dict[str, Any]) -> None:
     logger.debug(f"ptype: {ptype}")
 
     # --- pstring ---
-    max_len = getattr(data_config, "MAX_PARAMSTRING", len(pstring))
-    if len(data_config.ParamString) <= max_len:
-        data_config.ParamString = [""] * (max_len + 1)
-    for i in range(max_len + 1):
+    if len(data_config.ParamString) <= len(pstring):  # "MAX_PARAMSTRING"
+        data_config.ParamString = [""] * (len(pstring) + 1)
+    for i in range(len(pstring) + 1):
         data_config.ParamString[i] = str(pstring[i]) if i < len(pstring) else ""
 
     # --- pbool ---
-    max_len = getattr(data_config, "MAX_PARAMBOOL", len(pbool))
-    if len(data_config.ParamBool) <= max_len:
-        data_config.ParamBool = [False] * (max_len + 1)
-    for i in range(max_len + 1):
+    if len(data_config.ParamBool) <= len(pbool):  # MAX_PARAMBOOL
+        data_config.ParamBool = [False] * (len(pbool) + 1)
+    for i in range(len(pbool) + 1):
         data_config.ParamBool[i] = _bool_from_int(pbool[i]) if i < len(pbool) else False
 
     # --- pint ---
-    max_len = getattr(data_config, "MAX_PARAMINT", len(pint))
-    if len(data_config.ParamInt) <= max_len:
-        data_config.ParamInt = [0] * (max_len + 1)
-    for i in range(max_len + 1):
+    if len(data_config.ParamInt) <= len(pint):  # MAX_PARAMINT
+        data_config.ParamInt = [0] * (len(pint) + 1)
+    for i in range(len(pint) + 1):
         data_config.ParamInt[i] = _to_int(pint[i]) if i < len(pint) else 0
 
     # --- preal ---
-    max_len = getattr(data_config, "MAX_PARAMREAL", len(preal))
-    if len(data_config.ParamReal) <= max_len:
-        data_config.ParamReal = [0.0] * (max_len + 1)
-        data_config.ParamRealCfg = [0.0] * (max_len + 1)
-    for i in range(max_len + 1):
+    if len(data_config.ParamReal) <= len(preal): # MAX_PARAMREAL
+        data_config.ParamReal = [0.0] * (len(preal) + 1)
+        data_config.ParamRealCfg = [0.0] * (len(preal) + 1)
+    for i in range(len(preal) + 1):
         val = _to_float(preal[i]) if i < len(preal) else 0.0
         data_config.ParamRealCfg[i] = val
         data_config.ParamReal[i] = val
 
     # --- ptype ---
-    max_len = getattr(data_config, "MAX_PARAMREAL", len(ptype))
-    if len(data_config.ParamRealType) <= max_len:
-        data_config.ParamRealType = [-1] * (max_len + 1)
-    for i in range(max_len + 1):
+    if len(data_config.ParamRealType) <= len(ptype):  # MAX_PARAMREAL
+        data_config.ParamRealType = [-1] * (len(ptype) + 1)
+    for i in range(len(ptype) + 1):
         data_config.ParamRealType[i] = _to_int(ptype[i], -1) if i < len(ptype) else -1
 
 

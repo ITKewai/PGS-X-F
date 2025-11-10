@@ -35,4 +35,5 @@ A TEMPO PERSO:
    272 NON ESISTE
 
 # TODO: controllo pompe, master con slave e left con right
+# TODO: feedback dei rulli ratio deve essere 1
 """

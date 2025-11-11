@@ -7,9 +7,9 @@ POSSIBILI
 # TODO: non usare i max_ ma leggere dal file
 # TODO: controllare che allarmi siano safetystop
 # TODO: verificare che master mult sia 5 e vmin infeiriore  a 3
-
+# TODO: cerifica bug RI vedere se tutti i campi o la maggiorpare di Enabled è diverso da -1
 # TODO: verifica che indirizzi KE1/KE4 non sono scritti
-
+# TODO: verificare che i parametri archimetro config>check mesurment non siano LUNG
 # TODO: warning se expr calc e tipo non calc
 # TODO: verificare che input non ha seq imposto
 
@@ -36,4 +36,7 @@ A TEMPO PERSO:
 
 # TODO: controllo pompe, master con slave e left con right
 # TODO: feedback dei rulli ratio deve essere 1
+# TODO: controllo bypass attivi negli assi ma non configurati
+# TODO: sistemar ricerca duplicati perchp non va
+# TODO: ricerca free mi trova qualcosa in ANA1 - output: [1,2,-1,57,56,-1,-1,-1,-1,-1,-1,-1,-1,-1,300,900,300,900,0,0,0,0,0,100,0,100,0,0,20,20,40,40,60,60,80,80,100,100,0,0,20,20,40,40,60,60,80,80,100,100]
 """

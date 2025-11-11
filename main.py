@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import logging
 import sys
 from utils.version import __version__, __pgs_version__, __author__, __company__, __product__, __copyright__, get_version_info
 from utils.yaml.data.core import make_axis_sys_addr, make_alarm_sys_addr
@@ -29,7 +30,7 @@ def main():
         # data = load_yaml(str(cfg_path))
         populate_from_yaml_file(cfg_path)
     except Exception as e:
-        logging.info(f"Errore nel parsing YAML: {e}")
+        logging.critical(f"Errore nel parsing YAML: {e}")
         _pause_if_frozen()
         return
     sn = data_config.Config_Header[HEADER_SN]

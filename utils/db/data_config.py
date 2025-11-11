@@ -28,6 +28,7 @@ YELLOW = "\033[93m"
 RED = "\033[91m"
 BOLD_RED = "\033[1;91m"
 
+
 class ColorFormatter(logging.Formatter):
     COLORS = {
         logging.DEBUG: GRAY,
@@ -47,8 +48,7 @@ class ColorFormatter(logging.Formatter):
 handler = logging.StreamHandler(sys.stdout)
 handler.setFormatter(ColorFormatter("%(asctime)s [%(levelname)s] %(message)s", "%H:%M:%S"))
 
-log_level = logging.DEBUG if os.path.exists("debug.yaml") else logging.INFO
-
+log_level = logging.DEBUG if os.path.exists("debug.txt") and Path("debug.txt").read_text(encoding="utf-8").strip() else logging.INFO
 
 logging.basicConfig(level=log_level, handlers=[handler])
 
@@ -76,11 +76,14 @@ data_config.IO_RI_List = []
 # Public API
 # ------------------------------
 def populate_from_yaml_file(yaml_path: Path | str) -> None:
+    logging.debug('IN: populate_from_yaml_file')
     p = Path(yaml_path).resolve()
     data = load_yaml(str(p))
     if not isinstance(data, dict):
+        logging.critical("Il YAML caricato non è un dict.")
         raise ValueError("Il YAML deve essere un dict.")
     deserialize_config(data)
+    logging.debug('OUT: populate_from_yaml_file')
 
 
 def deserialize_config(data: Dict[str, Any]) -> None:
@@ -268,6 +271,7 @@ def _deserialize_axind_in_out(data: Dict[str, Any]) -> None:
 def _deserialize_io(data: Dict[str, Any]) -> None:
     # data['io'] è un dict: {'di': [[...], ...], 'ai': [...], ...}
     io_data = data.get("io", {})
+    counts = {field: 0 for field in ("di", "ai", "do", "ao", "ri")}
     for field in ("di", "ai", "do", "ao", "ri"):
         rows = _as_list(io_data.get(field))
         for ind, row in enumerate(rows):
@@ -276,6 +280,8 @@ def _deserialize_io(data: Dict[str, Any]) -> None:
             if not isinstance(row, (list, tuple)) or len(row) == 0:
                 continue
             _deserialize_io_row(field, ind, row)
+            counts[field] += 1
+    logger.info(f"Rilevati IO: DI={counts['di']}, AI={counts['ai']}, DO={counts['do']}, AO={counts['ao']}, RI={counts['ri']}")
 
 
 def _io_global_index(field: str, ind: int) -> int:

@@ -145,7 +145,7 @@ def _deserialize_header(data: Dict[str, Any]) -> None:
     logger.debug(f"header: {header}")
 
     # Prepara Config_Header
-    max_len = getattr(data_config, "MAX_HEADER", len(header))
+    max_len = getattr(data_config, "MAX_HEADER", len(header))  # TODO: leggere dal file
     if len(data_config.Config_Header) <= max_len:
         data_config.Config_Header = [0] * (max_len + 1)
     for i in range(max_len + 1):
@@ -177,28 +177,28 @@ def _deserialize_header(data: Dict[str, Any]) -> None:
     logger.debug(f"ptype: {ptype}")
 
     # --- pstring ---
-    max_len = getattr(data_config, "MAX_PARAMSTRING", len(pstring))
+    max_len = getattr(data_config, "MAX_PARAMSTRING", len(pstring))  # TODO: leggere dal file
     if len(data_config.ParamString) <= max_len:
         data_config.ParamString = [""] * (max_len + 1)
     for i in range(max_len + 1):
         data_config.ParamString[i] = str(pstring[i]) if i < len(pstring) else ""
 
     # --- pbool ---
-    max_len = getattr(data_config, "MAX_PARAMBOOL", len(pbool))
+    max_len = getattr(data_config, "MAX_PARAMBOOL", len(pbool))  # TODO: leggere dal file
     if len(data_config.ParamBool) <= max_len:
         data_config.ParamBool = [False] * (max_len + 1)
     for i in range(max_len + 1):
         data_config.ParamBool[i] = _bool_from_int(pbool[i]) if i < len(pbool) else False
 
     # --- pint ---
-    max_len = getattr(data_config, "MAX_PARAMINT", len(pint))
+    max_len = getattr(data_config, "MAX_PARAMINT", len(pint))  # TODO: leggere dal file
     if len(data_config.ParamInt) <= max_len:
         data_config.ParamInt = [0] * (max_len + 1)
     for i in range(max_len + 1):
         data_config.ParamInt[i] = _to_int(pint[i]) if i < len(pint) else 0
 
     # --- preal ---
-    max_len = getattr(data_config, "MAX_PARAMREAL", len(preal))
+    max_len = getattr(data_config, "MAX_PARAMREAL", len(preal))  # TODO: leggere dal file
     if len(data_config.ParamReal) <= max_len:
         data_config.ParamReal = [0.0] * (max_len + 1)
         data_config.ParamRealCfg = [0.0] * (max_len + 1)
@@ -208,7 +208,7 @@ def _deserialize_header(data: Dict[str, Any]) -> None:
         data_config.ParamReal[i] = val
 
     # --- ptype ---
-    max_len = getattr(data_config, "MAX_PARAMREAL", len(ptype))
+    max_len = getattr(data_config, "MAX_PARAMREAL", len(ptype))  # TODO: leggere dal file
     if len(data_config.ParamRealType) <= max_len:
         data_config.ParamRealType = [-1] * (max_len + 1)
     for i in range(max_len + 1):
@@ -249,17 +249,17 @@ def _deserialize_card_exc(data: Dict[str, Any]) -> None:
 def _deserialize_axind_in_out(data: Dict[str, Any]) -> None:
     """ axind / in / out """
     axind = _as_list(data.get("axind"))
-    limit = min(len(data_config.AxisFunInd), getattr(data_config, "MAX_ASSEFUNIND", len(axind)) + 1)
+    limit = min(len(data_config.AxisFunInd), getattr(data_config, "MAX_ASSEFUNIND", len(axind)) + 1)  # TODO: leggere dal file
     for i in range(limit):
         data_config.AxisFunInd[i] = _to_int(axind[i]) if i < len(axind) else -1
 
     in_list = _as_list(data.get("in"))
-    limit = min(len(data_config.InInd), getattr(data_config, "MAX_STATOBOOL", len(in_list)) + 1)
+    limit = min(len(data_config.InInd), getattr(data_config, "MAX_STATOBOOL", len(in_list)) + 1)  # TODO: leggere dal file
     for i in range(limit):
         data_config.InInd[i] = _to_int(in_list[i], -1) if i < len(in_list) else -1
 
     out_list = _as_list(data.get("out"))
-    limit = min(len(data_config.OutInd), getattr(data_config, "MAX_STATOBOOL", len(out_list)) + 1)
+    limit = min(len(data_config.OutInd), getattr(data_config, "MAX_STATOBOOL", len(out_list)) + 1)  # TODO: leggere dal file
     for i in range(limit):
         data_config.OutInd[i] = _to_int(out_list[i], -1) if i < len(out_list) else -1
 
@@ -433,32 +433,32 @@ def _deserialize_obj_axis(data: Dict[str, Any]) -> None:
         # 📌 Boolval[0..MAX_ASSEBOOL]
         # ======================
         bool_list = _as_list(block.get("bool"))
-        for j in range(min(len(bool_list), MAX_ASSEBOOL + 1)):
+        for j in range(min(len(bool_list), MAX_ASSEBOOL + 1)):  # TODO: leggere dal file
             data_config.Axis_Param[ind].boolval[j] = _bool_from_int(bool_list[j])
         # se meno valori → il resto default False
-        for j in range(len(bool_list), MAX_ASSEBOOL + 1):
+        for j in range(len(bool_list), MAX_ASSEBOOL + 1):  # TODO: leggere dal file
             data_config.Axis_Param[ind].boolval[j] = False
 
         # ======================
         # 📌 Intval[0..MAX_ASSEINT]
         # ======================
         int_list = _as_list(block.get("int"))
-        for j in range(min(len(int_list), MAX_ASSEINT + 1)):
+        for j in range(min(len(int_list), MAX_ASSEINT + 1)):  # TODO: leggere dal file
             data_config.Axis_Param[ind].intval[j] = _to_int(int_list[j], -1)
-        for j in range(len(int_list), MAX_ASSEINT + 1):
+        for j in range(len(int_list), MAX_ASSEINT + 1):  # TODO: leggere dal file
             data_config.Axis_Param[ind].intval[j] = -1
 
         # ======================
         # 📌 Realvalcfg / Realval / Fcval / Offsetval / Typval
         # ======================
         real_list = _as_list(block.get("real"))
-        for j in range(min(len(real_list), MAX_ASSEREAL + 1)):
+        for j in range(min(len(real_list), MAX_ASSEREAL + 1)):  # TODO: leggere dal file
             fv = _to_float(real_list[j], 0.0)
             data_config.Axis_Param[ind].realvalcfg[j] = fv
             data_config.Axis_Param[ind].realval[j] = fv
 
         type_list = _as_list(block.get("type"))
-        for j in range(min(len(type_list), MAX_ASSEREAL + 1)):
+        for j in range(min(len(type_list), MAX_ASSEREAL + 1)):  # TODO: leggere dal file
             data_config.Axis_Param[ind].typval[j] = type_list[j]
 
         # TODO: controllare
@@ -2123,10 +2123,10 @@ def custom_function():
 
         if verbose:
             if any(duplicates.values()):
-                logging.info("⚠️ Duplicazioni trovate:")
+                logging.warning("⚠️ Duplicazioni trovate:")
                 for cat, items in duplicates.items():
                     for ind, axes in items.items():
-                        logging.info(f" - {cat.upper()}[{ind}] usato in: {', '.join(axes)}")
+                        logging.warning(f" - {cat.upper()}[{ind}] usato in: {', '.join(axes)}")
         logging.debug('🔍 Fine controllo duplicati Input/Output/Feedback.')
         return duplicates
 
@@ -2504,6 +2504,7 @@ def custom_function():
                     for x in _:
                         if int(masterAxis.realval[x]) != int(slaveAxis.realval[x]):
                             logging.warning(f"⚠️ [{i}]{slaveAxisName} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][x]]['display']} diverso da [{masterAxisInd}]{masterAxisName}")
+        # TODO: controllare anche che sia 5.0 e 2.0 MAXVEL
         logging.debug("🔍 Fine controllo velocità master/slave...")
 
     def check_de_tilt() -> None:

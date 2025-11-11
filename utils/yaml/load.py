@@ -4,7 +4,7 @@
 Modulo per caricare e sanificare il file YAML di configurazione
 (estratto da main.py per maggiore chiarezza).
 """
-
+import logging
 import re
 import yaml
 from pathlib import Path
@@ -156,33 +156,39 @@ def _pack_by_index(rows: List[list], idx_pos: int = 7) -> List[Optional[list]]:
 
 
 def load_yaml(path: str) -> Any:
-    """Carica e struttura il file YAML, con tentativi di correzione automatica."""
+    logging.debug(f"📂 IN: load_yaml")
+    """Carica e struttura il file YAML, con tentativi di correzione automatica e logging del metodo riuscito."""
     text = Path(path).read_text(encoding='utf-8')
     try:
         data = yaml.safe_load(text)
+        logging.debug(f"✅ YAML caricato correttamente al primo tentativo: {path}")
     except yaml.YAMLError:
+        logging.debug(f"⚠️ YAML non valido al primo parsing: → applico _sanitize_yaml_like()")
         text2 = _sanitize_yaml_like(text)
         try:
             data = yaml.safe_load(text2)
+            logging.debug(f"✅ YAML caricato dopo _sanitize_yaml_like(): {path}")
         except yaml.YAMLError as e1:
+            logging.debug(f"⚠️ Ancora errore dopo _sanitize_yaml_like(): {e1} → applico _sanitize_pstring_flow_lists()")
             text3 = _sanitize_pstring_flow_lists(text2)
             try:
                 data = yaml.safe_load(text3)
+                logging.debug(f"✅ YAML caricato dopo _sanitize_pstring_flow_lists(): {path}")
             except yaml.YAMLError as e2:
+                logging.error(f"❌ Impossibile leggere il file YAML '{path}' anche dopo le sanificazioni: {e2}")
                 raise RuntimeError("Config YAML non leggibile dopo i tentativi di sanificazione.") from e2
 
-    # ---- raggruppa IO e impacchetta i DI per indice di canale ----
+    # ---- Raggruppa IO ----
     io_grouped = _group_io(data.get('io'))
-    # ✅ FIX: sostituisce None in prima posizione con stringa vuota
     for key, arr in io_grouped.items():
         if isinstance(arr, list):
             for i, row in enumerate(arr):
                 if isinstance(row, list) and row:
                     if row[0] is None:
                         row[0] = ""
-    # io_grouped['di'] = _pack_by_index(io_grouped.get('di', []), idx_pos=7) # rovina l'ordine
     data['io'] = io_grouped
-    # Raggruppa gli oggetti (fb) sotto 'obj'
-    obj_grouped = _group_obj(data.get('obj'))
-    data['obj'] = obj_grouped
+    # ---- Raggruppa OBJ ----
+    data['obj'] = _group_obj(data.get('obj'))
+    logging.debug(f"📂 OUT: load_yaml")
     return data
+

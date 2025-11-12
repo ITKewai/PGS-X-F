@@ -85,6 +85,7 @@ def populate_from_yaml_file(yaml_path: Path | str) -> None:
 
 def deserialize_config(data: Dict[str, Any]) -> None:
     logger.debug('IN: deserialize_config')
+    _clean_data_config()
     _deserialize_header(data)
     _deserialize_card_exc(data)  # card / exc
     _deserialize_axind_in_out(data)  # axind / in / out (indici mapping rapidi)
@@ -135,6 +136,195 @@ def _to_float(x: Any, default: float = 0.0) -> float:
 def _bool_from_int(x: Any) -> bool:
     return _to_int(x, 0) == 1
 
+
+def _clean_data_config() -> None:
+    """
+    Pulisce l'istanza globale 'data_config' IN PLACE, senza riassegnarla.
+    Serve per evitare che valori di una precedente deserializzazione
+    rimangano validi quando si richiama populate_from_yaml(_file).
+    """
+    dc = data_config
+
+    # --- helpers robusti -----------------------------------------------------
+    def _fill(seq, value):
+        try:
+            for i in range(len(seq)):
+                seq[i] = value
+        except Exception:
+            pass
+
+    def _reset_param_obj(p, spec):
+        """spec = [(attr_name, default_value)]"""
+        for attr, default in spec:
+            arr = getattr(p, attr, None)
+            if arr is None:
+                continue
+            try:
+                for i in range(len(arr)):
+                    arr[i] = default
+            except Exception:
+                pass
+        # campi accessori spesso presenti
+        if hasattr(p, "name"):
+            try:
+                p.name = ""
+            except Exception:
+                pass
+        if hasattr(p, "iotype"):
+            try:
+                p.iotype = -1
+            except Exception:
+                pass
+
+    # --- liste di comodo IO --------------------------------------------------
+    for lst_name in ("IO_DI_List", "IO_DO_List", "IO_AI_List", "IO_AO_List", "IO_RI_List"):
+        if hasattr(dc, lst_name):
+            try:
+                getattr(dc, lst_name).clear()
+            except Exception:
+                setattr(dc, lst_name, [])
+
+    # --- header/parametri globali -------------------------------------------
+    if hasattr(dc, "Config_Header"): _fill(dc.Config_Header, 0)
+    if hasattr(dc, "ParamString"):   _fill(dc.ParamString, "")
+    if hasattr(dc, "ParamBool"):     _fill(dc.ParamBool, False)
+    if hasattr(dc, "ParamInt"):      _fill(dc.ParamInt, 0)
+    if hasattr(dc, "ParamReal"):     _fill(dc.ParamReal, 0.0)
+    if hasattr(dc, "ParamRealCfg"):  _fill(dc.ParamRealCfg, 0.0)
+    if hasattr(dc, "ParamRealType"): _fill(dc.ParamRealType, -1)
+
+    # indici rapidi
+    for name, default in (("AxisFunInd", -1), ("InInd", -1), ("OutInd", -1)):
+        if hasattr(dc, name):
+            _fill(getattr(dc, name), default)
+
+    # --- IO ------------------------------------------------------------------
+    max_io = len(getattr(dc, "IO_Param", []))
+    for k in range(max_io):
+        try:
+            dc.IO_Name[k] = ""
+        except Exception:
+            pass
+        try:
+            p = dc.IO_Param[k]
+        except Exception:
+            continue
+        _reset_param_obj(p, [
+            ("boolval", False),
+            ("intval", 0),
+            ("dintval", 0),
+            ("realvalcfg", 0.0),
+            ("realval", 0.0),
+            ("exprintval", -1),
+            ("exprrealval", 0.0),
+        ])
+
+    # --- AXES ----------------------------------------------------------------
+    max_axes = len(getattr(dc, "Axis_Param", []))
+    for i in range(max_axes):
+        try:
+            dc.Axis_Name[i] = ""
+        except Exception:
+            pass
+        p = dc.Axis_Param[i]
+        _reset_param_obj(p, [
+            ("boolval", False),
+            ("intval", -1),
+            ("realvalcfg", 0.0),
+            ("realval", 0.0),
+            ("typval", -1),
+            ("fcval", 1.0),
+            ("offsetval", 0.0),
+        ])
+
+    # --- INPUT/OUTPUT/FEEDBACK/PID ------------------------------------------
+    for arr_name, spec in [
+        ("Input_Param",   [("boolval", False), ("intval", 0), ("dintvalcfg", 0), ("dintval", 0)]),
+        ("Output_Param",  [("intval", 0), ("dintval", 0), ("realval", 0.0)]),
+        ("Feedback_Param",[("intval", 0), ("dintval", 0), ("realvalcfg", 0.0), ("realval", 0.0)]),
+        ("PID_Param",     [("realval", 0.0)]),
+    ]:
+        arr = getattr(dc, arr_name, None)
+        if not arr:
+            continue
+        for p in arr:
+            _reset_param_obj(p, spec)
+
+    # --- MOTORS --------------------------------------------------------------
+    # indici e strutture motori (presenti in molti progetti)
+    for name in ("Motor_LSInd", "Motor_LS2Ind", "Motor_TRInd", "Motor_TR2Ind",
+                 "Motor_CmdInd", "Motor_Cmd1Ind", "Motor_Cmd2Ind", "Motor_Cmd3Ind",
+                 "Motor_StatInd", "Motor_StartingInd"):
+        if hasattr(dc, name):
+            _fill(getattr(dc, name), -1)
+    if hasattr(dc, "Motor_Config"):    _fill(dc.Motor_Config, False)
+    if hasattr(dc, "Motor_Selectable"):_fill(dc.Motor_Selectable, False)
+    if hasattr(dc, "Motor"):
+        # ogni elemento ha spesso campi: seq,opt,default,timeout,timeout2,typ,timeoutbtn
+        for m in dc.Motor:
+            for attr, val in [("seq", False), ("opt", False), ("default", False),
+                              ("timeout", 0), ("timeout2", 0), ("typ", -1), ("timeoutbtn", 0)]:
+                if hasattr(m, attr):
+                    try: setattr(m, attr, val)
+                    except Exception: pass
+    # stato riciclo
+    try:
+        dc.DATA_STATUS.RecyclingMotorInd = -1
+    except Exception:
+        pass
+
+    # --- ALARMS / MAINT ------------------------------------------------------
+    if hasattr(dc, "Alarm_Name"):
+        _fill(dc.Alarm_Name, "")
+    if hasattr(dc, "Alarm_Param"):
+        for p in dc.Alarm_Param:
+            _reset_param_obj(p, [("boolval", False), ("intval", -1)])
+    # mappe allarmi
+    try:
+        for i in range(len(dc.Stop_Ind)): dc.Stop_Ind[i] = -1
+        for i in range(len(dc.Stop_Name)): dc.Stop_Name[i] = ""
+        dc.Stop_Num = 0
+    except Exception:
+        pass
+    try:
+        for i in range(len(dc.DATA_ALARMS.Ind)): dc.DATA_ALARMS.Ind[i] = -1
+        for i in range(len(dc.DATA_ALARMS.Cod)): dc.DATA_ALARMS.Cod[i] = 0
+    except Exception:
+        pass
+
+    # --- MAINT ---------------------------------------------------------------
+    if hasattr(dc, "Maint_Name"):
+        _fill(dc.Maint_Name, "")
+    if hasattr(dc, "Maint_Param"):
+        for p in dc.Maint_Param:
+            _reset_param_obj(p, [("boolval", False), ("intval", 0)])
+
+    # --- TOOLSET -------------------------------------------------------------
+    if hasattr(dc, "Toolset_Name"):
+        _fill(dc.Toolset_Name, "")
+    if hasattr(dc, "Toolset_Param"):
+        for p in dc.Toolset_Param:
+            _reset_param_obj(p, [
+                ("boolval", False),
+                ("intval", 0),
+                ("realvalcfg", 0.0),
+                ("realval", 0.0),
+                ("typval", -1),
+                ("fcval", 1.0),
+                ("offsetval", 0.0),
+            ])
+            # matrix output (se presente)
+            outs = getattr(p, "output", None)
+            if outs:
+                for o in outs:
+                    _reset_param_obj(o, [("intval", 0), ("dintval", 0)])
+
+    # --- strutture varie opzionali ------------------------------------------
+    try:
+        dc.PLCVersion1 = 0; dc.PLCVersion2 = 0; dc.PLCVersion3 = 0; dc.PLCVersion4 = 0
+        dc.CFGVersion = 0
+    except Exception:
+        pass
 
 # ------------------------------
 # Header / Card / AxInd
@@ -1402,8 +1592,8 @@ def run_io_expr_scan(iotype: int, ind_target: int = None, verbose: bool = False)
                 # 🔁 Ciclo sui gruppi (partendo da index 1, passo di 3)
                 for i in range(1, len(data_config.IO_DI_List[Ind].exprintval), 3):
                     if i + 2 >= len(data_config.IO_DI_List[Ind].exprintval):
-                        if DEBUG_DEBUG_DEBUG:
-                            logging.info('xERR_001')
+                        # if DEBUG_DEBUG_DEBUG:
+                        #     logging.info('xERR_001')
                         continue
                     not_val, opnd_val, oper_val = data_config.IO_DI_List[Ind].exprintval[i:i + 3]
                     if not_val in [IO_EXPR_NONE, IO_EXPR_VAL, IO_EXPR_NOTVAL]:
@@ -1423,8 +1613,8 @@ def run_io_expr_scan(iotype: int, ind_target: int = None, verbose: bool = False)
                 # 🔁 Ciclo sui gruppi (partendo da index 1, passo di 3)
                 for i in range(1, len(data_config.IO_DI_List[Ind].exprintval), 3):
                     if i + 2 >= len(data_config.IO_DI_List[Ind].exprintval):
-                        if DEBUG_DEBUG_DEBUG:
-                            logging.info('xERR_001')
+                        # if DEBUG_DEBUG_DEBUG:
+                        #     logging.info('xERR_001')
                         continue
                     not_val, opnd_val, oper_val = data_config.IO_DI_List[Ind].exprintval[i:i + 3]
                     if not_val in [IO_EXPR_AIEQ0, IO_EXPR_AINE0, IO_EXPR_AIGT0,
@@ -1444,8 +1634,8 @@ def run_io_expr_scan(iotype: int, ind_target: int = None, verbose: bool = False)
                 # 🔁 Ciclo sui gruppi (partendo da index 1, passo di 3)
                 for i in range(1, len(data_config.IO_RI_List[Ind].exprintval), 3):
                     if i + 2 >= len(data_config.IO_RI_List[Ind].exprintval):
-                        if DEBUG_DEBUG_DEBUG:
-                            logging.info('xERR_001')
+                        # if DEBUG_DEBUG_DEBUG:
+                        #     logging.info('xERR_001')
                         continue
                     not_val, opnd_val, oper_val = data_config.IO_RI_List[Ind].exprintval[i:i + 3]
                     if not_val in [IO_EXPR_AI, IO_EXPR_ABSAI]:
@@ -1465,8 +1655,8 @@ def run_io_expr_scan(iotype: int, ind_target: int = None, verbose: bool = False)
                 # 🔁 Ciclo sui gruppi (partendo da index 1, passo di 3)
                 for i in range(1, len(data_config.IO_DI_List[Ind].exprintval), 3):
                     if i + 2 >= len(data_config.IO_DI_List[Ind].exprintval):
-                        if DEBUG_DEBUG_DEBUG:
-                            logging.info('xERR_001')
+                        # if DEBUG_DEBUG_DEBUG:
+                        #     logging.info('xERR_001')
                         continue
                     not_val, opnd_val, oper_val = data_config.IO_DI_List[Ind].exprintval[i:i + 3]
                     if not_val in [IO_EXPR_RIEQ0, IO_EXPR_RINE0, IO_EXPR_RIGT0,
@@ -1486,8 +1676,8 @@ def run_io_expr_scan(iotype: int, ind_target: int = None, verbose: bool = False)
                 # 🔁 Ciclo sui gruppi (partendo da index 1, passo di 3)
                 for i in range(1, len(data_config.IO_RI_List[Ind].exprintval), 3):
                     if i + 2 >= len(data_config.IO_RI_List[Ind].exprintval):
-                        if DEBUG_DEBUG_DEBUG:
-                            logging.info('xERR_001')
+                        # if DEBUG_DEBUG_DEBUG:
+                        #     logging.info('xERR_001')
                         continue
                     not_val, opnd_val, oper_val = data_config.IO_RI_List[Ind].exprintval[i:i + 3]
                     if not_val in [IO_EXPR_RI, IO_EXPR_ABSRI]:

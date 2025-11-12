@@ -263,7 +263,7 @@ def main():
     exports_dir = os.path.join(BASE_DIR, selected_folder)
     print(f"\n📂 Cartella selezionata: {exports_dir}")
 
-    output_file = os.path.join(BASE_DIR, "tia_constants.py")
+    output_file = os.path.join(BASE_DIR, selected_folder + "/tia_constants.py")
     print(f"📤 Generazione in corso... ({output_file})")
 
     with open(output_file, "w", encoding="utf-8") as out:

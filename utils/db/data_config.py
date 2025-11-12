@@ -360,31 +360,84 @@ def _deserialize_axind_in_out(data: Dict[str, Any]) -> None:
 
 
 # ------------------ IO (di/ai/do/ao/ri) ------------------
-def _deserialize_io(data: Dict[str, Any]) -> None:
-    # data['io'] è un dict: {'di': [[...], ...], 'ai': [...], ...}
-    io_data = data.get("io", {})
-    counts = {field: 0 for field in ("di", "ai", "do", "ao", "ri")}
+def _valid_io_rows(io_data: Dict[str, Any], field: str) -> List[Sequence[Any]]:  # DYNAMIC PATHING
+    rows = _as_list(io_data.get(field))
+    out = []
+    for row in rows:
+        if row is None:
+            continue
+        if not isinstance(row, (list, tuple)) or len(row) == 0:
+            continue
+        out.append(row)
+    return out
+
+
+def _prepare_io_layout(io_data: Dict[str, Any]) -> Dict[str, List[Sequence[Any]]]:  # DYNAMIC PATHING
+    fields = ("di", "ai", "do", "ao", "ri")
+    counts, starts, valid = {}, {}, {}
+    # 1) filtra righe valide per ciascun field
+    for f in fields:
+        valid[f] = _valid_io_rows(io_data, f)
+        counts[f] = len(valid[f])
+    # 2) calcola gli start cumulativi
+    acc = 0
+    for f in fields:
+        starts[f] = acc
+        acc += counts[f]
+    # 3) salva su data_config per uso globale
+    data_config.IO_COUNTS = counts
+    data_config.IO_STARTS = starts
+    data_config.IO_TOTAL = acc
+    return valid
+
+
+def _iotype_to_field(iotype: int) -> Optional[str]:  # DYNAMIC PATHING
+    if iotype == IO_DI: return "di"
+    if iotype == IO_AI: return "ai"
+    if iotype == IO_DO: return "do"
+    if iotype == IO_AO: return "ao"
+    if iotype == IO_RI: return "ri"
+    return None
+
+
+# def _deserialize_io(data: Dict[str, Any]) -> None:   # DYNAMIC PATHING
+#     # data['io'] è un dict: {'di': [[...], ...], 'ai': [...], ...}
+#     io_data = data.get("io", {})
+#     counts = {field: 0 for field in ("di", "ai", "do", "ao", "ri")}
+#     for field in ("di", "ai", "do", "ao", "ri"):
+#         rows = _as_list(io_data.get(field))
+#         for ind, row in enumerate(rows):
+#             if row is None:
+#                 continue
+#             if not isinstance(row, (list, tuple)) or len(row) == 0:
+#                 continue
+#             _deserialize_io_row(field, ind, row)
+#             counts[field] += 1
+#     logger.info(f"Rilevati IO: DI={counts['di']}, AI={counts['ai']}, DO={counts['do']}, AO={counts['ao']}, RI={counts['ri']}")
+
+def _deserialize_io(data: Dict[str, Any]) -> None: # DYNAMIC PATHING
+    io_data = data.get("io", {}) or {}
+    # Pre-scan: layout dinamico e righe già filtrate
+    valid_rows = _prepare_io_layout(io_data)
+    counts = {k: len(v) for k, v in valid_rows.items()}
+
+    # Deserializza usando gli offset dinamici
     for field in ("di", "ai", "do", "ao", "ri"):
-        rows = _as_list(io_data.get(field))
+        rows = valid_rows[field]
         for ind, row in enumerate(rows):
-            if row is None:
-                continue
-            if not isinstance(row, (list, tuple)) or len(row) == 0:
-                continue
             _deserialize_io_row(field, ind, row)
-            counts[field] += 1
+
     logger.info(f"Rilevati IO: DI={counts['di']}, AI={counts['ai']}, DO={counts['do']}, AO={counts['ao']}, RI={counts['ri']}")
 
 
 def _io_global_index(field: str, ind: int) -> int:
-    """
-    k globale come in SCL:
-      di -> k = ind
-      ai -> k = (MAX_DI+1) + ind
-      do -> k = (MAX_AI+1) + (MAX_DI+1) + ind
-      ao -> k = (MAX_DO+1) + (MAX_AI+1) + (MAX_DI+1) + ind
-      ri -> k = (MAX_AO+1) + (MAX_DO+1) + (MAX_AI+1) + (MAX_DI+1) + ind
-    """
+    # Dinamico se il layout è disponibile
+    starts = getattr(data_config, "IO_STARTS", None)
+    counts = getattr(data_config, "IO_COUNTS", None)
+    if isinstance(starts, dict) and isinstance(counts, dict) and field in starts:
+        return starts[field] + ind
+    logging.critical("Layout IO non disponibile, uso costante PLC con MAX_*.")
+    # Fallback: vecchia logica con MAX_*
     if field == "di":
         return ind
     if field == "ai":
@@ -406,6 +459,7 @@ def _deserialize_io_row(field: str, ind: int, row: Sequence[Any]) -> None:
     # row: [Name, bool..., int..., dint..., real..., exprint..., exprreal...]
     name = str(row[0])
     data_config.IO_Name[k] = name
+    # logging.debug(f"_deserialize_io_row: field={field}, ind={ind}, global_index={k}, name={name}")
     try:
         data_config.IO_Param[k].iotype = {
             "di": getattr(data_config, "IO_DI", 0),

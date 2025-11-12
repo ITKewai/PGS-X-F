@@ -42,5 +42,5 @@ A TEMPO PERSO:
 # TODO: verificare DEFAULT SPEED e mMAXVELPERC nin control negli assi se è diverso da 100 e 100
 # TODO: verificare se c è settato GOLDTORUNTYPE nell asse
 # TODO: controllo che LATSUPQ4 è 1 e LATSUPQ0 è minore o uguale al SUP dei supporti laterali, controllare che i lavlori poi siano LATSUPQ0 > LATSUPQ1 > LATSUPQ2 > LATSUPQ3 > LATSUPQ4
-
+# todo: VEDEre che ratio supp laterali sia 0 180 o 180 0
 """

@@ -115,7 +115,7 @@ def process_udt_file(filepath: str, out):
 
         class_name = sanitize_class_name(type_name)
         # out.write(f"# --- TYPE \"{type_name}\" ---\n")
-        out.write(f"class {class_name}:\n")
+        out.write(f"\nclass {class_name}:\n")
         out.write('    """\n')
         out.write(f"    Estratto da: {filename}\n\n")
         out.write("    Attributes:\n")

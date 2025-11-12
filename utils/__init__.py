@@ -39,4 +39,8 @@ A TEMPO PERSO:
 # TODO: controllo bypass attivi negli assi ma non configurati
 # TODO: sistemar ricerca duplicati perchp non va
 # TODO: ricerca free mi trova qualcosa in ANA1 - output: [1,2,-1,57,56,-1,-1,-1,-1,-1,-1,-1,-1,-1,300,900,300,900,0,0,0,0,0,100,0,100,0,0,20,20,40,40,60,60,80,80,100,100,0,0,20,20,40,40,60,60,80,80,100,100]
+# TODO: verificare DEFAULT SPEED e mMAXVELPERC nin control negli assi se è diverso da 100 e 100
+# TODO: verificare se c è settato GOLDTORUNTYPE nell asse
+# TODO: controllo che LATSUPQ4 è 1 e LATSUPQ0 è minore o uguale al SUP dei supporti laterali, controllare che i lavlori poi siano LATSUPQ0 > LATSUPQ1 > LATSUPQ2 > LATSUPQ3 > LATSUPQ4
+
 """

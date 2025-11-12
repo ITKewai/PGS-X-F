@@ -237,11 +237,39 @@ def process_excel(filepath: str, out):
 # 🔸 Main
 # ==============================
 def main():
-    print(EXPORTS_DIR, ' > ', OUTPUT_FILE)
-    with open(OUTPUT_FILE, "w", encoding="utf-8") as out:
+    print("=== Selezione cartella sorgente ===")
+
+    # Elenca tutte le sottocartelle nella directory corrente (escludendo hidden)
+    subfolders = [d for d in os.listdir(BASE_DIR)
+                  if os.path.isdir(os.path.join(BASE_DIR, d)) and not d.startswith('.')]
+
+    if not subfolders:
+        print("❌ Nessuna sottocartella trovata.")
+        return
+
+    # Mostra elenco numerato
+    for i, folder in enumerate(subfolders, start=1):
+        print(f"[{i}] {folder.replace('_', '.')}")
+
+    # Chiedi all'utente di scegliere
+    while True:
+        choice = input("Scegli il numero della versione da importare: ")
+        if choice.isdigit() and 1 <= int(choice) <= len(subfolders):
+            selected_folder = subfolders[int(choice) - 1]
+            break
+        print("⚠️ Scelta non valida, riprova.")
+
+    # Imposta EXPORTS_DIR sulla cartella scelta
+    exports_dir = os.path.join(BASE_DIR, selected_folder)
+    print(f"\n📂 Cartella selezionata: {exports_dir}")
+
+    output_file = os.path.join(BASE_DIR, selected_folder + "/tia_constants.py")
+    print(f"📤 Generazione in corso... ({output_file})")
+
+    with open(output_file, "w", encoding="utf-8") as out:
         out.write("# Auto-generato da main_import.py\n\n")
-        for filename in os.listdir(EXPORTS_DIR):
-            filepath = os.path.join(EXPORTS_DIR, filename)
+        for filename in os.listdir(exports_dir):
+            filepath = os.path.join(exports_dir, filename)
             lower = filename.lower()
             if lower.endswith(".udt"):
                 process_udt_file(filepath, out)
@@ -249,7 +277,8 @@ def main():
                 process_db_file(filepath, out)
             elif lower.endswith(".xlsx"):
                 process_excel(filepath, out)
-    print(f"✅ File generato: {OUTPUT_FILE}")
+
+    print(f"✅ File generato: {output_file}")
 
 
 if __name__ == "__main__":

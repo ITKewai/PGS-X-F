@@ -150,10 +150,7 @@ def _reset_udt_array(arr) -> None:
 
 
 def _reset_all_defaults() -> None:
-    """
-    Usa i reset() generati in tia_constants per riportare ai defaults
-    gli array UDT presenti dentro data_config.
-    """
+    """Usa i reset() generati in tia_constants per riportare ai defaults gli array UDT dentro data_config."""
     udt_arrays = [
         "IO_Param",
         "Axis_Param",
@@ -174,49 +171,47 @@ def _clean_data_config() -> None:
     """
     Pulisce completamente data_config:
     1) resetta gli UDT agli _defaults via .reset()
-    2) normalizza campi runtime dove i defaults non bastano (stringhe, indici, mappe)
+    2) normalizza campi runtime dove i defaults non bastano
     3) svuota le liste helper IO_*_List
     """
-    # 1) reset agli _defaults usando i .reset() auto-generati
+    # 1️⃣ resetta tutto ai defaults
     if hasattr(data_config, "reset") and callable(getattr(data_config, "reset")):
-        # Se la root ha un reset globale, usalo
         data_config.reset()
     else:
-        # Altrimenti resetta gli array UDT noti
         _reset_all_defaults()
 
-    # 2) normalizzazioni extra (differenze None vs "", indici runtime, cache, ecc.)
-    # 2a) IO_Name: preferisci "" al posto di None
+    # 2️⃣ Normalizzazioni extra
+    # IO_Name: None → ""
     io_name = getattr(data_config, "IO_Name", None)
     if isinstance(io_name, list):
         for i in range(len(io_name)):
             if io_name[i] is None:
                 io_name[i] = ""
 
-    # 2b) Se esistono strutture allarmi/codici/indici runtime, rimettili “neutri”
-    # (tutto protetto da hasattr per non rompere nulla)
-    # Esempi comuni:
+    # DATA_ALARMS
     if hasattr(data_config, "DATA_ALARMS"):
         da = data_config.DATA_ALARMS
+        max_warn = getattr(data_config, "MAX_WARNING", 0)
         if hasattr(da, "Ind"):
-            da.Ind = -1
+            da.Ind = [-1] * (max_warn + 1)
         if hasattr(da, "Cod"):
-            da.Cod = 0
+            da.Cod = [0] * (max_warn + 1)
 
-    # RecyclingMotorInd o simili a -1 se presenti
+    # RecyclingMotorInd
     if hasattr(data_config, "RecyclingMotorInd"):
         data_config.RecyclingMotorInd = -1
 
-    # Stop_* e indici vari, se presenti (tienili “neutri”)
-    for attr in ("Stop_Ind", "Stop_DI", "Stop_DO", "Stop_AI", "Stop_AO", "Stop_RI"):
-        if hasattr(data_config, attr):
-            try:
-                setattr(data_config, attr, -1)
-            except Exception:
-                pass
+    # --- ✅ Stop arrays ---
+    max_stop = getattr(data_config, "MAX_STOP", 0)
+    if hasattr(data_config, "Stop_Ind"):
+        data_config.Stop_Ind = [-1] * (max_stop + 1)
+    if hasattr(data_config, "Stop_Name"):
+        data_config.Stop_Name = [""] * (max_stop + 1)
+    for stop_attr in ("Stop_DI", "Stop_DO", "Stop_AI", "Stop_AO", "Stop_RI"):
+        if hasattr(data_config, stop_attr):
+            setattr(data_config, stop_attr, [-1] * (max_stop + 1))
 
-    # 2c) Pulisci eventuali mappe/cache/dizionari runtime se presenti
-    # Se sai come si chiamano nel tuo codice, aggiungili qui esplicitamente.
+    # 2c) pulisci cache/dizionari runtime
     for maybe_map in (
         "IO_IndexMap",
         "IO_NameToIndex",
@@ -228,7 +223,7 @@ def _clean_data_config() -> None:
         if isinstance(obj, dict):
             obj.clear()
 
-    # 3) svuota le 5 liste helper (non fanno parte dei defaults TIA)
+    # 3️⃣ svuota le liste helper (non nel TIA DB)
     data_config.IO_DI_List = []
     data_config.IO_DO_List = []
     data_config.IO_AI_List = []

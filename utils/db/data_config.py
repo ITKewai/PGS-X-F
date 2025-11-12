@@ -140,194 +140,101 @@ def _bool_from_int(x: Any) -> bool:
     return _to_int(x, 0) == 1
 
 
+def _reset_udt_array(arr) -> None:
+    """Chiama .reset() su ogni elemento di un array UDT, se presente."""
+    if not arr:
+        return
+    for x in arr:
+        if hasattr(x, "reset"):
+            x.reset()
+
+
+def _reset_all_defaults() -> None:
+    """
+    Usa i reset() generati in tia_constants per riportare ai defaults
+    gli array UDT presenti dentro data_config.
+    """
+    udt_arrays = [
+        "IO_Param",
+        "Axis_Param",
+        "Input_Param",
+        "Output_Param",
+        "Feedback_Param",
+        "PID_Param",
+        "Motor",
+        "Alarm_Param",
+        "Maint_Param",
+        "Toolset_Param",
+    ]
+    for name in udt_arrays:
+        _reset_udt_array(getattr(data_config, name, []))
+
+
 def _clean_data_config() -> None:
     """
-    Pulisce l'istanza globale 'data_config' IN PLACE, senza riassegnarla.
-    Serve per evitare che valori di una precedente deserializzazione
-    rimangano validi quando si richiama populate_from_yaml(_file).
+    Pulisce completamente data_config:
+    1) resetta gli UDT agli _defaults via .reset()
+    2) normalizza campi runtime dove i defaults non bastano (stringhe, indici, mappe)
+    3) svuota le liste helper IO_*_List
     """
-    dc = data_config
+    # 1) reset agli _defaults usando i .reset() auto-generati
+    if hasattr(data_config, "reset") and callable(getattr(data_config, "reset")):
+        # Se la root ha un reset globale, usalo
+        data_config.reset()
+    else:
+        # Altrimenti resetta gli array UDT noti
+        _reset_all_defaults()
 
-    # --- helpers robusti -----------------------------------------------------
-    def _fill(seq, value):
-        try:
-            for i in range(len(seq)):
-                seq[i] = value
-        except Exception:
-            pass
+    # 2) normalizzazioni extra (differenze None vs "", indici runtime, cache, ecc.)
+    # 2a) IO_Name: preferisci "" al posto di None
+    io_name = getattr(data_config, "IO_Name", None)
+    if isinstance(io_name, list):
+        for i in range(len(io_name)):
+            if io_name[i] is None:
+                io_name[i] = ""
 
-    def _reset_param_obj(p, spec):
-        """spec = [(attr_name, default_value)]"""
-        for attr, default in spec:
-            arr = getattr(p, attr, None)
-            if arr is None:
-                continue
+    # 2b) Se esistono strutture allarmi/codici/indici runtime, rimettili “neutri”
+    # (tutto protetto da hasattr per non rompere nulla)
+    # Esempi comuni:
+    if hasattr(data_config, "DATA_ALARMS"):
+        da = data_config.DATA_ALARMS
+        if hasattr(da, "Ind"):
+            da.Ind = -1
+        if hasattr(da, "Cod"):
+            da.Cod = 0
+
+    # RecyclingMotorInd o simili a -1 se presenti
+    if hasattr(data_config, "RecyclingMotorInd"):
+        data_config.RecyclingMotorInd = -1
+
+    # Stop_* e indici vari, se presenti (tienili “neutri”)
+    for attr in ("Stop_Ind", "Stop_DI", "Stop_DO", "Stop_AI", "Stop_AO", "Stop_RI"):
+        if hasattr(data_config, attr):
             try:
-                for i in range(len(arr)):
-                    arr[i] = default
+                setattr(data_config, attr, -1)
             except Exception:
                 pass
-        # campi accessori spesso presenti
-        if hasattr(p, "name"):
-            try:
-                p.name = ""
-            except Exception:
-                pass
-        if hasattr(p, "iotype"):
-            try:
-                p.iotype = -1
-            except Exception:
-                pass
 
-    # --- liste di comodo IO --------------------------------------------------
-    for lst_name in ("IO_DI_List", "IO_DO_List", "IO_AI_List", "IO_AO_List", "IO_RI_List"):
-        if hasattr(dc, lst_name):
-            try:
-                getattr(dc, lst_name).clear()
-            except Exception:
-                setattr(dc, lst_name, [])
+    # 2c) Pulisci eventuali mappe/cache/dizionari runtime se presenti
+    # Se sai come si chiamano nel tuo codice, aggiungili qui esplicitamente.
+    for maybe_map in (
+        "IO_IndexMap",
+        "IO_NameToIndex",
+        "AxisNameToIndex",
+        "DecodeCache",
+        "IO_SearchCache",
+    ):
+        obj = getattr(data_config, maybe_map, None)
+        if isinstance(obj, dict):
+            obj.clear()
 
-    # --- header/parametri globali -------------------------------------------
-    if hasattr(dc, "Config_Header"): _fill(dc.Config_Header, 0)
-    if hasattr(dc, "ParamString"):   _fill(dc.ParamString, "")
-    if hasattr(dc, "ParamBool"):     _fill(dc.ParamBool, False)
-    if hasattr(dc, "ParamInt"):      _fill(dc.ParamInt, 0)
-    if hasattr(dc, "ParamReal"):     _fill(dc.ParamReal, 0.0)
-    if hasattr(dc, "ParamRealCfg"):  _fill(dc.ParamRealCfg, 0.0)
-    if hasattr(dc, "ParamRealType"): _fill(dc.ParamRealType, -1)
+    # 3) svuota le 5 liste helper (non fanno parte dei defaults TIA)
+    data_config.IO_DI_List = []
+    data_config.IO_DO_List = []
+    data_config.IO_AI_List = []
+    data_config.IO_AO_List = []
+    data_config.IO_RI_List = []
 
-    # indici rapidi
-    for name, default in (("AxisFunInd", -1), ("InInd", -1), ("OutInd", -1)):
-        if hasattr(dc, name):
-            _fill(getattr(dc, name), default)
-
-    # --- IO ------------------------------------------------------------------
-    max_io = len(getattr(dc, "IO_Param", []))
-    for k in range(max_io):
-        try:
-            dc.IO_Name[k] = ""
-        except Exception:
-            pass
-        try:
-            p = dc.IO_Param[k]
-        except Exception:
-            continue
-        _reset_param_obj(p, [
-            ("boolval", False),
-            ("intval", 0),
-            ("dintval", 0),
-            ("realvalcfg", 0.0),
-            ("realval", 0.0),
-            ("exprintval", -1),
-            ("exprrealval", 0.0),
-        ])
-
-    # --- AXES ----------------------------------------------------------------
-    max_axes = len(getattr(dc, "Axis_Param", []))
-    for i in range(max_axes):
-        try:
-            dc.Axis_Name[i] = ""
-        except Exception:
-            pass
-        p = dc.Axis_Param[i]
-        _reset_param_obj(p, [
-            ("boolval", False),
-            ("intval", -1),
-            ("realvalcfg", 0.0),
-            ("realval", 0.0),
-            ("typval", -1),
-            ("fcval", 1.0),
-            ("offsetval", 0.0),
-        ])
-
-    # --- INPUT/OUTPUT/FEEDBACK/PID ------------------------------------------
-    for arr_name, spec in [
-        ("Input_Param",   [("boolval", False), ("intval", 0), ("dintvalcfg", 0), ("dintval", 0)]),
-        ("Output_Param",  [("intval", 0), ("dintval", 0), ("realval", 0.0)]),
-        ("Feedback_Param",[("intval", 0), ("dintval", 0), ("realvalcfg", 0.0), ("realval", 0.0)]),
-        ("PID_Param",     [("realval", 0.0)]),
-    ]:
-        arr = getattr(dc, arr_name, None)
-        if not arr:
-            continue
-        for p in arr:
-            _reset_param_obj(p, spec)
-
-    # --- MOTORS --------------------------------------------------------------
-    # indici e strutture motori (presenti in molti progetti)
-    for name in ("Motor_LSInd", "Motor_LS2Ind", "Motor_TRInd", "Motor_TR2Ind",
-                 "Motor_CmdInd", "Motor_Cmd1Ind", "Motor_Cmd2Ind", "Motor_Cmd3Ind",
-                 "Motor_StatInd", "Motor_StartingInd"):
-        if hasattr(dc, name):
-            _fill(getattr(dc, name), -1)
-    if hasattr(dc, "Motor_Config"):    _fill(dc.Motor_Config, False)
-    if hasattr(dc, "Motor_Selectable"):_fill(dc.Motor_Selectable, False)
-    if hasattr(dc, "Motor"):
-        # ogni elemento ha spesso campi: seq,opt,default,timeout,timeout2,typ,timeoutbtn
-        for m in dc.Motor:
-            for attr, val in [("seq", False), ("opt", False), ("default", False),
-                              ("timeout", 0), ("timeout2", 0), ("typ", -1), ("timeoutbtn", 0)]:
-                if hasattr(m, attr):
-                    try: setattr(m, attr, val)
-                    except Exception: pass
-    # stato riciclo
-    try:
-        dc.DATA_STATUS.RecyclingMotorInd = -1
-    except Exception:
-        pass
-
-    # --- ALARMS / MAINT ------------------------------------------------------
-    if hasattr(dc, "Alarm_Name"):
-        _fill(dc.Alarm_Name, "")
-    if hasattr(dc, "Alarm_Param"):
-        for p in dc.Alarm_Param:
-            _reset_param_obj(p, [("boolval", False), ("intval", -1)])
-    # mappe allarmi
-    try:
-        for i in range(len(dc.Stop_Ind)): dc.Stop_Ind[i] = -1
-        for i in range(len(dc.Stop_Name)): dc.Stop_Name[i] = ""
-        dc.Stop_Num = 0
-    except Exception:
-        pass
-    try:
-        for i in range(len(dc.DATA_ALARMS.Ind)): dc.DATA_ALARMS.Ind[i] = -1
-        for i in range(len(dc.DATA_ALARMS.Cod)): dc.DATA_ALARMS.Cod[i] = 0
-    except Exception:
-        pass
-
-    # --- MAINT ---------------------------------------------------------------
-    if hasattr(dc, "Maint_Name"):
-        _fill(dc.Maint_Name, "")
-    if hasattr(dc, "Maint_Param"):
-        for p in dc.Maint_Param:
-            _reset_param_obj(p, [("boolval", False), ("intval", 0)])
-
-    # --- TOOLSET -------------------------------------------------------------
-    if hasattr(dc, "Toolset_Name"):
-        _fill(dc.Toolset_Name, "")
-    if hasattr(dc, "Toolset_Param"):
-        for p in dc.Toolset_Param:
-            _reset_param_obj(p, [
-                ("boolval", False),
-                ("intval", 0),
-                ("realvalcfg", 0.0),
-                ("realval", 0.0),
-                ("typval", -1),
-                ("fcval", 1.0),
-                ("offsetval", 0.0),
-            ])
-            # matrix output (se presente)
-            outs = getattr(p, "output", None)
-            if outs:
-                for o in outs:
-                    _reset_param_obj(o, [("intval", 0), ("dintval", 0)])
-
-    # --- strutture varie opzionali ------------------------------------------
-    try:
-        dc.PLCVersion1 = 0; dc.PLCVersion2 = 0; dc.PLCVersion3 = 0; dc.PLCVersion4 = 0
-        dc.CFGVersion = 0
-    except Exception:
-        pass
 
 # ------------------------------
 # Header / Card / AxInd

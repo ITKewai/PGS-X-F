@@ -1,10 +1,11 @@
 """
-
+DA VERIFICARE:
+# TODO: non usare i max_ ma leggere dal file
 
 
 POSSIBILI
 # TODO: notificare se le termiche sono state inserite nei motori (no resistanza)
-# TODO: non usare i max_ ma leggere dal file
+
 # TODO: controllare che allarmi siano safetystop
 # TODO: verificare che master mult sia 5 e vmin infeiriore  a 3
 # TODO: cerifica bug RI vedere se tutti i campi o la maggiorpare di Enabled è diverso da -1

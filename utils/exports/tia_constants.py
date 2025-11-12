@@ -161,1635 +161,6 @@ class DATA_CONFIG:
         self.UM_FC_Imp = [0.0] * (MAX_UM + 1)  # Array[0.."MAX_UM"] of Real
         self._defaults['UM_FC_Imp'] = [0.0] * (MAX_UM + 1)
 
-class Type_ToolsetOutputParam:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        intval (Array[0.."MAX_TOOLSETOUTPUTINT"] of Int := [2(-1)]):
-        dintval (Array[0.."MAX_TOOLSETOUTPUTDINT"] of DInt):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.intval = [-1] * (MAX_TOOLSETOUTPUTINT + 1)  # Array[0.."MAX_TOOLSETOUTPUTINT"] of Int := [2(-1)]
-        self._defaults['intval'] = [-1] * (MAX_TOOLSETOUTPUTINT + 1)
-        self.dintval = [-1] * (MAX_TOOLSETOUTPUTDINT + 1)  # Array[0.."MAX_TOOLSETOUTPUTDINT"] of DInt
-        self._defaults['dintval'] = [-1] * (MAX_TOOLSETOUTPUTDINT + 1)
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Type_ToolsetOutputParam {fields}>"
-
-
-class Type_StatParam:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        seqid (Int := -1):
-        statpos (Int := -1):
-        pos (Int := -1):
-        objtype (Int := -1):
-        ival (Int):
-        rval (Real):
-        addr (Int := -1):
-        next (Int := -1):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.seqid = -1  # Int := -1
-        self._defaults['seqid'] = -1
-        self.statpos = -1  # Int := -1
-        self._defaults['statpos'] = -1
-        self.pos = -1  # Int := -1
-        self._defaults['pos'] = -1
-        self.objtype = -1  # Int := -1
-        self._defaults['objtype'] = -1
-        self.ival = -1  # Int
-        self._defaults['ival'] = -1
-        self.rval = 0.0  # Real
-        self._defaults['rval'] = 0.0
-        self.addr = -1  # Int := -1
-        self._defaults['addr'] = -1
-        self.next = -1  # Int := -1
-        self._defaults['next'] = -1
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Type_StatParam {fields}>"
-
-
-class Type_Stat:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        seqid (Int := -1):
-        pos (Int := -1):
-        cod (Int := -1):
-        firstparam (Int := -1):
-        lastparam (Int := -1):
-        next (Int := -1):
-        disabled (Bool):
-        prim (Int):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.seqid = -1  # Int := -1
-        self._defaults['seqid'] = -1
-        self.pos = -1  # Int := -1
-        self._defaults['pos'] = -1
-        self.cod = -1  # Int := -1
-        self._defaults['cod'] = -1
-        self.firstparam = -1  # Int := -1
-        self._defaults['firstparam'] = -1
-        self.lastparam = -1  # Int := -1
-        self._defaults['lastparam'] = -1
-        self.next = -1  # Int := -1
-        self._defaults['next'] = -1
-        self.disabled = False  # Bool
-        self._defaults['disabled'] = False
-        self.prim = -1  # Int
-        self._defaults['prim'] = -1
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Type_Stat {fields}>"
-
-
-class EnergyMeteMeasurementType:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        qualityWord (Word):
-        activePowerPOverall (Real):
-        activeEnergyOutflowOverall (Real):
-        activeEnergyInflowOverall (Real):
-        CurrentL1 (Real):
-        CurrentL2 (Real):
-        CurrentL3 (Real):
-        VoltageL1N (UInt):
-        VoltageL2N (UInt):
-        VOltageL3N (UInt):
-        fillBytes48Byte (Array[43..48] of Byte):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.qualityWord = -1  # Word
-        self._defaults['qualityWord'] = -1
-        self.activePowerPOverall = 0.0  # Real
-        self._defaults['activePowerPOverall'] = 0.0
-        self.activeEnergyOutflowOverall = 0.0  # Real
-        self._defaults['activeEnergyOutflowOverall'] = 0.0
-        self.activeEnergyInflowOverall = 0.0  # Real
-        self._defaults['activeEnergyInflowOverall'] = 0.0
-        self.CurrentL1 = 0.0  # Real
-        self._defaults['CurrentL1'] = 0.0
-        self.CurrentL2 = 0.0  # Real
-        self._defaults['CurrentL2'] = 0.0
-        self.CurrentL3 = 0.0  # Real
-        self._defaults['CurrentL3'] = 0.0
-        self.VoltageL1N = -1  # UInt
-        self._defaults['VoltageL1N'] = -1
-        self.VoltageL2N = -1  # UInt
-        self._defaults['VoltageL2N'] = -1
-        self.VOltageL3N = -1  # UInt
-        self._defaults['VOltageL3N'] = -1
-        self.fillBytes48Byte = [-1] * ((48) - (43) + 1)  # Array[43..48] of Byte
-        self._defaults['fillBytes48Byte'] = [-1] * ((48) - (43) + 1)
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<EnergyMeteMeasurementType {fields}>"
-
-
-class Type_AxisParam:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        boolval (Array[0.."MAX_ASSEBOOL"] of Bool):
-        intval (Array[0.."MAX_ASSEINT"] of Int := [8(-1), 1, 18(-1), 100, 2(0), 15(-1), 2(0), 2000, 6(-1), 2(0), 100, 7(-1), 2(0), 2(-1), 0, 2, 25(-1)]):
-        realvalcfg (Array[0.."MAX_ASSEREAL"] of Real):
-        realval (Array[0.."MAX_ASSEREAL"] of Real):
-        fcval (Array[0.."MAX_ASSEREAL"] of Real := [55(1.0)]):
-        offsetval (Array[0.."MAX_ASSEREAL"] of Real):
-        typval (Array[0.."MAX_ASSEREAL"] of Int := [55(-1)]):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.boolval = [False] * (MAX_ASSEBOOL + 1)  # Array[0.."MAX_ASSEBOOL"] of Bool
-        self._defaults['boolval'] = [False] * (MAX_ASSEBOOL + 1)
-        self.intval = [-1] * (MAX_ASSEINT + 1)  # Array[0.."MAX_ASSEINT"] of Int := [8(-1), 1, 18(-1), 100, 2(0), 15(-1), 2(0), 2000, 6(-1), 2(0), 100, 7(-1), 2(0), 2(-1), 0, 2, 25(-1)]
-        self._defaults['intval'] = [-1] * (MAX_ASSEINT + 1)
-        self.realvalcfg = [0.0] * (MAX_ASSEREAL + 1)  # Array[0.."MAX_ASSEREAL"] of Real
-        self._defaults['realvalcfg'] = [0.0] * (MAX_ASSEREAL + 1)
-        self.realval = [0.0] * (MAX_ASSEREAL + 1)  # Array[0.."MAX_ASSEREAL"] of Real
-        self._defaults['realval'] = [0.0] * (MAX_ASSEREAL + 1)
-        self.fcval = [0.0] * (MAX_ASSEREAL + 1)  # Array[0.."MAX_ASSEREAL"] of Real := [55(1.0)]
-        self._defaults['fcval'] = [0.0] * (MAX_ASSEREAL + 1)
-        self.offsetval = [0.0] * (MAX_ASSEREAL + 1)  # Array[0.."MAX_ASSEREAL"] of Real
-        self._defaults['offsetval'] = [0.0] * (MAX_ASSEREAL + 1)
-        self.typval = [-1] * (MAX_ASSEREAL + 1)  # Array[0.."MAX_ASSEREAL"] of Int := [55(-1)]
-        self._defaults['typval'] = [-1] * (MAX_ASSEREAL + 1)
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Type_AxisParam {fields}>"
-
-
-class Type_Feedback:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        val_in (DInt):
-        val_scaled (Real):
-        error (Int):
-        val_scaled_prev (Real):
-        setval (Bool):
-        newval (Real):
-        indasse (Int := -1):
-        resetval (Bool):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.val_in = -1  # DInt
-        self._defaults['val_in'] = -1
-        self.val_scaled = 0.0  # Real
-        self._defaults['val_scaled'] = 0.0
-        self.error = -1  # Int
-        self._defaults['error'] = -1
-        self.val_scaled_prev = 0.0  # Real
-        self._defaults['val_scaled_prev'] = 0.0
-        self.setval = False  # Bool
-        self._defaults['setval'] = False
-        self.newval = 0.0  # Real
-        self._defaults['newval'] = 0.0
-        self.indasse = -1  # Int := -1
-        self._defaults['indasse'] = -1
-        self.resetval = False  # Bool
-        self._defaults['resetval'] = False
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Type_Feedback {fields}>"
-
-
-class Type_Input:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        val (Real):
-        val_prev (Real):
-        indasse (Int := -1):
-        enab (Bool := true):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.val = 0.0  # Real
-        self._defaults['val'] = 0.0
-        self.val_prev = 0.0  # Real
-        self._defaults['val_prev'] = 0.0
-        self.indasse = -1  # Int := -1
-        self._defaults['indasse'] = -1
-        self.enab = False  # Bool := true
-        self._defaults['enab'] = False
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Type_Input {fields}>"
-
-
-class Type_PID:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        sp (Real):
-        in_ (Real):
-        reset (Bool):
-        out1 (Real):
-        out2 (Real):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.sp = 0.0  # Real
-        self._defaults['sp'] = 0.0
-        self.in_ = 0.0  # Real
-        self._defaults['in_'] = 0.0
-        self.reset = False  # Bool
-        self._defaults['reset'] = False
-        self.out1 = 0.0  # Real
-        self._defaults['out1'] = 0.0
-        self.out2 = 0.0  # Real
-        self._defaults['out2'] = 0.0
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Type_PID {fields}>"
-
-
-class Type_PIDParam:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        realval (Array[0.."MAX_PIDREAL"] of Real):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.realval = [0.0] * (MAX_PIDREAL + 1)  # Array[0.."MAX_PIDREAL"] of Real
-        self._defaults['realval'] = [0.0] * (MAX_PIDREAL + 1)
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Type_PIDParam {fields}>"
-
-
-class Type_InputParam:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        boolval (Array[0.."MAX_INPUTBOOL"] of Bool):
-        intval (Array[0.."MAX_INPUTINT"] of Int := [5(-1), 0, 2(-1), 0, 6(-1)]):
-        dintvalcfg (Array[0.."MAX_INPUTDINT"] of DInt):
-        dintval (Array[0.."MAX_INPUTDINT"] of DInt := [0, 100, 0, 100]):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.boolval = [False] * (MAX_INPUTBOOL + 1)  # Array[0.."MAX_INPUTBOOL"] of Bool
-        self._defaults['boolval'] = [False] * (MAX_INPUTBOOL + 1)
-        self.intval = [-1] * (MAX_INPUTINT + 1)  # Array[0.."MAX_INPUTINT"] of Int := [5(-1), 0, 2(-1), 0, 6(-1)]
-        self._defaults['intval'] = [-1] * (MAX_INPUTINT + 1)
-        self.dintvalcfg = [-1] * (MAX_INPUTDINT + 1)  # Array[0.."MAX_INPUTDINT"] of DInt
-        self._defaults['dintvalcfg'] = [-1] * (MAX_INPUTDINT + 1)
-        self.dintval = [-1] * (MAX_INPUTDINT + 1)  # Array[0.."MAX_INPUTDINT"] of DInt := [0, 100, 0, 100]
-        self._defaults['dintval'] = [-1] * (MAX_INPUTDINT + 1)
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Type_InputParam {fields}>"
-
-
-class Type_OutputParam:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        intval (Array[0.."MAX_OUTPUTINT"] of Int := [14(-1)]):
-        dintval (Array[0.."MAX_OUTPUTDINT"] of DInt):
-        realval (Array[0.."MAX_OUTPUTREAL"] of Real := [0.0, 100.0, 0.0, 100.0, 2(0.0), 2(20.0), 2(40.0), 2(60.0), 2(80.0), 2(100.0), 2(0.0), 2(20.0), 2(40.0), 2(60.0), 2(80.0), 2(100.0)]):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.intval = [-1] * (MAX_OUTPUTINT + 1)  # Array[0.."MAX_OUTPUTINT"] of Int := [14(-1)]
-        self._defaults['intval'] = [-1] * (MAX_OUTPUTINT + 1)
-        self.dintval = [-1] * (MAX_OUTPUTDINT + 1)  # Array[0.."MAX_OUTPUTDINT"] of DInt
-        self._defaults['dintval'] = [-1] * (MAX_OUTPUTDINT + 1)
-        self.realval = [0.0] * (MAX_OUTPUTREAL + 1)  # Array[0.."MAX_OUTPUTREAL"] of Real := [0.0, 100.0, 0.0, 100.0, 2(0.0), 2(20.0), 2(40.0), 2(60.0), 2(80.0), 2(100.0), 2(0.0), 2(20.0), 2(40.0), 2(60.0), 2(80.0), 2(100.0)]
-        self._defaults['realval'] = [0.0] * (MAX_OUTPUTREAL + 1)
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Type_OutputParam {fields}>"
-
-
-class Type_FeedbackParam:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        intval (Array[0.."MAX_FEEDBACKINT"] of Int := [5(-1)]):
-        dintval (Array[0.."MAX_FEEDBACKDINT"] of DInt := [48, 32000]):
-        realvalcfg (Array[0.."MAX_FEEDBACKREAL"] of Real):
-        realval (Array[0.."MAX_FEEDBACKREAL"] of Real):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.intval = [-1] * (MAX_FEEDBACKINT + 1)  # Array[0.."MAX_FEEDBACKINT"] of Int := [5(-1)]
-        self._defaults['intval'] = [-1] * (MAX_FEEDBACKINT + 1)
-        self.dintval = [-1] * (MAX_FEEDBACKDINT + 1)  # Array[0.."MAX_FEEDBACKDINT"] of DInt := [48, 32000]
-        self._defaults['dintval'] = [-1] * (MAX_FEEDBACKDINT + 1)
-        self.realvalcfg = [0.0] * (MAX_FEEDBACKREAL + 1)  # Array[0.."MAX_FEEDBACKREAL"] of Real
-        self._defaults['realvalcfg'] = [0.0] * (MAX_FEEDBACKREAL + 1)
-        self.realval = [0.0] * (MAX_FEEDBACKREAL + 1)  # Array[0.."MAX_FEEDBACKREAL"] of Real
-        self._defaults['realval'] = [0.0] * (MAX_FEEDBACKREAL + 1)
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Type_FeedbackParam {fields}>"
-
-
-class Type_Seq:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        SeqNum (Int):
-        SeqFirst (Int := -1):
-        SeqLast (Int := -1):
-        SeqCurrInd (Int := -1):
-        SeqId (Array[0.."MAX_SEQ"] of Int):
-        SeqTyp (Array[0.."MAX_SEQ"] of Int):
-        SeqFirstStat (Array[0.."MAX_SEQ"] of Int):
-        SeqLastStat (Array[0.."MAX_SEQ"] of Int):
-        SeqNext (Array[0.."MAX_SEQ"] of Int):
-        SeqNumStat (Array[0.."MAX_SEQ"] of Int):
-        StatNum (Int):
-        Stat (Array[0.."MAX_STAT"] of "Type_Stat"):
-        StatParamNum (Int):
-        StatParam (Array[0.."MAX_STATPARAM"] of "Type_StatParam"):
-        SeqStartCurrId (Int := -1):
-        SeqStartPrevId (Int := -1):
-        StatCurrInd (Int := -1):
-        SeqMode (Bool):
-        SeqModePrev (Bool):
-        SeqTerm (Bool):
-        StatTerm (Bool):
-        StatNew (Bool):
-        StackLevel (Int):
-        StackLevelAuto (Int):
-        StackRet (Array[0.."MAX_SEQSTACK"] of Int):
-        DelayElapsedTime (Int):
-        CurrProgSeq (Int):
-        PrevProgSeq (Int):
-        StatRunning (Int):
-        StatNumAxesStarted (Int):
-        CurrStatCod (Int):
-        PrevStatCod (Int):
-        StatStartInd (Int := -1):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.SeqNum = -1  # Int
-        self._defaults['SeqNum'] = -1
-        self.SeqFirst = -1  # Int := -1
-        self._defaults['SeqFirst'] = -1
-        self.SeqLast = -1  # Int := -1
-        self._defaults['SeqLast'] = -1
-        self.SeqCurrInd = -1  # Int := -1
-        self._defaults['SeqCurrInd'] = -1
-        self.SeqId = [-1] * (MAX_SEQ + 1)  # Array[0.."MAX_SEQ"] of Int
-        self._defaults['SeqId'] = [-1] * (MAX_SEQ + 1)
-        self.SeqTyp = [-1] * (MAX_SEQ + 1)  # Array[0.."MAX_SEQ"] of Int
-        self._defaults['SeqTyp'] = [-1] * (MAX_SEQ + 1)
-        self.SeqFirstStat = [-1] * (MAX_SEQ + 1)  # Array[0.."MAX_SEQ"] of Int
-        self._defaults['SeqFirstStat'] = [-1] * (MAX_SEQ + 1)
-        self.SeqLastStat = [-1] * (MAX_SEQ + 1)  # Array[0.."MAX_SEQ"] of Int
-        self._defaults['SeqLastStat'] = [-1] * (MAX_SEQ + 1)
-        self.SeqNext = [-1] * (MAX_SEQ + 1)  # Array[0.."MAX_SEQ"] of Int
-        self._defaults['SeqNext'] = [-1] * (MAX_SEQ + 1)
-        self.SeqNumStat = [-1] * (MAX_SEQ + 1)  # Array[0.."MAX_SEQ"] of Int
-        self._defaults['SeqNumStat'] = [-1] * (MAX_SEQ + 1)
-        self.StatNum = -1  # Int
-        self._defaults['StatNum'] = -1
-        self.Stat = None  # Array[0.."MAX_STAT"] of "Type_Stat"
-        self._defaults['Stat'] = None
-        self.StatParamNum = -1  # Int
-        self._defaults['StatParamNum'] = -1
-        self.StatParam = None  # Array[0.."MAX_STATPARAM"] of "Type_StatParam"
-        self._defaults['StatParam'] = None
-        self.SeqStartCurrId = -1  # Int := -1
-        self._defaults['SeqStartCurrId'] = -1
-        self.SeqStartPrevId = -1  # Int := -1
-        self._defaults['SeqStartPrevId'] = -1
-        self.StatCurrInd = -1  # Int := -1
-        self._defaults['StatCurrInd'] = -1
-        self.SeqMode = False  # Bool
-        self._defaults['SeqMode'] = False
-        self.SeqModePrev = False  # Bool
-        self._defaults['SeqModePrev'] = False
-        self.SeqTerm = False  # Bool
-        self._defaults['SeqTerm'] = False
-        self.StatTerm = False  # Bool
-        self._defaults['StatTerm'] = False
-        self.StatNew = False  # Bool
-        self._defaults['StatNew'] = False
-        self.StackLevel = -1  # Int
-        self._defaults['StackLevel'] = -1
-        self.StackLevelAuto = -1  # Int
-        self._defaults['StackLevelAuto'] = -1
-        self.StackRet = [-1] * (MAX_SEQSTACK + 1)  # Array[0.."MAX_SEQSTACK"] of Int
-        self._defaults['StackRet'] = [-1] * (MAX_SEQSTACK + 1)
-        self.DelayElapsedTime = -1  # Int
-        self._defaults['DelayElapsedTime'] = -1
-        self.CurrProgSeq = -1  # Int
-        self._defaults['CurrProgSeq'] = -1
-        self.PrevProgSeq = -1  # Int
-        self._defaults['PrevProgSeq'] = -1
-        self.StatRunning = -1  # Int
-        self._defaults['StatRunning'] = -1
-        self.StatNumAxesStarted = -1  # Int
-        self._defaults['StatNumAxesStarted'] = -1
-        self.CurrStatCod = -1  # Int
-        self._defaults['CurrStatCod'] = -1
-        self.PrevStatCod = -1  # Int
-        self._defaults['PrevStatCod'] = -1
-        self.StatStartInd = -1  # Int := -1
-        self._defaults['StatStartInd'] = -1
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Type_Seq {fields}>"
-
-
-class Type_MaintParam:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        boolval (Array[0.."MAX_MAINTBOOL"] of Bool):
-        intval (Array[0.."MAX_MAINTINT"] of Int):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.boolval = [False] * (MAX_MAINTBOOL + 1)  # Array[0.."MAX_MAINTBOOL"] of Bool
-        self._defaults['boolval'] = [False] * (MAX_MAINTBOOL + 1)
-        self.intval = [-1] * (MAX_MAINTINT + 1)  # Array[0.."MAX_MAINTINT"] of Int
-        self._defaults['intval'] = [-1] * (MAX_MAINTINT + 1)
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Type_MaintParam {fields}>"
-
-
-class Type_AlarmParam:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        boolval (Array[0.."MAX_ALARMBOOL"] of Bool):
-        intval (Array[0.."MAX_ALARMINT"] of Int := [10(-1)]):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.boolval = [False] * (MAX_ALARMBOOL + 1)  # Array[0.."MAX_ALARMBOOL"] of Bool
-        self._defaults['boolval'] = [False] * (MAX_ALARMBOOL + 1)
-        self.intval = [-1] * (MAX_ALARMINT + 1)  # Array[0.."MAX_ALARMINT"] of Int := [10(-1)]
-        self._defaults['intval'] = [-1] * (MAX_ALARMINT + 1)
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Type_AlarmParam {fields}>"
-
-
-class Type_IORef:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        FlagTot (Bool):
-        FlagTime (Bool):
-        Int (= [12(-1)]):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.FlagTot = False  # Bool
-        self._defaults['FlagTot'] = False
-        self.FlagTime = False  # Bool
-        self._defaults['FlagTime'] = False
-        self.Int = None  # = [12(-1)]
-        self._defaults['Int'] = None
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Type_IORef {fields}>"
-
-
-class Type_DataLoggerBuffer:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        Num (Int):
-        InInd (Int):
-        OutInd (Int):
-        Class (Array[0.."MAX_DATALOGGER_BUFFER"] of Int):
-        Cod (Array[0.."MAX_DATALOGGER_BUFFER"] of Int):
-        Val (Array[0.."MAX_DATALOGGER_BUFFER"] of Int):
-        Cnt (Array[0.."MAX_DATALOGGER_BUFFER"] of Int):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.Num = -1  # Int
-        self._defaults['Num'] = -1
-        self.InInd = -1  # Int
-        self._defaults['InInd'] = -1
-        self.OutInd = -1  # Int
-        self._defaults['OutInd'] = -1
-        self.Class = [-1] * (MAX_DATALOGGER_BUFFER + 1)  # Array[0.."MAX_DATALOGGER_BUFFER"] of Int
-        self._defaults['Class'] = [-1] * (MAX_DATALOGGER_BUFFER + 1)
-        self.Cod = [-1] * (MAX_DATALOGGER_BUFFER + 1)  # Array[0.."MAX_DATALOGGER_BUFFER"] of Int
-        self._defaults['Cod'] = [-1] * (MAX_DATALOGGER_BUFFER + 1)
-        self.Val = [-1] * (MAX_DATALOGGER_BUFFER + 1)  # Array[0.."MAX_DATALOGGER_BUFFER"] of Int
-        self._defaults['Val'] = [-1] * (MAX_DATALOGGER_BUFFER + 1)
-        self.Cnt = [-1] * (MAX_DATALOGGER_BUFFER + 1)  # Array[0.."MAX_DATALOGGER_BUFFER"] of Int
-        self._defaults['Cnt'] = [-1] * (MAX_DATALOGGER_BUFFER + 1)
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Type_DataLoggerBuffer {fields}>"
-
-
-class Type_LongString:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        c (Array[0.."DIM_STRINGHEADER"] of Char):
-        ind (Int):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.c = [None] * (DIM_STRINGHEADER + 1)  # Array[0.."DIM_STRINGHEADER"] of Char
-        self._defaults['c'] = [None] * (DIM_STRINGHEADER + 1)
-        self.ind = -1  # Int
-        self._defaults['ind'] = -1
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Type_LongString {fields}>"
-
-
-class Type_Motor:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        timeout (Int):
-        seq (Bool):
-        opt (Bool):
-        default (Bool):
-        timeout2 (Int):
-        typ (Int): tipo motore per nome e icona HMI
-        diff (ULInt):
-        diff2 (ULInt):
-        seqok (Bool):
-        timeoutbtn (Int):
-        timeout3 (Int):
-        timeout4 (Int):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.timeout = -1  # Int
-        self._defaults['timeout'] = -1
-        self.seq = False  # Bool
-        self._defaults['seq'] = False
-        self.opt = False  # Bool
-        self._defaults['opt'] = False
-        self.default = False  # Bool
-        self._defaults['default'] = False
-        self.timeout2 = -1  # Int
-        self._defaults['timeout2'] = -1
-        self.typ = -1  # Int // tipo motore per nome e icona HMI
-        self._defaults['typ'] = -1
-        self.diff = -1  # ULInt
-        self._defaults['diff'] = -1
-        self.diff2 = -1  # ULInt
-        self._defaults['diff2'] = -1
-        self.seqok = False  # Bool
-        self._defaults['seqok'] = False
-        self.timeoutbtn = -1  # Int
-        self._defaults['timeoutbtn'] = -1
-        self.timeout3 = -1  # Int
-        self._defaults['timeout3'] = -1
-        self.timeout4 = -1  # Int
-        self._defaults['timeout4'] = -1
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Type_Motor {fields}>"
-
-
-class Control_Record_CPU:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        Block_Length (USInt := "DIM_CPUDATA"):
-        Block_ID (USInt := 196):
-        USInt (= 2): ET200SP CPU 1510-1PN
-        SubVersion (USInt): ET200SP
-        Data (Array[0.."MAX_CPUDATA"] of USInt):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.Block_Length = -1  # USInt := "DIM_CPUDATA"
-        self._defaults['Block_Length'] = -1
-        self.Block_ID = -1  # USInt := 196
-        self._defaults['Block_ID'] = -1
-        self.USInt = None  # = 2 // ET200SP CPU 1510-1PN
-        self._defaults['USInt'] = None
-        self.SubVersion = -1  # USInt // ET200SP
-        self._defaults['SubVersion'] = -1
-        self.Data = [-1] * (MAX_CPUDATA + 1)  # Array[0.."MAX_CPUDATA"] of USInt
-        self._defaults['Data'] = [-1] * (MAX_CPUDATA + 1)
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Control_Record_CPU {fields}>"
-
-
-class Control_Record_Console:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        Block_Length (USInt := "DIM_CONSOLEDATA"):
-        Block_ID (USInt := 196):
-        USInt (= 2): ET200SP
-        SubVersion (USInt): ET200SP
-        Data (Array[0.."MAX_CONSOLEDATA"] of USInt):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.Block_Length = -1  # USInt := "DIM_CONSOLEDATA"
-        self._defaults['Block_Length'] = -1
-        self.Block_ID = -1  # USInt := 196
-        self._defaults['Block_ID'] = -1
-        self.USInt = None  # = 2 // ET200SP
-        self._defaults['USInt'] = None
-        self.SubVersion = -1  # USInt // ET200SP
-        self._defaults['SubVersion'] = -1
-        self.Data = [-1] * (MAX_CONSOLEDATA + 1)  # Array[0.."MAX_CONSOLEDATA"] of USInt
-        self._defaults['Data'] = [-1] * (MAX_CONSOLEDATA + 1)
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Control_Record_Console {fields}>"
-
-
-class Control_Status:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        Done (Bool):
-        Busy (Bool):
-        Error (Bool):
-        Status (DWord):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.Done = False  # Bool
-        self._defaults['Done'] = False
-        self.Busy = False  # Bool
-        self._defaults['Busy'] = False
-        self.Error = False  # Bool
-        self._defaults['Error'] = False
-        self.Status = -1  # DWord
-        self._defaults['Status'] = -1
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Control_Status {fields}>"
-
-
-class Write_ADV200:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        Write (Struct "Abilitazione Inverter" { S7_SetPoint := 'True'} : Bool := FALSE):
-        Bool (= FALSE):
-        Bool (= FALSE):
-        SPARE_BOOL_1 (Bool := FALSE):
-        SPARE_BOOL_2 (Bool := FALSE):
-        SPARE_BOOL_3 (Bool := FALSE):
-        SPARE_BOOL_4 (Bool := FALSE):
-        SPARE_BOOL_5 (Bool := FALSE):
-        SPARE_BOOL_6 (Bool := FALSE):
-        SPARE_BOOL_7 (Bool := FALSE):
-        SPARE_BOOL_8 (Bool := FALSE):
-        SPARE_BOOL_9 (Bool := FALSE):
-        SPARE_BOOL_10 (Bool := FALSE):
-        SPARE_BOOL_11 (Bool := FALSE):
-        SPARE_BOOL_12 (Bool := FALSE):
-        SPARE_BOOL_13 (Bool := FALSE):
-        Int (= 0):
-        Int (= 150): modificato per 6637 - era 125
-        SPARE_11 (Int := 0):
-        SPARE_10 (Int := 0):
-        SPARE_9 (Int := 0):
-        SPARE_8 (Int := 0):
-        SPARE_7 (Int := 0):
-        SPARE_6 (Int := 0):
-        SPARE_5 (Int := 0):
-        SPARE_4 (Int := 0):
-        SPARE_3 (Int := 0):
-        SPARE_2 (Int := 0):
-        SPARE_01 (Int := 0):
-        SPARE_02 (Int := 0):
-        SPARE_03 (Int := 0):
-        SPARE_04 (Int):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.Write = False  # Struct "Abilitazione Inverter" { S7_SetPoint := 'True'} : Bool := FALSE
-        self._defaults['Write'] = False
-        self.Bool = None  # = FALSE
-        self._defaults['Bool'] = None
-        self.Bool = None  # = FALSE
-        self._defaults['Bool'] = None
-        self.SPARE_BOOL_1 = False  # Bool := FALSE
-        self._defaults['SPARE_BOOL_1'] = False
-        self.SPARE_BOOL_2 = False  # Bool := FALSE
-        self._defaults['SPARE_BOOL_2'] = False
-        self.SPARE_BOOL_3 = False  # Bool := FALSE
-        self._defaults['SPARE_BOOL_3'] = False
-        self.SPARE_BOOL_4 = False  # Bool := FALSE
-        self._defaults['SPARE_BOOL_4'] = False
-        self.SPARE_BOOL_5 = False  # Bool := FALSE
-        self._defaults['SPARE_BOOL_5'] = False
-        self.SPARE_BOOL_6 = False  # Bool := FALSE
-        self._defaults['SPARE_BOOL_6'] = False
-        self.SPARE_BOOL_7 = False  # Bool := FALSE
-        self._defaults['SPARE_BOOL_7'] = False
-        self.SPARE_BOOL_8 = False  # Bool := FALSE
-        self._defaults['SPARE_BOOL_8'] = False
-        self.SPARE_BOOL_9 = False  # Bool := FALSE
-        self._defaults['SPARE_BOOL_9'] = False
-        self.SPARE_BOOL_10 = False  # Bool := FALSE
-        self._defaults['SPARE_BOOL_10'] = False
-        self.SPARE_BOOL_11 = False  # Bool := FALSE
-        self._defaults['SPARE_BOOL_11'] = False
-        self.SPARE_BOOL_12 = False  # Bool := FALSE
-        self._defaults['SPARE_BOOL_12'] = False
-        self.SPARE_BOOL_13 = False  # Bool := FALSE
-        self._defaults['SPARE_BOOL_13'] = False
-        self.Int = None  # = 0
-        self._defaults['Int'] = None
-        self.Int = None  # = 150 // modificato per 6637 - era 125
-        self._defaults['Int'] = None
-        self.SPARE_11 = -1  # Int := 0
-        self._defaults['SPARE_11'] = -1
-        self.SPARE_10 = -1  # Int := 0
-        self._defaults['SPARE_10'] = -1
-        self.SPARE_9 = -1  # Int := 0
-        self._defaults['SPARE_9'] = -1
-        self.SPARE_8 = -1  # Int := 0
-        self._defaults['SPARE_8'] = -1
-        self.SPARE_7 = -1  # Int := 0
-        self._defaults['SPARE_7'] = -1
-        self.SPARE_6 = -1  # Int := 0
-        self._defaults['SPARE_6'] = -1
-        self.SPARE_5 = -1  # Int := 0
-        self._defaults['SPARE_5'] = -1
-        self.SPARE_4 = -1  # Int := 0
-        self._defaults['SPARE_4'] = -1
-        self.SPARE_3 = -1  # Int := 0
-        self._defaults['SPARE_3'] = -1
-        self.SPARE_2 = -1  # Int := 0
-        self._defaults['SPARE_2'] = -1
-        self.SPARE_01 = -1  # Int := 0
-        self._defaults['SPARE_01'] = -1
-        self.SPARE_02 = -1  # Int := 0
-        self._defaults['SPARE_02'] = -1
-        self.SPARE_03 = -1  # Int := 0
-        self._defaults['SPARE_03'] = -1
-        self.SPARE_04 = -1  # Int
-        self._defaults['SPARE_04'] = -1
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Write_ADV200 {fields}>"
-
-
-class Type_Teach:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        teach_stat (Array[0.."MAX_TEACHSTAT"] of Bool):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.teach_stat = [False] * (MAX_TEACHSTAT + 1)  # Array[0.."MAX_TEACHSTAT"] of Bool
-        self._defaults['teach_stat'] = [False] * (MAX_TEACHSTAT + 1)
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Type_Teach {fields}>"
-
-
-class Type_IOParam:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        iotype (Int := -1): 0 = DI, 1 = AI, 2 = DO, 3 = AO, 4 = RI
-        boolval (Array[0.."MAX_IOBOOL"] of Bool):
-        intval (Array[0.."MAX_IOINT"] of Int := [9(-1)]):
-        dintval (Array[0.."MAX_IODINT"] of DInt):
-        realvalcfg (Array[0.."MAX_IOREAL"] of Real := [3(0.0), 3(1.0)]):
-        realval (Array[0.."MAX_IOREAL"] of Real := [3(0.0), 3(1.0)]):
-        exprintval (Array[0.."MAX_EXPRINT"] of Int := [25(-1)]): typ + (not, opnd, oper) x 8
-        exprrealval (Array[0.."MAX_EXPROPER"] of Real):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.iotype = -1  # Int := -1 // 0 = DI, 1 = AI, 2 = DO, 3 = AO, 4 = RI
-        self._defaults['iotype'] = -1
-        self.boolval = [False] * (MAX_IOBOOL + 1)  # Array[0.."MAX_IOBOOL"] of Bool
-        self._defaults['boolval'] = [False] * (MAX_IOBOOL + 1)
-        self.intval = [-1] * (MAX_IOINT + 1)  # Array[0.."MAX_IOINT"] of Int := [9(-1)]
-        self._defaults['intval'] = [-1] * (MAX_IOINT + 1)
-        self.dintval = [-1] * (MAX_IODINT + 1)  # Array[0.."MAX_IODINT"] of DInt
-        self._defaults['dintval'] = [-1] * (MAX_IODINT + 1)
-        self.realvalcfg = [0.0] * (MAX_IOREAL + 1)  # Array[0.."MAX_IOREAL"] of Real := [3(0.0), 3(1.0)]
-        self._defaults['realvalcfg'] = [0.0] * (MAX_IOREAL + 1)
-        self.realval = [0.0] * (MAX_IOREAL + 1)  # Array[0.."MAX_IOREAL"] of Real := [3(0.0), 3(1.0)]
-        self._defaults['realval'] = [0.0] * (MAX_IOREAL + 1)
-        self.exprintval = [-1] * (MAX_EXPRINT + 1)  # Array[0.."MAX_EXPRINT"] of Int := [25(-1)] // typ + (not, opnd, oper) x 8
-        self._defaults['exprintval'] = [-1] * (MAX_EXPRINT + 1)
-        self.exprrealval = [0.0] * (MAX_EXPROPER + 1)  # Array[0.."MAX_EXPROPER"] of Real
-        self._defaults['exprrealval'] = [0.0] * (MAX_EXPROPER + 1)
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Type_IOParam {fields}>"
-
-
-class Type_IO:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        Ind (Int := -1):
-        Stato (Int):
-        BVal (Bool):
-        IVal (Int):
-        DVal (DInt):
-        RVal (Real):
-        Offset (Real):
-        BProgVal (Bool):
-        DProgVal (DInt):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.Ind = -1  # Int := -1
-        self._defaults['Ind'] = -1
-        self.Stato = -1  # Int
-        self._defaults['Stato'] = -1
-        self.BVal = False  # Bool
-        self._defaults['BVal'] = False
-        self.IVal = -1  # Int
-        self._defaults['IVal'] = -1
-        self.DVal = -1  # DInt
-        self._defaults['DVal'] = -1
-        self.RVal = 0.0  # Real
-        self._defaults['RVal'] = 0.0
-        self.Offset = 0.0  # Real
-        self._defaults['Offset'] = 0.0
-        self.BProgVal = False  # Bool
-        self._defaults['BProgVal'] = False
-        self.DProgVal = -1  # DInt
-        self._defaults['DProgVal'] = -1
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Type_IO {fields}>"
-
-
-class Read_ADV200:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        Read (Struct "Inverter OK" : Bool := TRUE):
-        Bool (= FALSE):
-        Bool (= FALSE):
-        Bool (= FALSE):
-        Bool (= TRUE):
-        Bool (= TRUE):
-        SPARE_BIT (Bool := FALSE):
-        SPARE_BIT_1 (Bool := FALSE):
-        SPARE_BIT_2 (Bool := FALSE):
-        SPARE_BIT_3 (Bool := FALSE):
-        SPARE_BIT_4 (Bool := FALSE):
-        SPARE_BIT_5 (Bool := FALSE):
-        SPARE_BIT_6 (Bool := FALSE):
-        SPARE_BIT_7 (Bool := FALSE):
-        SPARE_BIT_8 (Bool := FALSE):
-        SPARE_BIT_9 (Bool := FALSE):
-        Corrente (Int := 0):
-        Tensione (Int := 0):
-        Frequenza (Int := 0):
-        Potenza (Int := 0):
-        Int (= 0):
-        Int (= 542):
-        Int (= 0):
-        Int (= 0):
-        Coppia (Int := 0):
-        TargaPotenza (Int := 0):
-        TargaVelocità (Int := 0):
-        Int (= 0):
-        Int (= 0):
-        SPARE_5 (Int := 0):
-        SPARE_6 (Int := 0):
-        SPARE_7 (Int := -4239):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.Read = False  # Struct "Inverter OK" : Bool := TRUE
-        self._defaults['Read'] = False
-        self.Bool = None  # = FALSE
-        self._defaults['Bool'] = None
-        self.Bool = None  # = FALSE
-        self._defaults['Bool'] = None
-        self.Bool = None  # = FALSE
-        self._defaults['Bool'] = None
-        self.Bool = None  # = TRUE
-        self._defaults['Bool'] = None
-        self.Bool = None  # = TRUE
-        self._defaults['Bool'] = None
-        self.SPARE_BIT = False  # Bool := FALSE
-        self._defaults['SPARE_BIT'] = False
-        self.SPARE_BIT_1 = False  # Bool := FALSE
-        self._defaults['SPARE_BIT_1'] = False
-        self.SPARE_BIT_2 = False  # Bool := FALSE
-        self._defaults['SPARE_BIT_2'] = False
-        self.SPARE_BIT_3 = False  # Bool := FALSE
-        self._defaults['SPARE_BIT_3'] = False
-        self.SPARE_BIT_4 = False  # Bool := FALSE
-        self._defaults['SPARE_BIT_4'] = False
-        self.SPARE_BIT_5 = False  # Bool := FALSE
-        self._defaults['SPARE_BIT_5'] = False
-        self.SPARE_BIT_6 = False  # Bool := FALSE
-        self._defaults['SPARE_BIT_6'] = False
-        self.SPARE_BIT_7 = False  # Bool := FALSE
-        self._defaults['SPARE_BIT_7'] = False
-        self.SPARE_BIT_8 = False  # Bool := FALSE
-        self._defaults['SPARE_BIT_8'] = False
-        self.SPARE_BIT_9 = False  # Bool := FALSE
-        self._defaults['SPARE_BIT_9'] = False
-        self.Corrente = -1  # Int := 0
-        self._defaults['Corrente'] = -1
-        self.Tensione = -1  # Int := 0
-        self._defaults['Tensione'] = -1
-        self.Frequenza = -1  # Int := 0
-        self._defaults['Frequenza'] = -1
-        self.Potenza = -1  # Int := 0
-        self._defaults['Potenza'] = -1
-        self.Int = None  # = 0
-        self._defaults['Int'] = None
-        self.Int = None  # = 542
-        self._defaults['Int'] = None
-        self.Int = None  # = 0
-        self._defaults['Int'] = None
-        self.Int = None  # = 0
-        self._defaults['Int'] = None
-        self.Coppia = -1  # Int := 0
-        self._defaults['Coppia'] = -1
-        self.TargaPotenza = -1  # Int := 0
-        self._defaults['TargaPotenza'] = -1
-        self.TargaVelocità = -1  # Int := 0
-        self._defaults['TargaVelocità'] = -1
-        self.Int = None  # = 0
-        self._defaults['Int'] = None
-        self.Int = None  # = 0
-        self._defaults['Int'] = None
-        self.SPARE_5 = -1  # Int := 0
-        self._defaults['SPARE_5'] = -1
-        self.SPARE_6 = -1  # Int := 0
-        self._defaults['SPARE_6'] = -1
-        self.SPARE_7 = -1  # Int := -4239
-        self._defaults['SPARE_7'] = -1
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Read_ADV200 {fields}>"
-
-
-class Type_ToolsetParam:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        boolval (Array[0.."MAX_TOOLSETBOOL"] of Bool):
-        intval (Array[0.."MAX_TOOLSETINT"] of Int := [4(-1)]):
-        realvalcfg (Array[0.."MAX_TOOLSETREAL"] of Real):
-        realval (Array[0.."MAX_TOOLSETREAL"] of Real):
-        fcval (Array[0.."MAX_TOOLSETREAL"] of Real := [10(1.0)]):
-        offsetval (Array[0.."MAX_TOOLSETREAL"] of Real):
-        typval (Array[0.."MAX_TOOLSETREAL"] of Int := [10(-1)]):
-        output (Array[0.."MAX_TOOLSETOUTPUT"] of "Type_ToolsetOutputParam" := [([2(-1)], [()]), ([2(-1)], [()]), ([2(-1)], [()]), ([2(-1)], [()])]):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.boolval = [False] * (MAX_TOOLSETBOOL + 1)  # Array[0.."MAX_TOOLSETBOOL"] of Bool
-        self._defaults['boolval'] = [False] * (MAX_TOOLSETBOOL + 1)
-        self.intval = [-1] * (MAX_TOOLSETINT + 1)  # Array[0.."MAX_TOOLSETINT"] of Int := [4(-1)]
-        self._defaults['intval'] = [-1] * (MAX_TOOLSETINT + 1)
-        self.realvalcfg = [0.0] * (MAX_TOOLSETREAL + 1)  # Array[0.."MAX_TOOLSETREAL"] of Real
-        self._defaults['realvalcfg'] = [0.0] * (MAX_TOOLSETREAL + 1)
-        self.realval = [0.0] * (MAX_TOOLSETREAL + 1)  # Array[0.."MAX_TOOLSETREAL"] of Real
-        self._defaults['realval'] = [0.0] * (MAX_TOOLSETREAL + 1)
-        self.fcval = [0.0] * (MAX_TOOLSETREAL + 1)  # Array[0.."MAX_TOOLSETREAL"] of Real := [10(1.0)]
-        self._defaults['fcval'] = [0.0] * (MAX_TOOLSETREAL + 1)
-        self.offsetval = [0.0] * (MAX_TOOLSETREAL + 1)  # Array[0.."MAX_TOOLSETREAL"] of Real
-        self._defaults['offsetval'] = [0.0] * (MAX_TOOLSETREAL + 1)
-        self.typval = [-1] * (MAX_TOOLSETREAL + 1)  # Array[0.."MAX_TOOLSETREAL"] of Int := [10(-1)]
-        self._defaults['typval'] = [-1] * (MAX_TOOLSETREAL + 1)
-        self.output = None  # Array[0.."MAX_TOOLSETOUTPUT"] of "Type_ToolsetOutputParam" := [([2(-1)], [()]), ([2(-1)], [()]), ([2(-1)], [()]), ([2(-1)], [()])]
-        self._defaults['output'] = None
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Type_ToolsetParam {fields}>"
-
-
-class Loader_Ctrl:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        Bool_1 (Bool):
-        Bool_2 (Bool):
-        Bool_3 (Bool):
-        Bool_4 (Bool):
-        Bool_5 (Bool):
-        Bool_6 (Bool):
-        Bool_7 (Bool):
-        Bool_8 (Bool):
-        Bool_9 (Bool):
-        Bool_10 (Bool):
-        Bool_11 (Bool):
-        Bool_12 (Bool):
-        Bool_13 (Bool):
-        Bool_14 (Bool):
-        Bool_15 (Bool):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.Bool_1 = False  # Bool
-        self._defaults['Bool_1'] = False
-        self.Bool_2 = False  # Bool
-        self._defaults['Bool_2'] = False
-        self.Bool_3 = False  # Bool
-        self._defaults['Bool_3'] = False
-        self.Bool_4 = False  # Bool
-        self._defaults['Bool_4'] = False
-        self.Bool_5 = False  # Bool
-        self._defaults['Bool_5'] = False
-        self.Bool_6 = False  # Bool
-        self._defaults['Bool_6'] = False
-        self.Bool_7 = False  # Bool
-        self._defaults['Bool_7'] = False
-        self.Bool_8 = False  # Bool
-        self._defaults['Bool_8'] = False
-        self.Bool_9 = False  # Bool
-        self._defaults['Bool_9'] = False
-        self.Bool_10 = False  # Bool
-        self._defaults['Bool_10'] = False
-        self.Bool_11 = False  # Bool
-        self._defaults['Bool_11'] = False
-        self.Bool_12 = False  # Bool
-        self._defaults['Bool_12'] = False
-        self.Bool_13 = False  # Bool
-        self._defaults['Bool_13'] = False
-        self.Bool_14 = False  # Bool
-        self._defaults['Bool_14'] = False
-        self.Bool_15 = False  # Bool
-        self._defaults['Bool_15'] = False
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Loader_Ctrl {fields}>"
-
-
-class Loader_Status:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        Bool_1 (Bool):
-        Bool_2 (Bool):
-        Bool_3 (Bool):
-        Bool_4 (Bool):
-        Bool_5 (Bool):
-        Bool_6 (Bool):
-        Bool_7 (Bool):
-        Bool_8 (Bool):
-        Bool_9 (Bool):
-        Bool_10 (Bool):
-        Bool_11 (Bool):
-        Bool_12 (Bool):
-        Bool_13 (Bool):
-        Bool_14 (Bool):
-        Bool_15 (Bool):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.Bool_1 = False  # Bool
-        self._defaults['Bool_1'] = False
-        self.Bool_2 = False  # Bool
-        self._defaults['Bool_2'] = False
-        self.Bool_3 = False  # Bool
-        self._defaults['Bool_3'] = False
-        self.Bool_4 = False  # Bool
-        self._defaults['Bool_4'] = False
-        self.Bool_5 = False  # Bool
-        self._defaults['Bool_5'] = False
-        self.Bool_6 = False  # Bool
-        self._defaults['Bool_6'] = False
-        self.Bool_7 = False  # Bool
-        self._defaults['Bool_7'] = False
-        self.Bool_8 = False  # Bool
-        self._defaults['Bool_8'] = False
-        self.Bool_9 = False  # Bool
-        self._defaults['Bool_9'] = False
-        self.Bool_10 = False  # Bool
-        self._defaults['Bool_10'] = False
-        self.Bool_11 = False  # Bool
-        self._defaults['Bool_11'] = False
-        self.Bool_12 = False  # Bool
-        self._defaults['Bool_12'] = False
-        self.Bool_13 = False  # Bool
-        self._defaults['Bool_13'] = False
-        self.Bool_14 = False  # Bool
-        self._defaults['Bool_14'] = False
-        self.Bool_15 = False  # Bool
-        self._defaults['Bool_15'] = False
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Loader_Status {fields}>"
-
-
-class Type_Axis:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        prev_pos (Real):
-        prev_vel (Real):
-        curr_velist (Real):
-        prev_velist (Real):
-        velavg_buf (Array[0.."MAX_DT"] of Real):
-        dsavg_buf (Array[0.."MAX_DT"] of Real):
-        dsmsavg_buf (Array[0.."MAX_DT"] of Real):
-        slave (Int):
-        mov_debug (Int):
-        ds (Real):
-        ds_ms (Real):
-        stop (Bool):
-        stopping (Bool):
-        started (Bool):
-        timeout_enabled (Bool):
-        t_start (Time):
-        delta_t_start (Real):
-        t_mov (Time):
-        delta_t_mov (Real):
-        curr_timeout (Int):
-        slewrate_s_up (Real):
-        slewrate_s_down (Real):
-        val_input (Real):
-        val_input_prev (Real):
-        val_output (Real):
-        val_output_prev (Real):
-        pid_timer (TON_TIME):
-        stat_sp_pos (Real):
-        stat_sp_vel (Real):
-        stat_sp_delta (Real):
-        stat_sp_enable (Bool):
-        stat_sp_intmode (Int):
-        sp_pos (Real):
-        prev_sp_pos (Real):
-        sp_vel (Real):
-        sp_vel_prev (Real):
-        sp_delta (Real):
-        sp_enable (Bool):
-        interp_vmaster (Real):
-        interp_vslave (Real):
-        interp_dsmaster (Real):
-        interp_dsslave (Real):
-        interp_tmaster (Real):
-        interp_tslave (Real):
-        interp_rmaster (Real):
-        interp_rslave (Real):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.prev_pos = 0.0  # Real
-        self._defaults['prev_pos'] = 0.0
-        self.prev_vel = 0.0  # Real
-        self._defaults['prev_vel'] = 0.0
-        self.curr_velist = 0.0  # Real
-        self._defaults['curr_velist'] = 0.0
-        self.prev_velist = 0.0  # Real
-        self._defaults['prev_velist'] = 0.0
-        self.velavg_buf = [0.0] * (MAX_DT + 1)  # Array[0.."MAX_DT"] of Real
-        self._defaults['velavg_buf'] = [0.0] * (MAX_DT + 1)
-        self.dsavg_buf = [0.0] * (MAX_DT + 1)  # Array[0.."MAX_DT"] of Real
-        self._defaults['dsavg_buf'] = [0.0] * (MAX_DT + 1)
-        self.dsmsavg_buf = [0.0] * (MAX_DT + 1)  # Array[0.."MAX_DT"] of Real
-        self._defaults['dsmsavg_buf'] = [0.0] * (MAX_DT + 1)
-        self.slave = -1  # Int
-        self._defaults['slave'] = -1
-        self.mov_debug = -1  # Int
-        self._defaults['mov_debug'] = -1
-        self.ds = 0.0  # Real
-        self._defaults['ds'] = 0.0
-        self.ds_ms = 0.0  # Real
-        self._defaults['ds_ms'] = 0.0
-        self.stop = False  # Bool
-        self._defaults['stop'] = False
-        self.stopping = False  # Bool
-        self._defaults['stopping'] = False
-        self.started = False  # Bool
-        self._defaults['started'] = False
-        self.timeout_enabled = False  # Bool
-        self._defaults['timeout_enabled'] = False
-        self.t_start = None  # Time
-        self._defaults['t_start'] = None
-        self.delta_t_start = 0.0  # Real
-        self._defaults['delta_t_start'] = 0.0
-        self.t_mov = None  # Time
-        self._defaults['t_mov'] = None
-        self.delta_t_mov = 0.0  # Real
-        self._defaults['delta_t_mov'] = 0.0
-        self.curr_timeout = -1  # Int
-        self._defaults['curr_timeout'] = -1
-        self.slewrate_s_up = 0.0  # Real
-        self._defaults['slewrate_s_up'] = 0.0
-        self.slewrate_s_down = 0.0  # Real
-        self._defaults['slewrate_s_down'] = 0.0
-        self.val_input = 0.0  # Real
-        self._defaults['val_input'] = 0.0
-        self.val_input_prev = 0.0  # Real
-        self._defaults['val_input_prev'] = 0.0
-        self.val_output = 0.0  # Real
-        self._defaults['val_output'] = 0.0
-        self.val_output_prev = 0.0  # Real
-        self._defaults['val_output_prev'] = 0.0
-        self.pid_timer = None  # TON_TIME
-        self._defaults['pid_timer'] = None
-        self.stat_sp_pos = 0.0  # Real
-        self._defaults['stat_sp_pos'] = 0.0
-        self.stat_sp_vel = 0.0  # Real
-        self._defaults['stat_sp_vel'] = 0.0
-        self.stat_sp_delta = 0.0  # Real
-        self._defaults['stat_sp_delta'] = 0.0
-        self.stat_sp_enable = False  # Bool
-        self._defaults['stat_sp_enable'] = False
-        self.stat_sp_intmode = -1  # Int
-        self._defaults['stat_sp_intmode'] = -1
-        self.sp_pos = 0.0  # Real
-        self._defaults['sp_pos'] = 0.0
-        self.prev_sp_pos = 0.0  # Real
-        self._defaults['prev_sp_pos'] = 0.0
-        self.sp_vel = 0.0  # Real
-        self._defaults['sp_vel'] = 0.0
-        self.sp_vel_prev = 0.0  # Real
-        self._defaults['sp_vel_prev'] = 0.0
-        self.sp_delta = 0.0  # Real
-        self._defaults['sp_delta'] = 0.0
-        self.sp_enable = False  # Bool
-        self._defaults['sp_enable'] = False
-        self.interp_vmaster = 0.0  # Real
-        self._defaults['interp_vmaster'] = 0.0
-        self.interp_vslave = 0.0  # Real
-        self._defaults['interp_vslave'] = 0.0
-        self.interp_dsmaster = 0.0  # Real
-        self._defaults['interp_dsmaster'] = 0.0
-        self.interp_dsslave = 0.0  # Real
-        self._defaults['interp_dsslave'] = 0.0
-        self.interp_tmaster = 0.0  # Real
-        self._defaults['interp_tmaster'] = 0.0
-        self.interp_tslave = 0.0  # Real
-        self._defaults['interp_tslave'] = 0.0
-        self.interp_rmaster = 0.0  # Real
-        self._defaults['interp_rmaster'] = 0.0
-        self.interp_rslave = 0.0  # Real
-        self._defaults['interp_rslave'] = 0.0
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Type_Axis {fields}>"
-
-
-class Type_Output:
-    """
-    Estratto da: PlcDataType.udt
-
-    Attributes:
-        val_in (Real):
-        val_norm (Real):
-        val_scaled (Real):
-        out_dig1 (Bool):
-        out_dig2 (Bool):
-        out_analog1 (DInt):
-        out_analog2 (DInt):
-        flagao (Bool):
-        indasse (Int := -1):
-        enab (Bool):
-        preset (Bool):
-        preval (Real):
-        preind2 (Int):
-    """
-    def __init__(self):
-        self._defaults = {}
-        self.val_in = 0.0  # Real
-        self._defaults['val_in'] = 0.0
-        self.val_norm = 0.0  # Real
-        self._defaults['val_norm'] = 0.0
-        self.val_scaled = 0.0  # Real
-        self._defaults['val_scaled'] = 0.0
-        self.out_dig1 = False  # Bool
-        self._defaults['out_dig1'] = False
-        self.out_dig2 = False  # Bool
-        self._defaults['out_dig2'] = False
-        self.out_analog1 = -1  # DInt
-        self._defaults['out_analog1'] = -1
-        self.out_analog2 = -1  # DInt
-        self._defaults['out_analog2'] = -1
-        self.flagao = False  # Bool
-        self._defaults['flagao'] = False
-        self.indasse = -1  # Int := -1
-        self._defaults['indasse'] = -1
-        self.enab = False  # Bool
-        self._defaults['enab'] = False
-        self.preset = False  # Bool
-        self._defaults['preset'] = False
-        self.preval = 0.0  # Real
-        self._defaults['preval'] = 0.0
-        self.preind2 = -1  # Int
-        self._defaults['preind2'] = -1
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self._defaults.keys()}
-
-    def reset(self):
-        for k, v in self._defaults.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
-        return f"<Type_Output {fields}>"
-
-
 # ===== Costanti da: PLCTags.xlsx =====
 STATO_INIT = 0
 STATO_MAN = 1
@@ -2096,8 +467,8 @@ REAL_F = 25  # typ = 0
 REAL_G = 26  # typ = 0
 REAL_S = 27  # typ = 0
 REAL_STARTSENSORDIST = 28  # typ = 0
-REAL_RESETPINCHPOS = 29  # era REAL_TSDELTADOWN
-REAL_RESETBENDPOS = 30  # era REAL_TSDELTADOUP
+REAL_BFSUPADJ = 29  # era REAL_RESETPINCHPOS, era REAL_TSDELTADOWN
+REAL_BFINFADJ = 30  # era REAL_RESETBENDPOS, era REAL_TSDELTADOUP
 REAL_K = 31  # era REAL_TSMINL
 REAL_EXTDIST = 32  # typ = 0
 REAL_LREFFCYLAREA = 33  # typ=8
@@ -2390,14 +761,12 @@ MAX_PID = 3
 MAX_ASSE = 47
 MAX_MOTORE = 7
 DIM_STRINGUMNAME = 8
-MAX_ALARM = 191  # da v.0.24
+MAX_ALARM = 223  # da v.25.45, erano 191 da v.0.24
 MAX_STOP = 31
 MAX_MAINT = 31  # era 15 prima di 6436
 MAX_ASSEFUNIND = 71  # era 54 prima di modifiche 6436
-MAX_STATOBOOL = 135  # era 127 in v.0.18
 MAX_UM = 12  # aggiunti MISURA_GRAD e MISURA_NUM
 MAX_PARAMSTRING = 3
-MAX_PARAMBOOL = 63  # da 59 a 63 in v.0.25.28
 MAX_PARAMINT = 79  # era 72 nella v.0.18
 MAX_PARAMREAL = 79  # era 62 nella v.0.18
 MAX_IO = 623
@@ -2425,7 +794,7 @@ MAX_PIDREAL = 6
 MAX_CMDBOOL = 32  # era 27
 MAX_CMDINT = 11  # era 10 - aggiunto CMDINT_JOBLASTOP
 MAX_CMDDINT = 1
-MAX_CMDREAL = 3  # era 1 prima di 6498
+MAX_CMDREAL = 5  # era 3 prima di APPLYRESET, era 1 prima di 6498
 DIM_STRINGID = 5
 MAX_STATOOUTINT = 7
 MAX_STATOOUTDINT = 1
@@ -2576,7 +945,7 @@ HDR_CAPACITY = 9
 REAL_B2ANG = 47
 BOOL_USER = 36  # era BOOL_SIMGRAPH
 BOOL_INTERPCALCTYPE = 37  # era BOOL_SIMCALC
-MAX_WARNING = 95  # da v.0.24
+MAX_WARNING = 111  # da v.25.45, erano 95 da v.0.24
 ALARM_WARNING = 2
 STATOINT_IND_LASTWARNING = 6
 BOOL_IND_DISABLEBP1 = 26  # Disabilitazione generale BP
@@ -2800,12 +1169,12 @@ BOOL_WT = 42
 BOOL_ALIGNSASSELECT = 43  # Possibilità di selezione SAS o SAS2
 BOOL_CURRFEEDSIDE = 44
 BOOL_CURRORIENT = 45
-INT_RECYCVALVEIND = 66  # INT_ALIGN_CENTFASTSPEED
-INT_RECYCVALVETIMEOUT = 67  # INT_ALIGN_CENTSLOWSPEED
-INT_PINCHPRESSSPEED = 68  # INT_ALIGN_ROTFASTSPEED
-INT_AVGDT_IND = 70
-INT_NHDT_IND = 71
-INT_RESETTYPE = 72  # INT_ALIGN_NUMCENT
+INT_JOBTYPE = 66  # era INT_RECYCVALVEIND; INT_ALIGN_CENTFASTSPEED
+INT_FREE_67 = 67  # era INT_RECYCVALVETIMEOUT; INT_ALIGN_CENTSLOWSPEED
+INT_PINCHPRESSSPEED = 68  # era INT_ALIGN_ROTFASTSPEED
+INT_FREE_70 = 70  # era INT_AVGDT_IND
+INT_FREE_71 = 71  # era INT_NHDT_IND
+INT_RESETTYPE = 72  # era INT_ALIGN_NUMCENT
 REAL_ALIGN_CENTDIST1 = 49
 REAL_ALIGN_CENTDIST2 = 50
 REAL_ALIGN_CENTDIST3 = 51
@@ -2945,10 +1314,10 @@ TABSTAT_FIRST = 4  # prima colonna variabile (fisse: Rot,L,R;P, Speed non è ind
 STATOINT_IND_TABSTATLAST = 7
 REAL_DELTAOFFSET = 9  # offset delta per assi in movimento
 CMDBOOL_TABSTAT_REQ = 18
-CMDBOOL_FREE_19 = 19  # era CMDBOOL_TABSTAT_ACK
+CMDBOOL_APPLYROT_END = 19  # era CMDBOOL_TABSTAT_ACK
 CMDREAL_AUTOPROGLENGTH = 1
-CMDBOOL_FREE_20 = 20  # era CMDBOOL_SETTINGS_REQ
-CMDBOOL_FREE_21 = 21  # era CMDBOOL_SETTINGS_ACK
+CMDBOOL_REPEATEND_END = 20  # era CMDBOOL_SETTINGS_REQ
+CMDBOOL_APPLYRESET_END = 21  # era CMDBOOL_SETTINGS_ACK
 CMDBOOL_FREE_22 = 22  # era CMDBOOL_PROG_ACK
 CMDBOOL_FREE_23 = 23  # era CMDBOOL_SIM_ACK
 CMDBOOL_TABSTAT2_REQ = 24
@@ -3086,7 +1455,7 @@ FB_INT_TIPO = 0
 FB_INT_TIPOMISURA = 1
 FB_INT_RESETIND = 2  # era FB_INT_GATEIND
 FB_INT_ININD = 3
-FB_INT_ERRIND = 4
+FB_INT_OPT = 4  # era FB_INT_ERRIND
 FB_REAL_DEADBAND = 0
 FB_REAL_RATIO = 1
 FB_REAL_SCALESUP = 2
@@ -3101,7 +1470,7 @@ RT_C3S = 30  # 6321, 6322
 PP_ROUNDO = 0  # come wCNC4
 PP_FACCIN1 = 1  # 6293,6295,6498
 PP_FACCIN2 = 2  # 6436
-INT_RTTYPE = 69  # INT_ALIGN_ROTSLOWSPEED
+INT_RTTYPE = 69  # era INT_ALIGN_ROTSLOWSPEED
 ALIGN_PRECENT = 16
 ALIGN_INFEED = 15
 CMDREAL_AUTOPROGWIDTH = 2
@@ -3118,7 +1487,7 @@ FUN_AXIS_MRFC = 64  # era FUN_AXIS_BENDMFC
 FUN_AXIS_MRRC = 65  # era FUN_AXIS_BENDMRC
 FUN_AXIS_TAL = 66  # Table A Lift
 FUN_AXIS_TBL = 67  # Table B Lift
-FUN_AXIS_FREE_68 = 68
+FUN_AXIS_RTTEMP = 68  # RT Oil Temp
 FUN_AXIS_FREE_69 = 69
 FUN_AXIS_PRELOAD2 = 55
 FUN_AXIS_PRELOAD3 = 56
@@ -3130,7 +1499,7 @@ MAINT_CHECKSTARTED2 = 2  # usa MAINT_INT_NN per il primo controllo
 MAINT_CHECKDATE = 4
 ALIGN_CENTTYPE_1 = 0  # prima centratura - un passo
 ALIGN_CENTTYPE_2A = 1  # prima centratura - due passi - 6436
-ALIGN_CENTTYPE_2B = 2  # prima centratura - due passi - 6498
+ALIGN_CENTTYPE_2B = 2  # prima centratura - due passi -6498
 MAX_SER_STEPS = 90
 DATA_MAXBOOL = 31
 DATA_MAXDINT = 103  # Dint per Int e DInt
@@ -3330,11 +1699,10 @@ BOOL_IND_SDOSTART = 129  # era BOOL_IND_EMGCYHWERR
 BOOL_IND_SDOBUSY = 130  # era BOOL_IND_EMGCYLOCKHWMSG
 BOOL_IND_SDOOK = 131
 BOOL_IND_RIGHTSUPPINTERLOCK = 132
-BOOL_IND_FREE_133 = 133
-BOOL_IND_FREE_134 = 134
-BOOL_IND_FREE_135 = 135
-BOOL_FREE_50 = 50  # era BOOL_ARCHIMETER
-BOOL_ARCHIMETER_DEBUG = 51
+BOOL_IND_APPLYROT = 133
+BOOL_IND_REPEATEND = 134
+BOOL_SAFETYBPDISAB = 50  # era BOOL_ARCHIMETER
+BOOL_PROGDESCR = 51  # era BOOL_ARCHIMETER_DEBUG
 BOOL_RCSW = 52
 BOOL_ENERGYMETER = 53
 BOOL_CILDIFF = 54
@@ -3456,7 +1824,7 @@ SER_IFM = 25
 MAX_TOOLSET = 7
 MAX_TOOLSETBOOL = 1
 MAX_TOOLSETINT = 3
-MAX_TOOLSETREAL = 9
+MAX_TOOLSETREAL = 19  # era 9 prima di v.0.25.45.1.6759 - TiltPreload
 TOOLSET_BOOL_FREE_0 = 0
 TOOLSET_BOOL_FREE_1 = 1
 TOOLSET_INT_ID = 0
@@ -3842,8 +2210,77 @@ IO_EXPR_OPMINUS = 3
 IO_EXPR_OPMULT = 4
 IO_EXPR_OPDIV = 5
 BOOL_FBROTLOWER = 62
-FB_ATV340 = 5
+COD_APPLYROT = 3033
+COD_SYNCLOADSEND = 3170
+COD_SYNCLOADRECV = 3171
+COD_SYNCUNLOADSEND = 3172
+COD_SYNCUNLOADRECV = 3173
+COD_SYNCSTARTSEND = 3174
+COD_SYNCSTARTRECV = 3175
+RT_C0 = 0  # 0 centratori - solo RT - 6703
+BOOL_SYNCLOADAFTERPRELOAD = 64  # era BOOL_SYNCLOAD
+BOOL_FREE_65 = 65  # era BOOL_SYNCUNLOAD
+BOOL_FREE_66 = 66  # era BOOL_SYNCLOADDI
+BOOL_FREE_67 = 67  # era BOOL_SYNCUNLOADDI
+BOOL_FREE_68 = 68  # era BOOL_SYNCSTART
+BOOL_FREE_69 = 69  # era BOOL_SYNCSTARTDI
+BOOL_FREE_70 = 70
+BOOL_FREE_71 = 71
+BOOL_SMARTCLIENT = 63
+MAX_PARAMBOOL = 71  # da 63 a 71 in v.0.25.42.1; da 59 a 63 in v.0.25.28
+BOOL_IND_SYNCLOADOUT = 136
+BOOL_IND_SYNCUNLOADIN = 137
+BOOL_IND_SYNCUNLOADOUT = 138
+BOOL_IND_SYNCSTARTIN = 139
+BOOL_IND_SYNCSTARTOUT = 140
+BOOL_IND_SYNCRELOADENAB = 141  # abilitazione stazione alternativa
+BOOL_IND_SYNCRELOADALT = 142  # stazione alternativa selezionata
+BOOL_IND_SYNCLOADPARAM = 143
+BOOL_IND_SYNCLOADIN = 135
+MAX_STATOBOOL = 151  # era 135 in v.0.25.42, era 127 in v.0.18
+IO_SYSTYPE_BOOLSYSTEM = 10
+IO_SYSBOOL_PARAM = 1
+IO_SYSBOOL_STATUS = 0
 ALIGN_CENTTYPE_1A = 3  # centratura unica con pressostato psa - 6761
 ALIGN_CENTPSONLY = 20  # centraggio solo con un ps - 6761
+ALIGN_CENTTYPE_NONE = -1  # nessuna centratura
+JOBS_NONE = 0
+JOBS_CSV = 1
+JOBS_OPCUA1 = 2  # 6703
+JOB_OP_REQ = 10
+HMIPAGE_JOB_REQ = 583
+JOBS_OPCUA2 = 3  # altre implementazioni future
+JOBS_OPCUA3 = 4  # ...
+HMIPAGE_SYNCLOADER_MAIN = 590
+HMIPAGE_CONFIG_PARAMSSYNC = 1139
+HDR_SYNCLDR = 12
+FB_OPT_NONE = -1
+FB_OPT_LEFT = 0
+FB_OPT_RIGHT = 1
+BOOL_IND_SYNCCONFIG1 = 144
+BOOL_IND_SYNCCONFIG1ALT = 145
+BOOL_IND_APPLYRESET = 146
+BOOL_IND_DISTMEM = 147
+BOOL_IND_DISTADJ = 148
+BOOL_IND_FREE_149 = 149
+BOOL_IND_FREE_150 = 150
+BOOL_IND_FREE_151 = 151
+COD_APPLYRESET = 3034
+CMDREAL_APPLYRESETROT = 4
+CMDREAL_FREE_5 = 5
+COD_CHECKDISTMEM = 3157  # reset distanza iniziale
+COD_CHECKDISTADJ = 3158  # setta distanza in funzione della misura
+TOOLSET_REAL_TILTMAX = 10
+TOOLSET_REAL_TILTHH = 11
+TOOLSET_REAL_TILTH = 12
+TOOLSET_REAL_TILTL = 13
+TOOLSET_REAL_TILTLL = 14
+TOOLSET_REAL_TILTMIN = 15
+TOOLSET_REAL_FREE_16 = 16
+TOOLSET_REAL_FREE_17 = 17
+TOOLSET_REAL_FREE_18 = 18
+TOOLSET_REAL_FREE_19 = 19
+MAX_TOOLSETREAL_OLD = 9
+ALIGN_CENTTYPE_1B = 4  # centratura un passo in posizione e psa - 6760
 
 

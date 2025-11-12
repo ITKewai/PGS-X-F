@@ -2680,9 +2680,26 @@ def custom_function():
         if axisTilt.intval[ASSE_INT_TIMEOUT1] != 0:
             logging.warning(f"⚠️ [{axisTiltInd}]{axisTilt_name} ritardo inclinazione in manuale impostato, interferenza con DE DOWN, impostare a 0")
         logging.debug("🔍 Fine controllo auto tilt...")
+
+    def check_stop_alarms() -> None:
+        logging.debug("🔍 Inizio controllo stop allarmi...")
+        normalstop = [0,2,3,4,5,6,7,28,29,32,33]
+        safetyStop = [110,111,115,116,118,120,121,124,128,129,130,131,132,133,134,135,136,149,150,151,152,153,154,155,156,157,158,159]
+        for i in normalstop:
+            alarm = data_config.Alarm_Param[i]
+            alarmName = data_config.Alarm_Name[i] or f"ALARM_{i}"
+            if alarm.intval[ALARM_INT_MODE] != ALARM_STOP:
+                logging.warning(f"⚠️ [{i}]{alarmName} non è configurato come STOP")
+        for i in safetyStop:
+            alarm = data_config.Alarm_Param[i]
+            alarmName = data_config.Alarm_Name[i] or f"ALARM_{i}"
+            if alarm.intval[ALARM_INT_MODE] != ALARM_SAFETYSTOP:
+                logging.warning(f"⚠️ [{i}]{alarmName} non è configurato come SAFETYSTOP")
+        logging.debug("🔍 Fine controllo stop allarmi...")
+
     foo = [check_axis_flag, check_duplicate_do_ao_usage, check_duplicate_obj_usage, clean_di_axis_check, duplicate_io_address,
            check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release, check_safety, check_rotation,
-           geometry_check, check_axis_speed_master_slave, check_forbidden_ao_do_usage, check_de_tilt]
+           geometry_check, check_axis_speed_master_slave, check_forbidden_ao_do_usage, check_de_tilt, check_stop_alarms]
     for func in foo:
         logging.info('-' * 60)
         func()

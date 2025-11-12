@@ -43,4 +43,5 @@ A TEMPO PERSO:
 # TODO: verificare se c è settato GOLDTORUNTYPE nell asse
 # TODO: controllo che LATSUPQ4 è 1 e LATSUPQ0 è minore o uguale al SUP dei supporti laterali, controllare che i lavlori poi siano LATSUPQ0 > LATSUPQ1 > LATSUPQ2 > LATSUPQ3 > LATSUPQ4
 # todo: VEDEre che ratio supp laterali sia 0 180 o 180 0
+# TODO: controllo che in pressure BWVSLOW E BWVFAST siano a 49 -49 o 51 -51 0 50-40
 """

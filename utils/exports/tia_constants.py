@@ -161,6 +161,1110 @@ class DATA_CONFIG:
         self.UM_FC_Imp = [0.0] * (MAX_UM + 1)  # Array[0.."MAX_UM"] of Real
         self._defaults['UM_FC_Imp'] = [0.0] * (MAX_UM + 1)
 
+class Type_StatParam:
+    """
+    Estratto da: PlcDataType.udt
+
+    Attributes:
+        seqid (Int := -1):
+        statpos (Int := -1):
+        pos (Int := -1):
+        objtype (Int := -1):
+        ival (Int):
+        rval (Real):
+        addr (Int := -1):
+        next (Int := -1):
+    """
+    def __init__(self):
+        self._defaults = {}
+        self.seqid = -1  # Int := -1
+        self._defaults['seqid'] = -1
+        self.statpos = -1  # Int := -1
+        self._defaults['statpos'] = -1
+        self.pos = -1  # Int := -1
+        self._defaults['pos'] = -1
+        self.objtype = -1  # Int := -1
+        self._defaults['objtype'] = -1
+        self.ival = -1  # Int
+        self._defaults['ival'] = -1
+        self.rval = 0.0  # Real
+        self._defaults['rval'] = 0.0
+        self.addr = -1  # Int := -1
+        self._defaults['addr'] = -1
+        self.next = -1  # Int := -1
+        self._defaults['next'] = -1
+
+    def to_dict(self):
+        return {k: getattr(self, k) for k in self._defaults.keys()}
+
+    def reset(self):
+        for k, v in self._defaults.items():
+            setattr(self, k, v)
+
+    def __repr__(self):
+        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
+        return f"<Type_StatParam {fields}>"
+
+
+class Type_Stat:
+    """
+    Estratto da: PlcDataType.udt
+
+    Attributes:
+        seqid (Int := -1):
+        pos (Int := -1):
+        cod (Int := -1):
+        firstparam (Int := -1):
+        lastparam (Int := -1):
+        next (Int := -1):
+        disabled (Bool):
+        prim (Int):
+    """
+    def __init__(self):
+        self._defaults = {}
+        self.seqid = -1  # Int := -1
+        self._defaults['seqid'] = -1
+        self.pos = -1  # Int := -1
+        self._defaults['pos'] = -1
+        self.cod = -1  # Int := -1
+        self._defaults['cod'] = -1
+        self.firstparam = -1  # Int := -1
+        self._defaults['firstparam'] = -1
+        self.lastparam = -1  # Int := -1
+        self._defaults['lastparam'] = -1
+        self.next = -1  # Int := -1
+        self._defaults['next'] = -1
+        self.disabled = False  # Bool
+        self._defaults['disabled'] = False
+        self.prim = -1  # Int
+        self._defaults['prim'] = -1
+
+    def to_dict(self):
+        return {k: getattr(self, k) for k in self._defaults.keys()}
+
+    def reset(self):
+        for k, v in self._defaults.items():
+            setattr(self, k, v)
+
+    def __repr__(self):
+        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
+        return f"<Type_Stat {fields}>"
+
+
+class Type_ToolsetOutputParam:
+    """
+    Estratto da: PlcDataType.udt
+
+    Attributes:
+        intval (Array[0.."MAX_TOOLSETOUTPUTINT"] of Int := [2(-1)]):
+        dintval (Array[0.."MAX_TOOLSETOUTPUTDINT"] of DInt):
+    """
+    def __init__(self):
+        self._defaults = {}
+        self.intval = [-1] * (MAX_TOOLSETOUTPUTINT + 1)  # Array[0.."MAX_TOOLSETOUTPUTINT"] of Int := [2(-1)]
+        self._defaults['intval'] = [-1] * (MAX_TOOLSETOUTPUTINT + 1)
+        self.dintval = [-1] * (MAX_TOOLSETOUTPUTDINT + 1)  # Array[0.."MAX_TOOLSETOUTPUTDINT"] of DInt
+        self._defaults['dintval'] = [-1] * (MAX_TOOLSETOUTPUTDINT + 1)
+
+    def to_dict(self):
+        return {k: getattr(self, k) for k in self._defaults.keys()}
+
+    def reset(self):
+        for k, v in self._defaults.items():
+            setattr(self, k, v)
+
+    def __repr__(self):
+        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
+        return f"<Type_ToolsetOutputParam {fields}>"
+
+
+class Type_AlarmParam:
+    """
+    Estratto da: PlcDataType.udt
+
+    Attributes:
+        boolval (Array[0.."MAX_ALARMBOOL"] of Bool):
+        intval (Array[0.."MAX_ALARMINT"] of Int := [10(-1)]):
+    """
+    def __init__(self):
+        self._defaults = {}
+        self.boolval = [False] * (MAX_ALARMBOOL + 1)  # Array[0.."MAX_ALARMBOOL"] of Bool
+        self._defaults['boolval'] = [False] * (MAX_ALARMBOOL + 1)
+        self.intval = [-1] * (MAX_ALARMINT + 1)  # Array[0.."MAX_ALARMINT"] of Int := [10(-1)]
+        self._defaults['intval'] = [-1] * (MAX_ALARMINT + 1)
+
+    def to_dict(self):
+        return {k: getattr(self, k) for k in self._defaults.keys()}
+
+    def reset(self):
+        for k, v in self._defaults.items():
+            setattr(self, k, v)
+
+    def __repr__(self):
+        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
+        return f"<Type_AlarmParam {fields}>"
+
+
+class Type_Teach:
+    """
+    Estratto da: PlcDataType.udt
+
+    Attributes:
+        teach_stat (Array[0.."MAX_TEACHSTAT"] of Bool):
+    """
+    def __init__(self):
+        self._defaults = {}
+        self.teach_stat = [False] * (MAX_TEACHSTAT + 1)  # Array[0.."MAX_TEACHSTAT"] of Bool
+        self._defaults['teach_stat'] = [False] * (MAX_TEACHSTAT + 1)
+
+    def to_dict(self):
+        return {k: getattr(self, k) for k in self._defaults.keys()}
+
+    def reset(self):
+        for k, v in self._defaults.items():
+            setattr(self, k, v)
+
+    def __repr__(self):
+        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
+        return f"<Type_Teach {fields}>"
+
+
+class Type_Seq:
+    """
+    Estratto da: PlcDataType.udt
+
+    Attributes:
+        SeqNum (Int):
+        SeqFirst (Int := -1):
+        SeqLast (Int := -1):
+        SeqCurrInd (Int := -1):
+        SeqId (Array[0.."MAX_SEQ"] of Int):
+        SeqTyp (Array[0.."MAX_SEQ"] of Int):
+        SeqFirstStat (Array[0.."MAX_SEQ"] of Int):
+        SeqLastStat (Array[0.."MAX_SEQ"] of Int):
+        SeqNext (Array[0.."MAX_SEQ"] of Int):
+        SeqNumStat (Array[0.."MAX_SEQ"] of Int):
+        StatNum (Int):
+        Stat (Array[0.."MAX_STAT"] of "Type_Stat"):
+        StatParamNum (Int):
+        StatParam (Array[0.."MAX_STATPARAM"] of "Type_StatParam"):
+        SeqStartCurrId (Int := -1):
+        SeqStartPrevId (Int := -1):
+        StatCurrInd (Int := -1):
+        SeqMode (Bool):
+        SeqModePrev (Bool):
+        SeqTerm (Bool):
+        StatTerm (Bool):
+        StatNew (Bool):
+        StackLevel (Int):
+        StackLevelAuto (Int):
+        StackRet (Array[0.."MAX_SEQSTACK"] of Int):
+        DelayElapsedTime (Int):
+        CurrProgSeq (Int):
+        PrevProgSeq (Int):
+        StatRunning (Int):
+        StatNumAxesStarted (Int):
+        CurrStatCod (Int):
+        PrevStatCod (Int):
+        StatStartInd (Int := -1):
+    """
+    def __init__(self):
+        self._defaults = {}
+        self.SeqNum = -1  # Int
+        self._defaults['SeqNum'] = -1
+        self.SeqFirst = -1  # Int := -1
+        self._defaults['SeqFirst'] = -1
+        self.SeqLast = -1  # Int := -1
+        self._defaults['SeqLast'] = -1
+        self.SeqCurrInd = -1  # Int := -1
+        self._defaults['SeqCurrInd'] = -1
+        self.SeqId = [-1] * (MAX_SEQ + 1)  # Array[0.."MAX_SEQ"] of Int
+        self._defaults['SeqId'] = [-1] * (MAX_SEQ + 1)
+        self.SeqTyp = [-1] * (MAX_SEQ + 1)  # Array[0.."MAX_SEQ"] of Int
+        self._defaults['SeqTyp'] = [-1] * (MAX_SEQ + 1)
+        self.SeqFirstStat = [-1] * (MAX_SEQ + 1)  # Array[0.."MAX_SEQ"] of Int
+        self._defaults['SeqFirstStat'] = [-1] * (MAX_SEQ + 1)
+        self.SeqLastStat = [-1] * (MAX_SEQ + 1)  # Array[0.."MAX_SEQ"] of Int
+        self._defaults['SeqLastStat'] = [-1] * (MAX_SEQ + 1)
+        self.SeqNext = [-1] * (MAX_SEQ + 1)  # Array[0.."MAX_SEQ"] of Int
+        self._defaults['SeqNext'] = [-1] * (MAX_SEQ + 1)
+        self.SeqNumStat = [-1] * (MAX_SEQ + 1)  # Array[0.."MAX_SEQ"] of Int
+        self._defaults['SeqNumStat'] = [-1] * (MAX_SEQ + 1)
+        self.StatNum = -1  # Int
+        self._defaults['StatNum'] = -1
+        self.Stat = None  # Array[0.."MAX_STAT"] of "Type_Stat"
+        self._defaults['Stat'] = None
+        self.StatParamNum = -1  # Int
+        self._defaults['StatParamNum'] = -1
+        self.StatParam = None  # Array[0.."MAX_STATPARAM"] of "Type_StatParam"
+        self._defaults['StatParam'] = None
+        self.SeqStartCurrId = -1  # Int := -1
+        self._defaults['SeqStartCurrId'] = -1
+        self.SeqStartPrevId = -1  # Int := -1
+        self._defaults['SeqStartPrevId'] = -1
+        self.StatCurrInd = -1  # Int := -1
+        self._defaults['StatCurrInd'] = -1
+        self.SeqMode = False  # Bool
+        self._defaults['SeqMode'] = False
+        self.SeqModePrev = False  # Bool
+        self._defaults['SeqModePrev'] = False
+        self.SeqTerm = False  # Bool
+        self._defaults['SeqTerm'] = False
+        self.StatTerm = False  # Bool
+        self._defaults['StatTerm'] = False
+        self.StatNew = False  # Bool
+        self._defaults['StatNew'] = False
+        self.StackLevel = -1  # Int
+        self._defaults['StackLevel'] = -1
+        self.StackLevelAuto = -1  # Int
+        self._defaults['StackLevelAuto'] = -1
+        self.StackRet = [-1] * (MAX_SEQSTACK + 1)  # Array[0.."MAX_SEQSTACK"] of Int
+        self._defaults['StackRet'] = [-1] * (MAX_SEQSTACK + 1)
+        self.DelayElapsedTime = -1  # Int
+        self._defaults['DelayElapsedTime'] = -1
+        self.CurrProgSeq = -1  # Int
+        self._defaults['CurrProgSeq'] = -1
+        self.PrevProgSeq = -1  # Int
+        self._defaults['PrevProgSeq'] = -1
+        self.StatRunning = -1  # Int
+        self._defaults['StatRunning'] = -1
+        self.StatNumAxesStarted = -1  # Int
+        self._defaults['StatNumAxesStarted'] = -1
+        self.CurrStatCod = -1  # Int
+        self._defaults['CurrStatCod'] = -1
+        self.PrevStatCod = -1  # Int
+        self._defaults['PrevStatCod'] = -1
+        self.StatStartInd = -1  # Int := -1
+        self._defaults['StatStartInd'] = -1
+
+    def to_dict(self):
+        return {k: getattr(self, k) for k in self._defaults.keys()}
+
+    def reset(self):
+        for k, v in self._defaults.items():
+            setattr(self, k, v)
+
+    def __repr__(self):
+        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
+        return f"<Type_Seq {fields}>"
+
+
+class Type_PIDParam:
+    """
+    Estratto da: PlcDataType.udt
+
+    Attributes:
+        realval (Array[0.."MAX_PIDREAL"] of Real):
+    """
+    def __init__(self):
+        self._defaults = {}
+        self.realval = [0.0] * (MAX_PIDREAL + 1)  # Array[0.."MAX_PIDREAL"] of Real
+        self._defaults['realval'] = [0.0] * (MAX_PIDREAL + 1)
+
+    def to_dict(self):
+        return {k: getattr(self, k) for k in self._defaults.keys()}
+
+    def reset(self):
+        for k, v in self._defaults.items():
+            setattr(self, k, v)
+
+    def __repr__(self):
+        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
+        return f"<Type_PIDParam {fields}>"
+
+
+class Type_PID:
+    """
+    Estratto da: PlcDataType.udt
+
+    Attributes:
+        sp (Real):
+        in_ (Real):
+        reset (Bool):
+        out1 (Real):
+        out2 (Real):
+    """
+    def __init__(self):
+        self._defaults = {}
+        self.sp = 0.0  # Real
+        self._defaults['sp'] = 0.0
+        self.in_ = 0.0  # Real
+        self._defaults['in_'] = 0.0
+        self.reset = False  # Bool
+        self._defaults['reset'] = False
+        self.out1 = 0.0  # Real
+        self._defaults['out1'] = 0.0
+        self.out2 = 0.0  # Real
+        self._defaults['out2'] = 0.0
+
+    def to_dict(self):
+        return {k: getattr(self, k) for k in self._defaults.keys()}
+
+    def reset(self):
+        for k, v in self._defaults.items():
+            setattr(self, k, v)
+
+    def __repr__(self):
+        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
+        return f"<Type_PID {fields}>"
+
+
+class Type_OutputParam:
+    """
+    Estratto da: PlcDataType.udt
+
+    Attributes:
+        intval (Array[0.."MAX_OUTPUTINT"] of Int := [14(-1)]):
+        dintval (Array[0.."MAX_OUTPUTDINT"] of DInt):
+        realval (Array[0.."MAX_OUTPUTREAL"] of Real := [0.0, 100.0, 0.0, 100.0, 2(0.0), 2(20.0), 2(40.0), 2(60.0), 2(80.0), 2(100.0), 2(0.0), 2(20.0), 2(40.0), 2(60.0), 2(80.0), 2(100.0)]):
+    """
+    def __init__(self):
+        self._defaults = {}
+        self.intval = [-1] * (MAX_OUTPUTINT + 1)  # Array[0.."MAX_OUTPUTINT"] of Int := [14(-1)]
+        self._defaults['intval'] = [-1] * (MAX_OUTPUTINT + 1)
+        self.dintval = [-1] * (MAX_OUTPUTDINT + 1)  # Array[0.."MAX_OUTPUTDINT"] of DInt
+        self._defaults['dintval'] = [-1] * (MAX_OUTPUTDINT + 1)
+        self.realval = [0.0] * (MAX_OUTPUTREAL + 1)  # Array[0.."MAX_OUTPUTREAL"] of Real := [0.0, 100.0, 0.0, 100.0, 2(0.0), 2(20.0), 2(40.0), 2(60.0), 2(80.0), 2(100.0), 2(0.0), 2(20.0), 2(40.0), 2(60.0), 2(80.0), 2(100.0)]
+        self._defaults['realval'] = [0.0] * (MAX_OUTPUTREAL + 1)
+
+    def to_dict(self):
+        return {k: getattr(self, k) for k in self._defaults.keys()}
+
+    def reset(self):
+        for k, v in self._defaults.items():
+            setattr(self, k, v)
+
+    def __repr__(self):
+        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
+        return f"<Type_OutputParam {fields}>"
+
+
+class Type_Output:
+    """
+    Estratto da: PlcDataType.udt
+
+    Attributes:
+        val_in (Real):
+        val_norm (Real):
+        val_scaled (Real):
+        out_dig1 (Bool):
+        out_dig2 (Bool):
+        out_analog1 (DInt):
+        out_analog2 (DInt):
+        flagao (Bool):
+        indasse (Int := -1):
+        enab (Bool):
+        preset (Bool):
+        preval (Real):
+        preind2 (Int):
+    """
+    def __init__(self):
+        self._defaults = {}
+        self.val_in = 0.0  # Real
+        self._defaults['val_in'] = 0.0
+        self.val_norm = 0.0  # Real
+        self._defaults['val_norm'] = 0.0
+        self.val_scaled = 0.0  # Real
+        self._defaults['val_scaled'] = 0.0
+        self.out_dig1 = False  # Bool
+        self._defaults['out_dig1'] = False
+        self.out_dig2 = False  # Bool
+        self._defaults['out_dig2'] = False
+        self.out_analog1 = -1  # DInt
+        self._defaults['out_analog1'] = -1
+        self.out_analog2 = -1  # DInt
+        self._defaults['out_analog2'] = -1
+        self.flagao = False  # Bool
+        self._defaults['flagao'] = False
+        self.indasse = -1  # Int := -1
+        self._defaults['indasse'] = -1
+        self.enab = False  # Bool
+        self._defaults['enab'] = False
+        self.preset = False  # Bool
+        self._defaults['preset'] = False
+        self.preval = 0.0  # Real
+        self._defaults['preval'] = 0.0
+        self.preind2 = -1  # Int
+        self._defaults['preind2'] = -1
+
+    def to_dict(self):
+        return {k: getattr(self, k) for k in self._defaults.keys()}
+
+    def reset(self):
+        for k, v in self._defaults.items():
+            setattr(self, k, v)
+
+    def __repr__(self):
+        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
+        return f"<Type_Output {fields}>"
+
+
+class Type_Motor:
+    """
+    Estratto da: PlcDataType.udt
+
+    Attributes:
+        timeout (Int):
+        seq (Bool):
+        opt (Bool):
+        default (Bool):
+        timeout2 (Int):
+        typ (Int): tipo motore per nome e icona HMI
+        diff (ULInt):
+        diff2 (ULInt):
+        seqok (Bool):
+        timeoutbtn (Int):
+        timeout3 (Int):
+        timeout4 (Int):
+    """
+    def __init__(self):
+        self._defaults = {}
+        self.timeout = -1  # Int
+        self._defaults['timeout'] = -1
+        self.seq = False  # Bool
+        self._defaults['seq'] = False
+        self.opt = False  # Bool
+        self._defaults['opt'] = False
+        self.default = False  # Bool
+        self._defaults['default'] = False
+        self.timeout2 = -1  # Int
+        self._defaults['timeout2'] = -1
+        self.typ = -1  # Int // tipo motore per nome e icona HMI
+        self._defaults['typ'] = -1
+        self.diff = -1  # ULInt
+        self._defaults['diff'] = -1
+        self.diff2 = -1  # ULInt
+        self._defaults['diff2'] = -1
+        self.seqok = False  # Bool
+        self._defaults['seqok'] = False
+        self.timeoutbtn = -1  # Int
+        self._defaults['timeoutbtn'] = -1
+        self.timeout3 = -1  # Int
+        self._defaults['timeout3'] = -1
+        self.timeout4 = -1  # Int
+        self._defaults['timeout4'] = -1
+
+    def to_dict(self):
+        return {k: getattr(self, k) for k in self._defaults.keys()}
+
+    def reset(self):
+        for k, v in self._defaults.items():
+            setattr(self, k, v)
+
+    def __repr__(self):
+        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
+        return f"<Type_Motor {fields}>"
+
+
+class Type_MaintParam:
+    """
+    Estratto da: PlcDataType.udt
+
+    Attributes:
+        boolval (Array[0.."MAX_MAINTBOOL"] of Bool):
+        intval (Array[0.."MAX_MAINTINT"] of Int):
+    """
+    def __init__(self):
+        self._defaults = {}
+        self.boolval = [False] * (MAX_MAINTBOOL + 1)  # Array[0.."MAX_MAINTBOOL"] of Bool
+        self._defaults['boolval'] = [False] * (MAX_MAINTBOOL + 1)
+        self.intval = [-1] * (MAX_MAINTINT + 1)  # Array[0.."MAX_MAINTINT"] of Int
+        self._defaults['intval'] = [-1] * (MAX_MAINTINT + 1)
+
+    def to_dict(self):
+        return {k: getattr(self, k) for k in self._defaults.keys()}
+
+    def reset(self):
+        for k, v in self._defaults.items():
+            setattr(self, k, v)
+
+    def __repr__(self):
+        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
+        return f"<Type_MaintParam {fields}>"
+
+
+class Type_ToolsetParam:
+    """
+    Estratto da: PlcDataType.udt
+
+    Attributes:
+        boolval (Array[0.."MAX_TOOLSETBOOL"] of Bool):
+        intval (Array[0.."MAX_TOOLSETINT"] of Int := [4(-1)]):
+        realvalcfg (Array[0.."MAX_TOOLSETREAL"] of Real):
+        realval (Array[0.."MAX_TOOLSETREAL"] of Real):
+        fcval (Array[0.."MAX_TOOLSETREAL"] of Real := [20(1.0)]):
+        offsetval (Array[0.."MAX_TOOLSETREAL"] of Real):
+        typval (Array[0.."MAX_TOOLSETREAL"] of Int := [20(-1)]):
+        output (Array[0.."MAX_TOOLSETOUTPUT"] of "Type_ToolsetOutputParam" := [([2(-1)], [()]), ([2(-1)], [()]), ([2(-1)], [()]), ([2(-1)], [()])]):
+    """
+    def __init__(self):
+        self._defaults = {}
+        self.boolval = [False] * (MAX_TOOLSETBOOL + 1)  # Array[0.."MAX_TOOLSETBOOL"] of Bool
+        self._defaults['boolval'] = [False] * (MAX_TOOLSETBOOL + 1)
+        self.intval = [-1] * (MAX_TOOLSETINT + 1)  # Array[0.."MAX_TOOLSETINT"] of Int := [4(-1)]
+        self._defaults['intval'] = [-1] * (MAX_TOOLSETINT + 1)
+        self.realvalcfg = [0.0] * (MAX_TOOLSETREAL + 1)  # Array[0.."MAX_TOOLSETREAL"] of Real
+        self._defaults['realvalcfg'] = [0.0] * (MAX_TOOLSETREAL + 1)
+        self.realval = [0.0] * (MAX_TOOLSETREAL + 1)  # Array[0.."MAX_TOOLSETREAL"] of Real
+        self._defaults['realval'] = [0.0] * (MAX_TOOLSETREAL + 1)
+        self.fcval = [0.0] * (MAX_TOOLSETREAL + 1)  # Array[0.."MAX_TOOLSETREAL"] of Real := [20(1.0)]
+        self._defaults['fcval'] = [0.0] * (MAX_TOOLSETREAL + 1)
+        self.offsetval = [0.0] * (MAX_TOOLSETREAL + 1)  # Array[0.."MAX_TOOLSETREAL"] of Real
+        self._defaults['offsetval'] = [0.0] * (MAX_TOOLSETREAL + 1)
+        self.typval = [-1] * (MAX_TOOLSETREAL + 1)  # Array[0.."MAX_TOOLSETREAL"] of Int := [20(-1)]
+        self._defaults['typval'] = [-1] * (MAX_TOOLSETREAL + 1)
+        self.output = None  # Array[0.."MAX_TOOLSETOUTPUT"] of "Type_ToolsetOutputParam" := [([2(-1)], [()]), ([2(-1)], [()]), ([2(-1)], [()]), ([2(-1)], [()])]
+        self._defaults['output'] = None
+
+    def to_dict(self):
+        return {k: getattr(self, k) for k in self._defaults.keys()}
+
+    def reset(self):
+        for k, v in self._defaults.items():
+            setattr(self, k, v)
+
+    def __repr__(self):
+        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
+        return f"<Type_ToolsetParam {fields}>"
+
+
+class Type_IOParam:
+    """
+    Estratto da: PlcDataType.udt
+
+    Attributes:
+        iotype (Int := -1): 0 = DI, 1 = AI, 2 = DO, 3 = AO, 4 = RI
+        boolval (Array[0.."MAX_IOBOOL"] of Bool):
+        intval (Array[0.."MAX_IOINT"] of Int := [9(-1)]):
+        dintval (Array[0.."MAX_IODINT"] of DInt):
+        realvalcfg (Array[0.."MAX_IOREAL"] of Real := [3(0.0), 3(1.0)]):
+        realval (Array[0.."MAX_IOREAL"] of Real := [3(0.0), 3(1.0)]):
+        exprintval (Array[0.."MAX_EXPRINT"] of Int := [25(-1)]): typ + (not, opnd, oper) x 8
+        exprrealval (Array[0.."MAX_EXPROPER"] of Real):
+    """
+    def __init__(self):
+        self._defaults = {}
+        self.iotype = -1  # Int := -1 // 0 = DI, 1 = AI, 2 = DO, 3 = AO, 4 = RI
+        self._defaults['iotype'] = -1
+        self.boolval = [False] * (MAX_IOBOOL + 1)  # Array[0.."MAX_IOBOOL"] of Bool
+        self._defaults['boolval'] = [False] * (MAX_IOBOOL + 1)
+        self.intval = [-1] * (MAX_IOINT + 1)  # Array[0.."MAX_IOINT"] of Int := [9(-1)]
+        self._defaults['intval'] = [-1] * (MAX_IOINT + 1)
+        self.dintval = [-1] * (MAX_IODINT + 1)  # Array[0.."MAX_IODINT"] of DInt
+        self._defaults['dintval'] = [-1] * (MAX_IODINT + 1)
+        self.realvalcfg = [0.0] * (MAX_IOREAL + 1)  # Array[0.."MAX_IOREAL"] of Real := [3(0.0), 3(1.0)]
+        self._defaults['realvalcfg'] = [0.0] * (MAX_IOREAL + 1)
+        self.realval = [0.0] * (MAX_IOREAL + 1)  # Array[0.."MAX_IOREAL"] of Real := [3(0.0), 3(1.0)]
+        self._defaults['realval'] = [0.0] * (MAX_IOREAL + 1)
+        self.exprintval = [-1] * (MAX_EXPRINT + 1)  # Array[0.."MAX_EXPRINT"] of Int := [25(-1)] // typ + (not, opnd, oper) x 8
+        self._defaults['exprintval'] = [-1] * (MAX_EXPRINT + 1)
+        self.exprrealval = [0.0] * (MAX_EXPROPER + 1)  # Array[0.."MAX_EXPROPER"] of Real
+        self._defaults['exprrealval'] = [0.0] * (MAX_EXPROPER + 1)
+
+    def to_dict(self):
+        return {k: getattr(self, k) for k in self._defaults.keys()}
+
+    def reset(self):
+        for k, v in self._defaults.items():
+            setattr(self, k, v)
+
+    def __repr__(self):
+        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
+        return f"<Type_IOParam {fields}>"
+
+
+class Type_IO:
+    """
+    Estratto da: PlcDataType.udt
+
+    Attributes:
+        Ind (Int := -1):
+        Stato (Int):
+        BVal (Bool):
+        IVal (Int):
+        DVal (DInt):
+        RVal (Real):
+        Offset (Real):
+        BProgVal (Bool):
+        DProgVal (DInt):
+    """
+    def __init__(self):
+        self._defaults = {}
+        self.Ind = -1  # Int := -1
+        self._defaults['Ind'] = -1
+        self.Stato = -1  # Int
+        self._defaults['Stato'] = -1
+        self.BVal = False  # Bool
+        self._defaults['BVal'] = False
+        self.IVal = -1  # Int
+        self._defaults['IVal'] = -1
+        self.DVal = -1  # DInt
+        self._defaults['DVal'] = -1
+        self.RVal = 0.0  # Real
+        self._defaults['RVal'] = 0.0
+        self.Offset = 0.0  # Real
+        self._defaults['Offset'] = 0.0
+        self.BProgVal = False  # Bool
+        self._defaults['BProgVal'] = False
+        self.DProgVal = -1  # DInt
+        self._defaults['DProgVal'] = -1
+
+    def to_dict(self):
+        return {k: getattr(self, k) for k in self._defaults.keys()}
+
+    def reset(self):
+        for k, v in self._defaults.items():
+            setattr(self, k, v)
+
+    def __repr__(self):
+        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
+        return f"<Type_IO {fields}>"
+
+
+class Type_InputParam:
+    """
+    Estratto da: PlcDataType.udt
+
+    Attributes:
+        boolval (Array[0.."MAX_INPUTBOOL"] of Bool):
+        intval (Array[0.."MAX_INPUTINT"] of Int := [5(-1), 0, 2(-1), 0, 6(-1)]):
+        dintvalcfg (Array[0.."MAX_INPUTDINT"] of DInt):
+        dintval (Array[0.."MAX_INPUTDINT"] of DInt := [0, 100, 0, 100]):
+    """
+    def __init__(self):
+        self._defaults = {}
+        self.boolval = [False] * (MAX_INPUTBOOL + 1)  # Array[0.."MAX_INPUTBOOL"] of Bool
+        self._defaults['boolval'] = [False] * (MAX_INPUTBOOL + 1)
+        self.intval = [-1] * (MAX_INPUTINT + 1)  # Array[0.."MAX_INPUTINT"] of Int := [5(-1), 0, 2(-1), 0, 6(-1)]
+        self._defaults['intval'] = [-1] * (MAX_INPUTINT + 1)
+        self.dintvalcfg = [-1] * (MAX_INPUTDINT + 1)  # Array[0.."MAX_INPUTDINT"] of DInt
+        self._defaults['dintvalcfg'] = [-1] * (MAX_INPUTDINT + 1)
+        self.dintval = [-1] * (MAX_INPUTDINT + 1)  # Array[0.."MAX_INPUTDINT"] of DInt := [0, 100, 0, 100]
+        self._defaults['dintval'] = [-1] * (MAX_INPUTDINT + 1)
+
+    def to_dict(self):
+        return {k: getattr(self, k) for k in self._defaults.keys()}
+
+    def reset(self):
+        for k, v in self._defaults.items():
+            setattr(self, k, v)
+
+    def __repr__(self):
+        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
+        return f"<Type_InputParam {fields}>"
+
+
+class Type_Input:
+    """
+    Estratto da: PlcDataType.udt
+
+    Attributes:
+        val (Real):
+        val_prev (Real):
+        indasse (Int := -1):
+        enab (Bool := true):
+    """
+    def __init__(self):
+        self._defaults = {}
+        self.val = 0.0  # Real
+        self._defaults['val'] = 0.0
+        self.val_prev = 0.0  # Real
+        self._defaults['val_prev'] = 0.0
+        self.indasse = -1  # Int := -1
+        self._defaults['indasse'] = -1
+        self.enab = False  # Bool := true
+        self._defaults['enab'] = False
+
+    def to_dict(self):
+        return {k: getattr(self, k) for k in self._defaults.keys()}
+
+    def reset(self):
+        for k, v in self._defaults.items():
+            setattr(self, k, v)
+
+    def __repr__(self):
+        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
+        return f"<Type_Input {fields}>"
+
+
+class Type_FeedbackParam:
+    """
+    Estratto da: PlcDataType.udt
+
+    Attributes:
+        intval (Array[0.."MAX_FEEDBACKINT"] of Int := [5(-1)]):
+        dintval (Array[0.."MAX_FEEDBACKDINT"] of DInt := [48, 32000]):
+        realvalcfg (Array[0.."MAX_FEEDBACKREAL"] of Real):
+        realval (Array[0.."MAX_FEEDBACKREAL"] of Real):
+    """
+    def __init__(self):
+        self._defaults = {}
+        self.intval = [-1] * (MAX_FEEDBACKINT + 1)  # Array[0.."MAX_FEEDBACKINT"] of Int := [5(-1)]
+        self._defaults['intval'] = [-1] * (MAX_FEEDBACKINT + 1)
+        self.dintval = [-1] * (MAX_FEEDBACKDINT + 1)  # Array[0.."MAX_FEEDBACKDINT"] of DInt := [48, 32000]
+        self._defaults['dintval'] = [-1] * (MAX_FEEDBACKDINT + 1)
+        self.realvalcfg = [0.0] * (MAX_FEEDBACKREAL + 1)  # Array[0.."MAX_FEEDBACKREAL"] of Real
+        self._defaults['realvalcfg'] = [0.0] * (MAX_FEEDBACKREAL + 1)
+        self.realval = [0.0] * (MAX_FEEDBACKREAL + 1)  # Array[0.."MAX_FEEDBACKREAL"] of Real
+        self._defaults['realval'] = [0.0] * (MAX_FEEDBACKREAL + 1)
+
+    def to_dict(self):
+        return {k: getattr(self, k) for k in self._defaults.keys()}
+
+    def reset(self):
+        for k, v in self._defaults.items():
+            setattr(self, k, v)
+
+    def __repr__(self):
+        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
+        return f"<Type_FeedbackParam {fields}>"
+
+
+class Type_Feedback:
+    """
+    Estratto da: PlcDataType.udt
+
+    Attributes:
+        val_in (DInt):
+        val_scaled (Real):
+        error (Int):
+        val_scaled_prev (Real):
+        setval (Bool):
+        newval (Real):
+        indasse (Int := -1):
+        resetval (Bool):
+    """
+    def __init__(self):
+        self._defaults = {}
+        self.val_in = -1  # DInt
+        self._defaults['val_in'] = -1
+        self.val_scaled = 0.0  # Real
+        self._defaults['val_scaled'] = 0.0
+        self.error = -1  # Int
+        self._defaults['error'] = -1
+        self.val_scaled_prev = 0.0  # Real
+        self._defaults['val_scaled_prev'] = 0.0
+        self.setval = False  # Bool
+        self._defaults['setval'] = False
+        self.newval = 0.0  # Real
+        self._defaults['newval'] = 0.0
+        self.indasse = -1  # Int := -1
+        self._defaults['indasse'] = -1
+        self.resetval = False  # Bool
+        self._defaults['resetval'] = False
+
+    def to_dict(self):
+        return {k: getattr(self, k) for k in self._defaults.keys()}
+
+    def reset(self):
+        for k, v in self._defaults.items():
+            setattr(self, k, v)
+
+    def __repr__(self):
+        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
+        return f"<Type_Feedback {fields}>"
+
+
+class Type_AxisParam:
+    """
+    Estratto da: PlcDataType.udt
+
+    Attributes:
+        boolval (Array[0.."MAX_ASSEBOOL"] of Bool):
+        intval (Array[0.."MAX_ASSEINT"] of Int := [8(-1), 1, 18(-1), 100, 2(0), 15(-1), 2(0), 2000, 6(-1), 2(0), 100, 7(-1), 2(0), 2(-1), 0, 2, 25(-1)]):
+        realvalcfg (Array[0.."MAX_ASSEREAL"] of Real):
+        realval (Array[0.."MAX_ASSEREAL"] of Real):
+        fcval (Array[0.."MAX_ASSEREAL"] of Real := [55(1.0)]):
+        offsetval (Array[0.."MAX_ASSEREAL"] of Real):
+        typval (Array[0.."MAX_ASSEREAL"] of Int := [55(-1)]):
+    """
+    def __init__(self):
+        self._defaults = {}
+        self.boolval = [False] * (MAX_ASSEBOOL + 1)  # Array[0.."MAX_ASSEBOOL"] of Bool
+        self._defaults['boolval'] = [False] * (MAX_ASSEBOOL + 1)
+        self.intval = [-1] * (MAX_ASSEINT + 1)  # Array[0.."MAX_ASSEINT"] of Int := [8(-1), 1, 18(-1), 100, 2(0), 15(-1), 2(0), 2000, 6(-1), 2(0), 100, 7(-1), 2(0), 2(-1), 0, 2, 25(-1)]
+        self._defaults['intval'] = [-1] * (MAX_ASSEINT + 1)
+        self.realvalcfg = [0.0] * (MAX_ASSEREAL + 1)  # Array[0.."MAX_ASSEREAL"] of Real
+        self._defaults['realvalcfg'] = [0.0] * (MAX_ASSEREAL + 1)
+        self.realval = [0.0] * (MAX_ASSEREAL + 1)  # Array[0.."MAX_ASSEREAL"] of Real
+        self._defaults['realval'] = [0.0] * (MAX_ASSEREAL + 1)
+        self.fcval = [0.0] * (MAX_ASSEREAL + 1)  # Array[0.."MAX_ASSEREAL"] of Real := [55(1.0)]
+        self._defaults['fcval'] = [0.0] * (MAX_ASSEREAL + 1)
+        self.offsetval = [0.0] * (MAX_ASSEREAL + 1)  # Array[0.."MAX_ASSEREAL"] of Real
+        self._defaults['offsetval'] = [0.0] * (MAX_ASSEREAL + 1)
+        self.typval = [-1] * (MAX_ASSEREAL + 1)  # Array[0.."MAX_ASSEREAL"] of Int := [55(-1)]
+        self._defaults['typval'] = [-1] * (MAX_ASSEREAL + 1)
+
+    def to_dict(self):
+        return {k: getattr(self, k) for k in self._defaults.keys()}
+
+    def reset(self):
+        for k, v in self._defaults.items():
+            setattr(self, k, v)
+
+    def __repr__(self):
+        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
+        return f"<Type_AxisParam {fields}>"
+
+
+class Type_Axis:
+    """
+    Estratto da: PlcDataType.udt
+
+    Attributes:
+        prev_pos (Real):
+        prev_vel (Real):
+        curr_velist (Real):
+        prev_velist (Real):
+        velavg_buf (Array[0.."MAX_DT"] of Real):
+        dsavg_buf (Array[0.."MAX_DT"] of Real):
+        dsmsavg_buf (Array[0.."MAX_DT"] of Real):
+        slave (Int):
+        mov_debug (Int):
+        ds (Real):
+        ds_ms (Real):
+        stop (Bool):
+        stopping (Bool):
+        started (Bool):
+        timeout_enabled (Bool):
+        t_start (Time):
+        delta_t_start (Real):
+        t_mov (Time):
+        delta_t_mov (Real):
+        curr_timeout (Int):
+        slewrate_s_up (Real):
+        slewrate_s_down (Real):
+        val_input (Real):
+        val_input_prev (Real):
+        val_output (Real):
+        val_output_prev (Real):
+        pid_timer (TON_TIME):
+        stat_sp_pos (Real):
+        stat_sp_vel (Real):
+        stat_sp_delta (Real):
+        stat_sp_enable (Bool):
+        stat_sp_intmode (Int):
+        sp_pos (Real):
+        prev_sp_pos (Real):
+        sp_vel (Real):
+        sp_vel_prev (Real):
+        sp_delta (Real):
+        sp_enable (Bool):
+        interp_vmaster (Real):
+        interp_vslave (Real):
+        interp_dsmaster (Real):
+        interp_dsslave (Real):
+        interp_tmaster (Real):
+        interp_tslave (Real):
+        interp_rmaster (Real):
+        interp_rslave (Real):
+    """
+    def __init__(self):
+        self._defaults = {}
+        self.prev_pos = 0.0  # Real
+        self._defaults['prev_pos'] = 0.0
+        self.prev_vel = 0.0  # Real
+        self._defaults['prev_vel'] = 0.0
+        self.curr_velist = 0.0  # Real
+        self._defaults['curr_velist'] = 0.0
+        self.prev_velist = 0.0  # Real
+        self._defaults['prev_velist'] = 0.0
+        self.velavg_buf = [0.0] * (MAX_DT + 1)  # Array[0.."MAX_DT"] of Real
+        self._defaults['velavg_buf'] = [0.0] * (MAX_DT + 1)
+        self.dsavg_buf = [0.0] * (MAX_DT + 1)  # Array[0.."MAX_DT"] of Real
+        self._defaults['dsavg_buf'] = [0.0] * (MAX_DT + 1)
+        self.dsmsavg_buf = [0.0] * (MAX_DT + 1)  # Array[0.."MAX_DT"] of Real
+        self._defaults['dsmsavg_buf'] = [0.0] * (MAX_DT + 1)
+        self.slave = -1  # Int
+        self._defaults['slave'] = -1
+        self.mov_debug = -1  # Int
+        self._defaults['mov_debug'] = -1
+        self.ds = 0.0  # Real
+        self._defaults['ds'] = 0.0
+        self.ds_ms = 0.0  # Real
+        self._defaults['ds_ms'] = 0.0
+        self.stop = False  # Bool
+        self._defaults['stop'] = False
+        self.stopping = False  # Bool
+        self._defaults['stopping'] = False
+        self.started = False  # Bool
+        self._defaults['started'] = False
+        self.timeout_enabled = False  # Bool
+        self._defaults['timeout_enabled'] = False
+        self.t_start = None  # Time
+        self._defaults['t_start'] = None
+        self.delta_t_start = 0.0  # Real
+        self._defaults['delta_t_start'] = 0.0
+        self.t_mov = None  # Time
+        self._defaults['t_mov'] = None
+        self.delta_t_mov = 0.0  # Real
+        self._defaults['delta_t_mov'] = 0.0
+        self.curr_timeout = -1  # Int
+        self._defaults['curr_timeout'] = -1
+        self.slewrate_s_up = 0.0  # Real
+        self._defaults['slewrate_s_up'] = 0.0
+        self.slewrate_s_down = 0.0  # Real
+        self._defaults['slewrate_s_down'] = 0.0
+        self.val_input = 0.0  # Real
+        self._defaults['val_input'] = 0.0
+        self.val_input_prev = 0.0  # Real
+        self._defaults['val_input_prev'] = 0.0
+        self.val_output = 0.0  # Real
+        self._defaults['val_output'] = 0.0
+        self.val_output_prev = 0.0  # Real
+        self._defaults['val_output_prev'] = 0.0
+        self.pid_timer = None  # TON_TIME
+        self._defaults['pid_timer'] = None
+        self.stat_sp_pos = 0.0  # Real
+        self._defaults['stat_sp_pos'] = 0.0
+        self.stat_sp_vel = 0.0  # Real
+        self._defaults['stat_sp_vel'] = 0.0
+        self.stat_sp_delta = 0.0  # Real
+        self._defaults['stat_sp_delta'] = 0.0
+        self.stat_sp_enable = False  # Bool
+        self._defaults['stat_sp_enable'] = False
+        self.stat_sp_intmode = -1  # Int
+        self._defaults['stat_sp_intmode'] = -1
+        self.sp_pos = 0.0  # Real
+        self._defaults['sp_pos'] = 0.0
+        self.prev_sp_pos = 0.0  # Real
+        self._defaults['prev_sp_pos'] = 0.0
+        self.sp_vel = 0.0  # Real
+        self._defaults['sp_vel'] = 0.0
+        self.sp_vel_prev = 0.0  # Real
+        self._defaults['sp_vel_prev'] = 0.0
+        self.sp_delta = 0.0  # Real
+        self._defaults['sp_delta'] = 0.0
+        self.sp_enable = False  # Bool
+        self._defaults['sp_enable'] = False
+        self.interp_vmaster = 0.0  # Real
+        self._defaults['interp_vmaster'] = 0.0
+        self.interp_vslave = 0.0  # Real
+        self._defaults['interp_vslave'] = 0.0
+        self.interp_dsmaster = 0.0  # Real
+        self._defaults['interp_dsmaster'] = 0.0
+        self.interp_dsslave = 0.0  # Real
+        self._defaults['interp_dsslave'] = 0.0
+        self.interp_tmaster = 0.0  # Real
+        self._defaults['interp_tmaster'] = 0.0
+        self.interp_tslave = 0.0  # Real
+        self._defaults['interp_tslave'] = 0.0
+        self.interp_rmaster = 0.0  # Real
+        self._defaults['interp_rmaster'] = 0.0
+        self.interp_rslave = 0.0  # Real
+        self._defaults['interp_rslave'] = 0.0
+
+    def to_dict(self):
+        return {k: getattr(self, k) for k in self._defaults.keys()}
+
+    def reset(self):
+        for k, v in self._defaults.items():
+            setattr(self, k, v)
+
+    def __repr__(self):
+        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
+        return f"<Type_Axis {fields}>"
+
+
+class Type_IORef:
+    """
+    Estratto da: PlcDataType.udt
+
+    Attributes:
+        FlagTot (Bool):
+        FlagTime (Bool):
+        Int (= [12(-1)]):
+    """
+    def __init__(self):
+        self._defaults = {}
+        self.FlagTot = False  # Bool
+        self._defaults['FlagTot'] = False
+        self.FlagTime = False  # Bool
+        self._defaults['FlagTime'] = False
+        self.Int = None  # = [12(-1)]
+        self._defaults['Int'] = None
+
+    def to_dict(self):
+        return {k: getattr(self, k) for k in self._defaults.keys()}
+
+    def reset(self):
+        for k, v in self._defaults.items():
+            setattr(self, k, v)
+
+    def __repr__(self):
+        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
+        return f"<Type_IORef {fields}>"
+
+
+class Type_DataLoggerBuffer:
+    """
+    Estratto da: PlcDataType.udt
+
+    Attributes:
+        Num (Int):
+        InInd (Int):
+        OutInd (Int):
+        Class (Array[0.."MAX_DATALOGGER_BUFFER"] of Int):
+        Cod (Array[0.."MAX_DATALOGGER_BUFFER"] of Int):
+        Val (Array[0.."MAX_DATALOGGER_BUFFER"] of Int):
+        Cnt (Array[0.."MAX_DATALOGGER_BUFFER"] of Int):
+    """
+    def __init__(self):
+        self._defaults = {}
+        self.Num = -1  # Int
+        self._defaults['Num'] = -1
+        self.InInd = -1  # Int
+        self._defaults['InInd'] = -1
+        self.OutInd = -1  # Int
+        self._defaults['OutInd'] = -1
+        self.Class = [-1] * (MAX_DATALOGGER_BUFFER + 1)  # Array[0.."MAX_DATALOGGER_BUFFER"] of Int
+        self._defaults['Class'] = [-1] * (MAX_DATALOGGER_BUFFER + 1)
+        self.Cod = [-1] * (MAX_DATALOGGER_BUFFER + 1)  # Array[0.."MAX_DATALOGGER_BUFFER"] of Int
+        self._defaults['Cod'] = [-1] * (MAX_DATALOGGER_BUFFER + 1)
+        self.Val = [-1] * (MAX_DATALOGGER_BUFFER + 1)  # Array[0.."MAX_DATALOGGER_BUFFER"] of Int
+        self._defaults['Val'] = [-1] * (MAX_DATALOGGER_BUFFER + 1)
+        self.Cnt = [-1] * (MAX_DATALOGGER_BUFFER + 1)  # Array[0.."MAX_DATALOGGER_BUFFER"] of Int
+        self._defaults['Cnt'] = [-1] * (MAX_DATALOGGER_BUFFER + 1)
+
+    def to_dict(self):
+        return {k: getattr(self, k) for k in self._defaults.keys()}
+
+    def reset(self):
+        for k, v in self._defaults.items():
+            setattr(self, k, v)
+
+    def __repr__(self):
+        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
+        return f"<Type_DataLoggerBuffer {fields}>"
+
+
+class Type_LongString:
+    """
+    Estratto da: PlcDataType.udt
+
+    Attributes:
+        c (Array[0.."DIM_STRINGHEADER"] of Char):
+        ind (Int):
+    """
+    def __init__(self):
+        self._defaults = {}
+        self.c = [None] * (DIM_STRINGHEADER + 1)  # Array[0.."DIM_STRINGHEADER"] of Char
+        self._defaults['c'] = [None] * (DIM_STRINGHEADER + 1)
+        self.ind = -1  # Int
+        self._defaults['ind'] = -1
+
+    def to_dict(self):
+        return {k: getattr(self, k) for k in self._defaults.keys()}
+
+    def reset(self):
+        for k, v in self._defaults.items():
+            setattr(self, k, v)
+
+    def __repr__(self):
+        fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
+        return f"<Type_LongString {fields}>"
+
+
 # ===== Costanti da: PLCTags.xlsx =====
 STATO_INIT = 0
 STATO_MAN = 1

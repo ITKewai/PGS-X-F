@@ -23,17 +23,6 @@ A TEMPO PERSO:
 # TODO: in base a indirizzo ip scheda rete imposta ip plc e scarica config
 # TODO: verifiche (verificare che per i reset pressostati si scende solo con il joystick, se ci sono digitali nel fb_err)
 # TODO: creazione file json con flag per attivare o disattivare parti dei controlli
-# TODO: [ASSE 10] TILT
-#   ⚠️  Flag HH disattivo ma HH=SYS è impostato/usato
-#     ↳ Axes	→	[10]TILT	→	HH
-#         ↳ IO	→	DI	→	[99] TopRollRotation RI Enable Count	→	Expr	→	N0
-#         ↳ IO	→	DI	→	[100] TopRollRotation RI Reset	→	Expr	→	N0
-#         ↳ IO	→	DI	→	[307] None	→	Expr	→	N0
-#         ↳ IO	→	DI	→	[308] None	→	Expr	→	N0 fuori indice???
-
-⚠️  Duplicati trovati in DI:
-   → PNET 0.3   → [64] EMERGENCY RESET PB, [272] EMERGENCY RESET PB
-   272 NON ESISTE
 
 # TODO: controllo pompe, master con slave e left con right
 # TODO: feedback dei rulli ratio deve essere 1

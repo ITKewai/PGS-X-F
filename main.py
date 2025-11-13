@@ -4,6 +4,8 @@ import json
 import logging
 import sys
 from utils.version import __version__, __pgs_version__, __author__, __company__, __product__, __copyright__, get_version_info
+from utils.web.core_logic import SearchState
+from utils.web.web_server import run_web_server
 from utils.yaml.data.core import make_axis_sys_addr, make_alarm_sys_addr
 from utils.yaml.data.costants import AXIS_GROUPS_ORDER, ALARM_GROUPS_ORDER, SYSTEM_TYPE, SYSTEM_TYPE_REV
 from utils.yaml.download import *
@@ -14,18 +16,19 @@ sn = ''
 
 DEFAULT_CONFIG: Dict[str, bool] = {
     "debug": False,
-    "webServer": False,
+    "webServer": False,  # <-- FLAG WEBSERVER
     "autoPlcIp": False,
     "logToFile": False,
 }
 
 
 def get_exe_config_path() -> Path:
-    # stesso comportamento di config.yaml:
-    return get_config_path("config.json", prefer_cwd=True)
+    """Ritorna il percorso del file config.json."""
+    return Path.cwd() / "config.json"
 
 
 def save_exe_config(cfg: Dict[str, bool], path: str | Path | None = None) -> None:
+    """Salva la configurazione nel file config.json."""
     p = Path(path) if path is not None else get_exe_config_path()
     p.parent.mkdir(parents=True, exist_ok=True)
     with p.open("w", encoding="utf-8") as f:
@@ -33,6 +36,10 @@ def save_exe_config(cfg: Dict[str, bool], path: str | Path | None = None) -> Non
 
 
 def load_exe_config(path: str | Path | None = None) -> Dict[str, bool]:
+    """
+    Carica la configurazione dal file config.json.
+    Se il file non esiste, lo crea con i valori di default.
+    """
     p = Path(path) if path is not None else get_exe_config_path()
     if not p.exists():
         save_exe_config(DEFAULT_CONFIG, p)
@@ -58,27 +65,41 @@ def load_exe_config(path: str | Path | None = None) -> Dict[str, bool]:
 
 
 def _pause_if_frozen():
-    if getattr(sys, "frozen", False):  # eseguibile PyInstaller
+    """Se eseguibile PyInstaller, pausa prima di chiudere."""
+    if getattr(sys, "frozen", False):
         try:
             input("\nPremi Invio per chiudere...")
         except EOFError:
             pass
 
 
-def main():
+def print_in_columns(entries: list[str], cols: int = 3) -> None:
+    """Stampa una lista di stringhe in colonne."""
+    if not entries:
+        return
+    colw = max(len(s) for s in entries) + 2
+    for i in range(0, len(entries), cols):
+        row = entries[i:i + cols]
+        logging.info("  " + "".join(s.ljust(colw) for s in row))
+
+
+def main_cli():
+    """
+    Modalità CLI tradizionale.
+    Mantiene la logica originale del programma.
+    """
     global sn
     logging.info(get_version_info())
-    # 1) Carico una volta il config
-    load_exe_config()
+
     cfg_path = choose_and_prepare_config(sn)
 
     try:
-        # data = load_yaml(str(cfg_path))
         populate_from_yaml_file(cfg_path)
     except Exception as e:
         logging.critical(f"Errore nel parsing YAML: {e}")
         _pause_if_frozen()
         return
+
     sn = data_config.Config_Header[HEADER_SN]
     logging.info(f"Caricato config della commessa: {data_config.Config_Header[HEADER_SN]}")
 
@@ -92,7 +113,6 @@ def main():
             logging.info("-" * 60)
             cfg_path = choose_and_prepare_config(sn)
             try:
-                # data = load_yaml(str(cfg_path))
                 populate_from_yaml_file(cfg_path)
             except Exception as e:
                 logging.info(f"Errore nel parsing YAML: {e}")
@@ -161,8 +181,8 @@ def main():
                 # prepara le stringhe "[ii] nome"
                 entries = [f"[{i:02d}] {axis_name(i)}" for i in range(n_to_show)]
                 if entries:
-                    cols = 6  # raggruppa per 6
-                    colw = max(len(s) for s in entries) + 2  # padding
+                    cols = 6
+                    colw = max(len(s) for s in entries) + 2
                     for k in range(0, len(entries), cols):
                         row = entries[k:k + cols]
                         logging.info("  " + "".join(s.ljust(colw) for s in row))
@@ -191,8 +211,8 @@ def main():
             try:
                 idx_raw = input(f"\nInserisci INDEX per {sys_type} (0..{idx_prompt_max}): ").strip()
                 index = int(idx_raw)
-            except TypeError:
-                logging.info(f"INDEX non valido: {e}")
+            except TypeError as e:
+                logging.critical(f"INDEX non valido: {e}")
                 continue
 
             # --- Scelta FIELD (nome o indice) ---
@@ -230,6 +250,7 @@ def main():
             logging.info(f"\nSYSTEM → {human}  => numero: {number}")
             run_io_search(iotype=IO_DI, Ind=number, verbose=True)
             continue
+
         if tipo == 6:
             custom_function()
             continue
@@ -275,13 +296,34 @@ def main():
             continue
 
 
-def print_in_columns(entries: List[str], cols: int = 3) -> None:
-    if not entries:
-        return
-    colw = max(len(s) for s in entries) + 2  # padding
-    for i in range(0, len(entries), cols):
-        row = entries[i:i + cols]
-        logging.info("  " + "".join(s.ljust(colw) for s in row))
+def main():
+    """
+    Entry point principale.
+    Carica la configurazione e avvia CLI o Web Server in base al flag.
+    """
+    logging.info(get_version_info())
+
+    # Carica il config.json
+    config = load_exe_config()
+
+    # Mostra quale modalità è attiva
+    logging.info(f"Modalità: {'🌐 WEB SERVER' if config['webServer'] else '🖥️  CLI'}")
+
+    if config['webServer']:
+        # MODALITÀ WEB SERVER
+        # Carica il config YAML predefinito (se esiste)
+        state = SearchState()
+        try:
+            cfg_path = choose_and_prepare_config("")
+            state.load_config(cfg_path)
+        except Exception as e:
+            logging.warning(f"Avvio senza config caricato: {e}")
+
+        # Avvia il server Flask
+        run_web_server(host='127.0.0.1', port=6666)
+    else:
+        # MODALITÀ CLI TRADIZIONALE
+        main_cli()
 
 
 if __name__ == "__main__":
@@ -294,8 +336,6 @@ if __name__ == "__main__":
         _pause_if_frozen()
         sys.exit(code)
     except Exception as e:
-        logging.info("\n[Errore inatteso]:", e)
+        logging.error(f"\n[Errore inatteso]: {e}")
         _pause_if_frozen()
         sys.exit(1)
-
-

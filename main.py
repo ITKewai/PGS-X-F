@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import json
 import logging
 import sys
 from utils.version import __version__, __pgs_version__, __author__, __company__, __product__, __copyright__, get_version_info
@@ -10,6 +11,50 @@ from utils.yaml.download import *
 from utils.db.data_config import *
 
 sn = ''
+
+DEFAULT_CONFIG: Dict[str, bool] = {
+    "debug": False,
+    "webServer": False,
+    "autoPlcIp": False,
+    "logToFile": False,
+}
+
+
+def get_exe_config_path() -> Path:
+    # stesso comportamento di config.yaml:
+    return get_config_path("config.json", prefer_cwd=True)
+
+
+def save_exe_config(cfg: Dict[str, bool], path: str | Path | None = None) -> None:
+    p = Path(path) if path is not None else get_exe_config_path()
+    p.parent.mkdir(parents=True, exist_ok=True)
+    with p.open("w", encoding="utf-8") as f:
+        json.dump(cfg, f, indent=2, ensure_ascii=False)
+
+
+def load_exe_config(path: str | Path | None = None) -> Dict[str, bool]:
+    p = Path(path) if path is not None else get_exe_config_path()
+    if not p.exists():
+        save_exe_config(DEFAULT_CONFIG, p)
+        return DEFAULT_CONFIG.copy()
+    try:
+        with p.open("r", encoding="utf-8") as f:
+            cfg = json.load(f)
+            if not isinstance(cfg, dict):
+                raise ValueError("config.json non è un oggetto JSON valido")
+    except Exception:
+        save_exe_config(DEFAULT_CONFIG, p)
+        return DEFAULT_CONFIG.copy()
+
+    changed = False
+    for k, v in DEFAULT_CONFIG.items():
+        if k not in cfg:
+            cfg[k] = v
+            changed = True
+    if changed:
+        save_exe_config(cfg, p)
+
+    return {k: bool(cfg.get(k, v)) for k, v in DEFAULT_CONFIG.items()}
 
 
 def _pause_if_frozen():
@@ -24,6 +69,7 @@ def main():
     global sn
     logging.info(get_version_info())
     # 1) Carico una volta il config
+    load_exe_config()
     cfg_path = choose_and_prepare_config(sn)
 
     try:

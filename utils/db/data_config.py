@@ -32,7 +32,7 @@ BOLD_RED = "\033[1;91m"
 class ColorFormatter(logging.Formatter):
     COLORS = {
         logging.DEBUG: GRAY,
-        logging.INFO: RESET,        # INFO resta normale
+        logging.INFO: RESET,  # INFO resta normale
         logging.WARNING: YELLOW,
         logging.ERROR: RED,
         logging.CRITICAL: BOLD_RED
@@ -51,7 +51,6 @@ handler.setFormatter(ColorFormatter("%(asctime)s [%(levelname)s] %(message)s", "
 log_level = logging.DEBUG if os.path.exists("debug.txt") and Path("debug.txt").read_text(encoding="utf-8").strip() else logging.INFO
 
 logging.basicConfig(level=log_level, handlers=[handler])
-
 
 logger = logging.getLogger(__name__)  # crea un logger con il nome del file
 
@@ -213,11 +212,11 @@ def _clean_data_config() -> None:
 
     # 2c) pulisci cache/dizionari runtime
     for maybe_map in (
-        "IO_IndexMap",
-        "IO_NameToIndex",
-        "AxisNameToIndex",
-        "DecodeCache",
-        "IO_SearchCache",
+            "IO_IndexMap",
+            "IO_NameToIndex",
+            "AxisNameToIndex",
+            "DecodeCache",
+            "IO_SearchCache",
     ):
         obj = getattr(data_config, maybe_map, None)
         if isinstance(obj, dict):
@@ -415,7 +414,7 @@ def _iotype_to_field(iotype: int) -> Optional[str]:  # DYNAMIC PATHING
 #             counts[field] += 1
 #     logger.info(f"Rilevati IO: DI={counts['di']}, AI={counts['ai']}, DO={counts['do']}, AO={counts['ao']}, RI={counts['ri']}")
 
-def _deserialize_io(data: Dict[str, Any]) -> None: # DYNAMIC PATHING
+def _deserialize_io(data: Dict[str, Any]) -> None:  # DYNAMIC PATHING
     io_data = data.get("io", {}) or {}
     # Pre-scan: layout dinamico e righe già filtrate
     valid_rows = _prepare_io_layout(io_data)
@@ -1523,7 +1522,8 @@ def run_feedback_scan(iotype: int, ind_target: int = None, feedbackInd: int = No
                         logging.info(txt)
         elif iotype == IO_AI:
             FeedbackParamIntVals = data_config.Feedback_Param[feedbackInd].intval
-            if FeedbackParamIntVals[FB_INT_TIPO] in [FB_AI, FB_AHSC, FB_AI2]:  # TODO: quello a ritenzione di analogico come si chiama?
+            if FeedbackParamIntVals[FB_INT_TIPO] in [FB_AI, FB_AHSC,
+                                                     FB_AI2]:  # TODO: quello a ritenzione di analogico come si chiama?
                 if FeedbackParamIntVals[FB_INT_ININD] == ind_target:
                     origin = Type_FeedbackParam_Map["intval"]["FB_INT_ININD"]["origin"]
                     display = Type_FeedbackParam_Map["intval"]["FB_INT_ININD"]["display"]
@@ -2354,7 +2354,8 @@ def custom_function():
                     # ordina per tipo per renderlo più leggibile
                     for (tp, a1, a2), entries in sorted(dup_group.items(), key=lambda x: x[0]):
                         joined = ", ".join([f"[{idx}] {nm}" for idx, nm in entries])
-                        logging.warning(f"   → {'PNET' if tp == IO_TYPE_PNET else 'CAN' if tp == IO_TYPE_CAN else 'SW'} {a1}.{a2:<3} → {joined}")
+                        logging.warning(
+                            f"   → {'PNET' if tp == IO_TYPE_PNET else 'CAN' if tp == IO_TYPE_CAN else 'SW'} {a1}.{a2:<3} → {joined}")
 
         _check(data_config.IO_DI_List, "DI")
         _check(data_config.IO_AI_List, "AI")
@@ -2384,7 +2385,7 @@ def custom_function():
             if data_config.IO_DI_List[Ind].intval[IO_INT_ADDRTYPE] == IO_TYPE_PNET:
                 addr1 = data_config.IO_DI_List[Ind].intval[IO_INT_ADDR1]
                 # addr2 = data_config.IO_DI_List[Ind].intval[IO_INT_ADDR2]
-                addr_str = f"{addr1}" # {addr2}"
+                addr_str = f"{addr1}"  # {addr2}"
                 if addr_str in fAddresses:
                     io_name = get_io_name(iotype=IO_DI, Ind=Ind)
                     logging.warning(f"⚠️ Safety non permesso in DI [{Ind}] {io_name} at address {addr_str}")
@@ -2392,7 +2393,7 @@ def custom_function():
             if data_config.IO_AI_List[Ind].intval[IO_INT_ADDRTYPE] == IO_TYPE_PNET:
                 addr1 = data_config.IO_AI_List[Ind].intval[IO_INT_ADDR1]
                 # addr2 = data_config.IO_AI_List[Ind].intval[IO_INT_ADDR2]
-                addr_str = f"{addr1}" # {addr2}"
+                addr_str = f"{addr1}"  # {addr2}"
                 if addr_str in fAddresses:
                     io_name = get_io_name(iotype=IO_AI, Ind=Ind)
                     logging.warning(f"⚠️  Safety non permesso in AI [{Ind}] {io_name} at address {addr_str}")
@@ -2400,7 +2401,7 @@ def custom_function():
             if data_config.IO_DO_List[Ind].intval[IO_INT_ADDRTYPE] == IO_TYPE_PNET:
                 addr1 = data_config.IO_DO_List[Ind].intval[IO_INT_ADDR1]
                 # addr2 = data_config.IO_DO_List[Ind].intval[IO_INT_ADDR2]
-                addr_str = f"{addr1}" # {addr2}"
+                addr_str = f"{addr1}"  # {addr2}"
                 if addr_str in fAddresses:
                     io_name = get_io_name(iotype=IO_DO, Ind=Ind)
                     logging.warning(f"⚠️ Safety non permesso in DO [{Ind}] {io_name} at address {addr_str}")
@@ -2408,7 +2409,7 @@ def custom_function():
             if data_config.IO_AO_List[Ind].intval[IO_INT_ADDRTYPE] == IO_TYPE_PNET:
                 addr1 = data_config.IO_AO_List[Ind].intval[IO_INT_ADDR1]
                 # addr2 = data_config.IO_AO_List[Ind].intval[IO_INT_ADDR2]
-                addr_str = f"{addr1}" # {addr2}"
+                addr_str = f"{addr1}"  # {addr2}"
                 if addr_str in fAddresses:
                     io_name = get_io_name(iotype=IO_AO, Ind=Ind)
                     logging.warning(f"⚠️ Safety non permesso in AO [{Ind}] {io_name} at address {addr_str}")
@@ -2683,8 +2684,9 @@ def custom_function():
 
     def check_stop_alarms() -> None:
         logging.debug("🔍 Inizio controllo stop allarmi...")
-        normalstop = [0,2,3,4,5,6,7,28,29,32,33]
-        safetyStop = [110,111,115,116,118,120,121,124,128,129,130,131,132,133,134,135,136,149,150,151,152,153,154,155,156,157,158,159]
+        normalstop = [0, 2, 3, 4, 5, 7, 28, 29, 32, 33, 83]
+        safetyStop = [110, 111, 115, 116, 118, 120, 121, 124, 128, 129, 130, 131, 132, 133, 134, 135, 136, 149, 150,
+                      151, 152, 153, 154, 155, 156, 157, 158, 159, 184, 186, 187]
         for i in normalstop:
             alarm = data_config.Alarm_Param[i]
             alarmName = data_config.Alarm_Name[i] or f"ALARM_{i}"
@@ -2697,9 +2699,30 @@ def custom_function():
                 logging.warning(f"⚠️ [{i}]{alarmName} non è configurato come SAFETYSTOP")
         logging.debug("🔍 Fine controllo stop allarmi...")
 
+    def check_axis_speed() -> None:
+        logging.debug("🔍 Inizio controllo coerenza velocità asse...")
+        for axisInd in range(0, MAX_ASSE):
+            axis = data_config.Axis_Param[axisInd]
+            axis_name = data_config.Axis_Name[axisInd] or f"AXIS_{axisInd}"
+            bwSlow = axis.intval[ASSE_INT_BWVSLOW]
+            fwSlow = axis.intval[ASSE_INT_FWVSLOW]
+            maxSpeedFw = axis.realval[ASSE_REAL_FWVMAX]
+            maxSpeedBw = axis.realval[ASSE_REAL_BWVMAX]
+            if bwSlow not in (-49, -50):
+                logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['intval'][Type_AxisParam_Map['_intval'][ASSE_INT_BWVSLOW]]['display']} impostato a {bwSlow} e non -49 o -50")
+            if fwSlow not in (49, 50):
+                logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['intval'][Type_AxisParam_Map['_intval'][ASSE_INT_FWVSLOW]]['display']} impostato a {fwSlow} e non +49 o +50")
+            if maxSpeedBw > 0.0:
+                logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_BWVMAX]]['display']} impostato a {maxSpeedBw} maggiore di 0.0")
+            if maxSpeedFw < 0.0:
+                logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_FWVMAX]]['display']} impostato a {maxSpeedFw} minore di 0.0")
+            if axis.boolval[ASSE_BOOL_CONFIG] and (maxSpeedBw == 0.0 or maxSpeedBw == 0.0):
+                logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro velocità massima impostato a 0.0")
+        logging.debug("🔍 Fine controllo coerenza velocità asse...")
+
     foo = [check_axis_flag, check_duplicate_do_ao_usage, check_duplicate_obj_usage, clean_di_axis_check, duplicate_io_address,
            check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release, check_safety, check_rotation,
-           geometry_check, check_axis_speed_master_slave, check_forbidden_ao_do_usage, check_de_tilt, check_stop_alarms]
+           geometry_check, check_axis_speed_master_slave, check_forbidden_ao_do_usage, check_de_tilt, check_stop_alarms, check_axis_speed]
     for func in foo:
         logging.info('-' * 60)
         func()

@@ -2493,8 +2493,9 @@ def custom_function():
 
     def check_lat_sup() -> None:
         logging.debug("🔍 Avvio controllo supporti laterali")
-        foo = [FUN_AXIS_PRESIDESUPP, FUN_AXIS_BENDSIDESUPP]
-        for i in foo:
+        _ = [FUN_AXIS_PRESIDESUPP, FUN_AXIS_BENDSIDESUPP]
+        maxSupp = 0.0
+        for i in _:
             if data_config.AxisFunInd[i] == -1:
                 logging.warning("Indice non configurato in Params > Functions")
             else:
@@ -2508,18 +2509,33 @@ def custom_function():
                     tipo_feedback = axis_feedback.intval[FB_INT_TIPOMISURA]
                     if tipo_feedback != MISURA_GRAD:
                         logging.warning(f"⚠️ [{data_config.AxisFunInd[i]}]{axis_name} il feedback non ha il tipo di misura GRAD")
+                    if axis_feedback.realval[FB_REAL_SCALEINF] != 180.0 and axis_feedback.realval[FB_REAL_SCALESUP] != -180.0:
+                        logging.warning(f"⚠️ [{data_config.AxisFunInd[i]}]{axis_name} il feedback non ha scala -180°/+180°")
                 if axis.boolval[ASSE_BOOL_MANSPDOWN]:
                     logging.warning(f"⚠️ [{data_config.AxisFunInd[i]}]{axis_name} ha il flag MANSPDOWN attivo!")
-        foo = {
+                if maxSupp == 0.0:
+                    maxSupp = axis.realval[ASSE_REAL_SMAX]
+                else:
+                    if axis.realval[ASSE_REAL_SMAX] != maxSupp:
+                        logging.warning(f"⚠️ [{data_config.AxisFunInd[i]}]{axis_name} ha SMax diverso dagli altri supporti laterali!")
+                    if axis.realval[ASSE_REAL_SMAX] > maxSupp:
+                        maxSupp = axis.realval[ASSE_REAL_SMAX]
+        if data_config.ParamReal[REAL_LATSUPQ0] != maxSupp and data_config.ParamReal[REAL_LATSUPQ0] < maxSupp - 5.0:
+            logging.warning(f"⚠️ Config\t→\tLat\t→\tLATSUPQ0 deve essere impostato a {maxSupp} o leggermente meno")
+        if data_config.ParamReal[REAL_LATSUPQ4] == 0.0 or data_config.ParamReal[REAL_LATSUPQ4] > 5.0:
+            logging.warning(f"⚠️ Config\t→\tLat\t→\tLATSUPQ4 deve essere impostato a 1 o leggermente di più")
+
+        _ = {
             "REAL_LATSUPQ0": REAL_LATSUPQ0,
             "REAL_LATSUPQ1": REAL_LATSUPQ1,
             "REAL_LATSUPQ2": REAL_LATSUPQ2,
             "REAL_LATSUPQ3": REAL_LATSUPQ3,
             "REAL_LATSUPQ4": REAL_LATSUPQ4,
         }
-        for label, idx in foo.items():
+        for label, idx in _.items():
             if data_config.ParamRealType[idx] != -1:
                 logging.warning(f"⚠️ Config\t→\tLat\t→\t{label.replace('REAL_', '')} deve essere impostato -")
+
         logging.debug("🔍 Fine controllo supporti laterali...")
 
     def check_oil_temp() -> None:
@@ -2596,8 +2612,15 @@ def custom_function():
         logging.debug("🔍 Fine controllo sgancio...")
 
     def check_safety() -> None:
+        logging.debug("🔍 Inizio controllo safety...")
         if data_config.ParamInt[INT_HOLDTORUNTYPE] != SAFETY_INT:
             logging.warning("⚠️ Hold to run non impostato su INT")
+        for i in range(0, MAX_ASSE):
+            axis = data_config.Axis_Param[i]
+            axis_name = data_config.Axis_Name[i] or f"AXIS_{i}"
+            if axis.intval[ASSE_INT_HOLDTORUNTYPE] == ASSE_HOLDTORUNTYPE_NONE:
+                logging.warning(f"⚠️ [{i}]{axis_name} Hold to run non impostato")
+        logging.debug("🔍 Fine controllo safety...")
 
     def check_rotation() -> None:
         logging.debug("🔍 Inizio controllo rotazione...")

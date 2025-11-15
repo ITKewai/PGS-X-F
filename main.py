@@ -299,31 +299,31 @@ def main_cli():
 def main():
     """
     Entry point principale.
-    Carica la configurazione e avvia CLI o Web Server in base al flag.
+    Avvia il web server come interfaccia primaria.
+    Il flag webServer nel config.json permette di forzare la modalità CLI (se false).
     """
     logging.info(get_version_info())
 
-    # Carica il config.json
     config = load_exe_config()
 
     # Mostra quale modalità è attiva
-    logging.info(f"Modalità: {'🌐 WEB SERVER' if config['webServer'] else '🖥️  CLI'}")
-
     if config['webServer']:
-        # MODALITÀ WEB SERVER
-        # Carica il config YAML predefinito (se esiste)
-        state = SearchState()
-        try:
-            cfg_path = choose_and_prepare_config("")
-            state.load_config(cfg_path)
-        except Exception as e:
-            logging.warning(f"Avvio senza config caricato: {e}")
-
-        # Avvia il server Flask
-        run_web_server(host='127.0.0.1', port=6666)
+        logging.info(f"Modalità: 🌐 WEB SERVER (primaria)")
     else:
-        # MODALITÀ CLI TRADIZIONALE
+        logging.info(f"Modalità: 🖥️  CLI (forzato da config)")
+
+    if not config['webServer']:
+        # MODALITÀ CLI TRADIZIONALE (solo se esplicitamente forzato)
         main_cli()
+    else:
+        # Il web server parte senza alcuna config caricata
+        # L'utente può caricarla via UI
+        logging.info("\n" + "=" * 60)
+        logging.info("🚀 Interfaccia Web - Nessuna config precaricata")
+        logging.info("Carica una configurazione tramite l'UI per iniziare")
+        logging.info("=" * 60 + "\n")
+
+        run_web_server(host='0.0.0.0', port=7777)
 
 
 if __name__ == "__main__":

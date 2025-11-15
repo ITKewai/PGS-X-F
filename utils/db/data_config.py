@@ -2741,11 +2741,82 @@ def custom_function():
                 logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_FWVMAX]]['display']} impostato a {maxSpeedFw} minore di 0.0")
             if axis.boolval[ASSE_BOOL_CONFIG] and (maxSpeedBw == 0.0 or maxSpeedBw == 0.0):
                 logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro velocità massima impostato a 0.0")
+            if axis.realval[ASSE_REAL_MASTERMULT] != 5.0:
+                logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_MASTERMULT]]['display']} impostato a {axis.realval[ASSE_REAL_MASTERMULT]} diverso da 5.0")
+            if axis.realval[ASSE_REAL_MASTERDELTAMIN] < 3.0:
+                logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_MASTERDELTAMIN]]['display']} impostato a {axis.realval[ASSE_REAL_MASTERDELTAMIN]} inveriore a 2.0")
         logging.debug("🔍 Fine controllo coerenza velocità asse...")
+
+    def check_archimeter_params() -> None:
+        logging.info("🔍 Inizio controllo parametri archimetro...")
+        _ = [
+            "REAL_ARCHIMETER_L1",
+            "REAL_ARCHIMETER_A1",
+            "REAL_ARCHIMETER_B1",
+            "REAL_ARCHIMETER_C1",
+            "REAL_ARCHIMETER_L2",
+            "REAL_ARCHIMETER_A2",
+            "REAL_ARCHIMETER_B2",
+            "REAL_ARCHIMETER_C2",
+            "REAL_ARCHIMETER_L3",
+            "REAL_ARCHIMETER_A3",
+            "REAL_ARCHIMETER_B3",
+            "REAL_ARCHIMETER_C3",
+        ]
+        for idx_name in _:
+            if data_config.ParamRealType[globals()[idx_name]] != -1:
+                logging.warning(f"⚠️ Config\t→\tArchimetro\t→\t{idx_name.replace('REAL_', '')} deve essere impostato -")
+        logging.info("🔍 Fine controllo parametri archimetro.")
+
+    def check_bypass_unused() -> None:
+        logging.info("🔍 Inizio controllo bypass unused...")
+
+        # Indici dei BOOL di bypass negli assi
+        axis_bypass_flags = [
+            ASSE_BOOL_BP1, ASSE_BOOL_BP2, ASSE_BOOL_BP3, ASSE_BOOL_BP4,
+            ASSE_BOOL_BP5, ASSE_BOOL_BP6, ASSE_BOOL_BP7, ASSE_BOOL_BP8,
+            ASSE_BOOL_BP9, ASSE_BOOL_BP10, ASSE_BOOL_BP11, ASSE_BOOL_BP12,
+        ]
+
+        # Indici ParamInt corrispondenti ai bypass
+        outIndBypass = [
+            data_config.OutInd[BOOL_IND_BP1],
+            data_config.OutInd[BOOL_IND_BP2],
+            data_config.OutInd[BOOL_IND_BP3],
+            data_config.OutInd[BOOL_IND_BP4],
+            data_config.OutInd[BOOL_IND_BP5],
+            data_config.OutInd[BOOL_IND_BP6],
+            data_config.OutInd[BOOL_IND_BP7],
+            data_config.OutInd[BOOL_IND_BP8],
+            data_config.OutInd[BOOL_IND_BP9],
+            data_config.OutInd[BOOL_IND_BP10],
+            data_config.OutInd[BOOL_IND_BP11],
+            data_config.OutInd[BOOL_IND_BP12],
+        ]
+
+        for bp_idx, bypassOutInd in enumerate(outIndBypass):
+
+            # Se il bypass non è mappato
+            if bypassOutInd == -1:
+
+                # Allora cerchiamo chi cazzo lo sta usando lo stesso
+                for axisInd in range(MAX_ASSE):
+                    axis = data_config.Axis_Param[axisInd]
+
+                    # Nome asse safe
+                    raw_name = data_config.Axis_Name[axisInd]
+                    axis_name = raw_name.strip() if isinstance(raw_name, str) else f"AXIS_{axisInd}"
+
+                    # Se l'asse ha il flag del bypass → warning
+                    if axis.boolval[axis_bypass_flags[bp_idx]]:
+                        logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il bypass {Type_AxisParam_Map['boolval'][Type_AxisParam_Map['_boolval'][axis_bypass_flags[bp_idx]]]['display']} attivo ma non è stato mappato")
+
+        logging.info("🔍 Fine controllo bypass unused...")
 
     foo = [check_axis_flag, check_duplicate_do_ao_usage, check_duplicate_obj_usage, clean_di_axis_check, duplicate_io_address,
            check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release, check_safety, check_rotation,
-           geometry_check, check_axis_speed_master_slave, check_forbidden_ao_do_usage, check_de_tilt, check_stop_alarms, check_axis_speed]
+           geometry_check, check_axis_speed_master_slave, check_forbidden_ao_do_usage, check_de_tilt, check_stop_alarms, check_axis_speed,
+           check_archimeter_params, check_bypass_unused]
     for func in foo:
         logging.info('-' * 60)
         func()

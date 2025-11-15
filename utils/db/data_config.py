@@ -8,12 +8,13 @@ verso l'istanza DATA_CONFIG, seguendo la logica SCL.
 """
 from __future__ import annotations
 import logging
-import os
 import sys
+import json
 
 from pathlib import Path
 from typing import Any, List, Dict, Sequence, Optional
 
+from utils.exe.config import load_exe_config
 from utils.exports.tia_constants_map import *
 from utils.yaml.data.core import make_axis_sys_addr
 from utils.yaml.data.costants import BASE_AXIS, AXIS_GROUP_STEP, ALARM_GROUP_STEP, AXIS_GROUPS_ORDER
@@ -47,8 +48,11 @@ class ColorFormatter(logging.Formatter):
 # ⚙️ Configurazione handler con formatter colorato
 handler = logging.StreamHandler(sys.stdout)
 handler.setFormatter(ColorFormatter("%(asctime)s [%(levelname)s] %(message)s", "%H:%M:%S"))
+# handler.setFormatter(ColorFormatter())
 
-log_level = logging.DEBUG if os.path.exists("debug.txt") and Path("debug.txt").read_text(encoding="utf-8").strip() else logging.INFO
+config = load_exe_config()
+
+log_level = logging.DEBUG if config['debug'] else logging.INFO
 
 logging.basicConfig(level=log_level, handlers=[handler])
 

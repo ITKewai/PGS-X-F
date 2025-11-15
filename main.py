@@ -4,7 +4,7 @@ import json
 import logging
 import sys
 
-from utils.exe.load import load_exe_config
+from utils.exe.config import load_exe_config
 from utils.version import __version__, __pgs_version__, __author__, __company__, __product__, __copyright__, get_version_info
 from utils.web.core_logic import SearchState
 from utils.web.web_server import run_web_server

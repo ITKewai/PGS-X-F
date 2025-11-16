@@ -47,7 +47,8 @@ class ColorFormatter(logging.Formatter):
 
 # ⚙️ Configurazione handler con formatter colorato
 handler = logging.StreamHandler(sys.stdout)
-handler.setFormatter(ColorFormatter("%(asctime)s [%(levelname)s] %(message)s", "%H:%M:%S"))
+# handler.setFormatter(ColorFormatter("%(asctime)s [%(levelname)s] %(message)s", "%H:%M:%S"))
+handler.setFormatter(ColorFormatter("%(message)s", "%H:%M:%S"))
 # handler.setFormatter(ColorFormatter())
 
 config = load_exe_config()

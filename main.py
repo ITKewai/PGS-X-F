@@ -6,8 +6,6 @@ import sys
 
 from utils.exe.config import load_exe_config
 from utils.version import __version__, __pgs_version__, __author__, __company__, __product__, __copyright__, get_version_info
-from utils.web.core_logic import SearchState
-from utils.web.web_server import run_web_server
 from utils.yaml.data.core import make_axis_sys_addr, make_alarm_sys_addr
 from utils.yaml.data.costants import AXIS_GROUPS_ORDER, ALARM_GROUPS_ORDER, SYSTEM_TYPE, SYSTEM_TYPE_REV
 from utils.yaml.download import *
@@ -36,12 +34,22 @@ def print_in_columns(entries: list[str], cols: int = 3) -> None:
         logging.info("  " + "".join(s.ljust(colw) for s in row))
 
 
-def main_cli():
+def main():
     """
     Modalità CLI tradizionale.
     Mantiene la logica originale del programma.
     """
     global sn
+
+    logging.info(get_version_info())
+
+    config = load_exe_config()
+
+    if config['webServer']:
+        logging.info(f"Modalità: 🌐 WEB SERVER (primaria)")
+    else:
+        logging.info(f"Modalità: 🖥️  CLI (forzato da config)")
+
     logging.info(get_version_info())
 
     cfg_path = choose_and_prepare_config(sn)
@@ -247,36 +255,6 @@ def main_cli():
                 elif tipo == 4:
                     run_io_search(iotype=IO_AO, Ind=target_number, verbose=True)
             continue
-
-
-def main():
-    """
-    Entry point principale.
-    Avvia il web server come interfaccia primaria.
-    Il flag webServer nel config.json permette di forzare la modalità CLI (se false).
-    """
-    logging.info(get_version_info())
-
-    config = load_exe_config()
-
-    # Mostra quale modalità è attiva
-    if config['webServer']:
-        logging.info(f"Modalità: 🌐 WEB SERVER (primaria)")
-    else:
-        logging.info(f"Modalità: 🖥️  CLI (forzato da config)")
-
-    if not config['webServer']:
-        # MODALITÀ CLI TRADIZIONALE (solo se esplicitamente forzato)
-        main_cli()
-    else:
-        # Il web server parte senza alcuna config caricata
-        # L'utente può caricarla via UI
-        logging.info("\n" + "=" * 60)
-        logging.info("🚀 Interfaccia Web - Nessuna config precaricata")
-        logging.info("Carica una configurazione tramite l'UI per iniziare")
-        logging.info("=" * 60 + "\n")
-
-        run_web_server(host='0.0.0.0', port=7777)
 
 
 if __name__ == "__main__":

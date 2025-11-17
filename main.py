@@ -45,11 +45,6 @@ def main():
 
     config = load_exe_config()
 
-    if config['webServer']:
-        logging.info(f"Modalità: 🌐 WEB SERVER (primaria)")
-    else:
-        logging.info(f"Modalità: 🖥️  CLI (forzato da config)")
-
     logging.info(get_version_info())
 
     cfg_path = choose_and_prepare_config(sn)

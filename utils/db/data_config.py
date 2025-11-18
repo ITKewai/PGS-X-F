@@ -466,7 +466,7 @@ def _io_global_index(field: str, ind: int) -> int:
 
 
 def _deserialize_io_row(field: str, ind: int, row: Sequence[Any]) -> None:
-    logging.debug(f'IN: _deserialize_io_row: field={field}, ind={ind}')
+    # logging.debug(f'IN: _deserialize_io_row: field={field}, ind={ind}')
     k = _io_global_index(field, ind)
     if k > getattr(data_config, "MAX_IO", k):
         return
@@ -558,7 +558,7 @@ def _deserialize_io_row(field: str, ind: int, row: Sequence[Any]) -> None:
     #     DATA_STATUS.IO[k].Ind = -1
     # else:
     #     DATA_STATUS.IO[k].Ind = -1
-    logging.debug(f'OUT: _deserialize_io_row: field={field}, ind={ind}')
+    # logging.debug(f'OUT: _deserialize_io_row: field={field}, ind={ind}')
 
 
 def _build_io_lists():

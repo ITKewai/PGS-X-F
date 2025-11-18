@@ -22,4 +22,11 @@ A TEMPO PERSO:
 # TODO: sistemar ricerca duplicati perchp non va
 # TODO: ricerca free mi trova qualcosa in ANA1 - output: [1,2,-1,57,56,-1,-1,-1,-1,-1,-1,-1,-1,-1,300,900,300,900,0,0,0,0,0,100,0,100,0,0,20,20,40,40,60,60,80,80,100,100,0,0,20,20,40,40,60,60,80,80,100,100]
 # TODO: verificare DEFAULT SPEED e mMAXVELPERC nin control negli assi se è diverso da 100 e 100
+
+⚠️ [7]RS il feedback non ha scala -180°/+180°
+⚠️ [6]LS il feedback non ha scala -180°/+180° nn va benen
+ASTER MULT impostato a 1.7 diverso da 5.0
+⚠️ [4]AXIS_4 ha il parametro MASTER DELTAMIN impostato a 2.0 inveriore a 2.0
+⚠️ [5]VS ha il parametro MAX SPEED (BW) impostato a 108.33299 maggiore di
+
 """

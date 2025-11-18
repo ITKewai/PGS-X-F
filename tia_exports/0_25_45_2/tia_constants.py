@@ -1,5 +1,8 @@
 # Auto-generato da main_import.py
 
+__version__ = "0.25.45.2"
+
+
 # --- DB DATA_CONFIG.db ---
 class DATA_CONFIG:
     def __init__(self):

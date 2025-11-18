@@ -178,6 +178,7 @@ def _clean_data_config() -> None:
     2) normalizza campi runtime dove i defaults non bastano
     3) svuota le liste helper IO_*_List
     """
+    logging.debug('IN: _clean_data_config')
     # 1️⃣ resetta tutto ai defaults
     if hasattr(data_config, "reset") and callable(getattr(data_config, "reset")):
         data_config.reset()
@@ -233,6 +234,7 @@ def _clean_data_config() -> None:
     data_config.IO_AI_List = []
     data_config.IO_AO_List = []
     data_config.IO_RI_List = []
+    logging.debug('OUT: _clean_data_config')
 
 
 # ------------------------------
@@ -240,6 +242,7 @@ def _clean_data_config() -> None:
 # ------------------------------
 def _deserialize_header(data: Dict[str, Any]) -> None:
     """ header / pstring / pbool / pint / preal / ptype — compatibile con YAML dove 'param' è lista di dizionari """
+    logging.debug('IN: _deserialize_header')
     header = _as_list(data.get("header"))
     logger.debug(f"header: {header}")
 
@@ -312,10 +315,12 @@ def _deserialize_header(data: Dict[str, Any]) -> None:
         data_config.ParamRealType = [-1] * (max_len + 1)
     for i in range(max_len + 1):
         data_config.ParamRealType[i] = _to_int(ptype[i], -1) if i < len(ptype) else -1
+    logging.debug('OUT: _deserialize_header')
 
 
 def _deserialize_card_exc(data: Dict[str, Any]) -> None:
     """ card / exc → struttura SDO se presente """
+    logging.debug('IN: _deserialize_card_exc')
     card = _as_list(data.get("card"))
     for idx, row in enumerate(card):
         if not isinstance(row, (list, tuple)):
@@ -343,10 +348,12 @@ def _deserialize_card_exc(data: Dict[str, Any]) -> None:
             data_config.DATA_SDO.SdoIFM.ARRAY_SPECIALI[idx].DITHER_VALUE = _to_int(row[3], 0)
         except Exception:
             pass
+    logging.debug('OUT: _deserialize_card_exc')
 
 
 def _deserialize_axind_in_out(data: Dict[str, Any]) -> None:
     """ axind / in / out """
+    logging.debug('IN: _deserialize_axind_in_out')
     axind = _as_list(data.get("axind"))
     limit = min(len(data_config.AxisFunInd), getattr(data_config, "MAX_ASSEFUNIND", len(axind)) + 1)  # TODO: leggere dal file
     for i in range(limit):
@@ -361,6 +368,7 @@ def _deserialize_axind_in_out(data: Dict[str, Any]) -> None:
     limit = min(len(data_config.OutInd), getattr(data_config, "MAX_STATOBOOL", len(out_list)) + 1)  # TODO: leggere dal file
     for i in range(limit):
         data_config.OutInd[i] = _to_int(out_list[i], -1) if i < len(out_list) else -1
+    logging.debug('OUT: _deserialize_axind_in_out')
 
 
 # ------------------ IO (di/ai/do/ao/ri) ------------------
@@ -420,6 +428,7 @@ def _iotype_to_field(iotype: int) -> Optional[str]:  # DYNAMIC PATHING
 #     logger.info(f"Rilevati IO: DI={counts['di']}, AI={counts['ai']}, DO={counts['do']}, AO={counts['ao']}, RI={counts['ri']}")
 
 def _deserialize_io(data: Dict[str, Any]) -> None:  # DYNAMIC PATHING
+    logger.debug('IN: _deserialize_io')
     io_data = data.get("io", {}) or {}
     # Pre-scan: layout dinamico e righe già filtrate
     valid_rows = _prepare_io_layout(io_data)
@@ -432,6 +441,7 @@ def _deserialize_io(data: Dict[str, Any]) -> None:  # DYNAMIC PATHING
             _deserialize_io_row(field, ind, row)
 
     logger.info(f"Rilevati IO: DI={counts['di']}, AI={counts['ai']}, DO={counts['do']}, AO={counts['ao']}, RI={counts['ri']}")
+    logger.debug('OUT: _deserialize_io')
 
 
 def _io_global_index(field: str, ind: int) -> int:
@@ -456,6 +466,7 @@ def _io_global_index(field: str, ind: int) -> int:
 
 
 def _deserialize_io_row(field: str, ind: int, row: Sequence[Any]) -> None:
+    logging.debug(f'IN: _deserialize_io_row: field={field}, ind={ind}')
     k = _io_global_index(field, ind)
     if k > getattr(data_config, "MAX_IO", k):
         return
@@ -544,9 +555,11 @@ def _deserialize_io_row(field: str, ind: int, row: Sequence[Any]) -> None:
     #     DATA_STATUS.IO[k].Ind = -1
     # else:
     #     DATA_STATUS.IO[k].Ind = -1
+    logging.debug(f'OUT: _deserialize_io_row: field={field}, ind={ind}')
 
 
 def _build_io_lists():
+    logging.debug('IN: _build_io_lists')
     for param in data_config.IO_Param:
         if param.iotype == IO_DI:
             data_config.IO_DI_List.append(param)
@@ -559,7 +572,7 @@ def _build_io_lists():
         elif param.iotype == IO_RI:
             data_config.IO_RI_List.append(param)
     logger.debug(f'DI: {len(data_config.IO_DI_List)}, DO: {len(data_config.IO_DO_List)}, AI: {len(data_config.IO_AI_List)}, AO: {len(data_config.IO_AO_List)}, RI: {len(data_config.IO_RI_List)}, ')
-
+    logging.debug('OUT: _build_io_lists')
 
 # ------------------ OBJ/AXIS ------------------
 def _deserialize_obj_axis(data: Dict[str, Any]) -> None:
@@ -568,6 +581,7 @@ def _deserialize_obj_axis(data: Dict[str, Any]) -> None:
     tutti i campi di data_config.Axis_Param[i] (boolval, intval, realval, fcval, offsetval, typval)
     in base agli indici standard definiti in Type_AxisParam.
     """
+    logging.debug('IN: _deserialize_obj_axis')
     axis_blocks = data.get("obj", {}).get("axis", [])
     if not axis_blocks:
         return
@@ -625,10 +639,11 @@ def _deserialize_obj_axis(data: Dict[str, Any]) -> None:
         #     data_config.Axis_Param[ind].typval[j] = 0
         #     data_config.Axis_Param[ind].fcval[j] = 1.0
         #     data_config.Axis_Param[ind].offsetval[j] = 0.0
-
+    logging.debug('OUT: _deserialize_obj_axis')
 
 # ------------------ INPUT / OUTPUT / FB / PID / MOT / ALARM / MAINT / TOOLSET ------------------
 def _deserialize_obj_input(data: Dict[str, Any]) -> None:
+    logging.debug('IN: _deserialize_obj_input')
     rows = _as_list(data.get("obj", {}).get("input"))
     for ind, row in enumerate(rows):
         if not isinstance(row, (list, tuple)):
@@ -649,9 +664,10 @@ def _deserialize_obj_input(data: Dict[str, Any]) -> None:
             iv = _to_int(val)
             data_config.Input_Param[ind].dintvalcfg[j] = iv
             data_config.Input_Param[ind].dintval[j] = iv
-
+    logging.debug('OUT: _deserialize_obj_input')
 
 def _deserialize_obj_output(data: Dict[str, Any]) -> None:
+    logging.debug('IN: _deserialize_obj_output')
     rows = _as_list(data.get("obj", {}).get("output"))
     for ind, row in enumerate(rows):
         if not isinstance(row, (list, tuple)):
@@ -670,9 +686,11 @@ def _deserialize_obj_output(data: Dict[str, Any]) -> None:
         for j in range(MAX_OUTPUTREAL + 1):
             val = row[off + j] if off + j < len(row) else 0.0
             data_config.Output_Param[ind].realval[j] = _to_float(val)
+    logging.debug('OUT: _deserialize_obj_output')
 
 
 def _deserialize_obj_fb(data: Dict[str, Any]) -> None:
+    logging.debug('IN: _deserialize_obj_fb')
     rows = _as_list(data.get("obj", {}).get("fb"))
     typever = int(data_config.Config_Header[getattr(data_config, "HEADER_TYPEVERSION", 0)]) if hasattr(data_config, "Config_Header") else 0
     for ind, row in enumerate(rows):
@@ -708,9 +726,11 @@ def _deserialize_obj_fb(data: Dict[str, Any]) -> None:
             fv = _to_float(val)
             data_config.Feedback_Param[ind].realvalcfg[j] = fv
             data_config.Feedback_Param[ind].realval[j] = fv
+    logging.debug('OUT: _deserialize_obj_fb')
 
 
 def _deserialize_obj_pid(data: Dict[str, Any]) -> None:
+    logging.debug('IN: _deserialize_obj_pid')
     rows = _as_list(data.get("obj", {}).get("pid"))
     for ind, row in enumerate(rows):
         if not isinstance(row, (list, tuple)):
@@ -718,9 +738,10 @@ def _deserialize_obj_pid(data: Dict[str, Any]) -> None:
         for j in range(MAX_PIDREAL + 1):
             val = row[j] if j < len(row) else 0.0
             data_config.PID_Param[ind].realval[j] = _to_float(val)
-
+    logging.debug('OUT: _deserialize_obj_pid')
 
 def _deserialize_obj_mot(data: Dict[str, Any]) -> None:
+    logging.debug('IN: _deserialize_obj_mot')
     rows = _as_list(data.get("obj", {}).get("mot"))
     # Reset RecyclingMotorInd a inizio
     try:
@@ -762,9 +783,11 @@ def _deserialize_obj_mot(data: Dict[str, Any]) -> None:
                 data_config.DATA_STATUS.RecyclingMotorInd = ind
         except Exception:
             pass
+    logging.debug('OUT: _deserialize_obj_mot')
 
 
 def _deserialize_obj_alarm(data: Dict[str, Any]) -> None:
+    logger.debug('IN: _deserialize_obj_alarm')
     rows = _as_list(data.get("obj", {}).get("alarm"))
     # init Stop e warning map a inizio
     data_config.Stop_Num = 0
@@ -836,9 +859,11 @@ def _deserialize_obj_alarm(data: Dict[str, Any]) -> None:
                 data_config.Stop_Num = s + 1
         except Exception:
             pass
+    logger.debug('OUT: _deserialize_obj_alarm')
 
 
 def _deserialize_obj_maint(data: Dict[str, Any]) -> None:
+    logger.debug('IN: _deserialize_obj_maint')
     rows = _as_list(data.get("obj", {}).get("maint"))
     for ind, row in enumerate(rows):
         if not isinstance(row, (list, tuple)) or len(row) == 0:
@@ -861,9 +886,10 @@ def _deserialize_obj_maint(data: Dict[str, Any]) -> None:
             data_config.DATA_MAINT.Cod[ind] = data_config.Maint_Param[ind].intval[MAINT_INT_COD]
         except Exception:
             pass
-
+    logger.debug('OUT: _deserialize_obj_maint')
 
 def _deserialize_obj_toolset(data: Dict[str, Any]) -> None:
+    logger.debug('IN: _deserialize_obj_toolset')
     rows = _as_list(data.get("obj", {}).get("toolset"))
     for ind, row in enumerate(rows):
         if not isinstance(row, (list, tuple)) or len(row) == 0:
@@ -915,6 +941,7 @@ def _deserialize_obj_toolset(data: Dict[str, Any]) -> None:
                 idx = base + j
                 val = row[idx] if idx < len(row) else 0
                 data_config.Toolset_Param[ind].output[i_out].dintval[j] = _to_int(val)
+    logger.debug('OUT: _deserialize_obj_toolset')
 
 
 # ------------------ Finalize ------------------
@@ -2514,7 +2541,7 @@ def custom_function():
                     tipo_feedback = axis_feedback.intval[FB_INT_TIPOMISURA]
                     if tipo_feedback != MISURA_GRAD:
                         logging.warning(f"⚠️ [{data_config.AxisFunInd[i]}]{axis_name} il feedback non ha il tipo di misura GRAD")
-                    if axis_feedback.realval[FB_REAL_SCALEINF] != 180.0 and axis_feedback.realval[FB_REAL_SCALESUP] != -180.0:
+                    if axis_feedback.realval[FB_REAL_SCALEINF] not in (180.0, -180.0) and axis_feedback.realval[FB_REAL_SCALESUP] not in (180.0, -180.0):
                         logging.warning(f"⚠️ [{data_config.AxisFunInd[i]}]{axis_name} il feedback non ha scala -180°/+180°")
                 if axis.boolval[ASSE_BOOL_MANSPDOWN]:
                     logging.warning(f"⚠️ [{data_config.AxisFunInd[i]}]{axis_name} ha il flag MANSPDOWN attivo!")

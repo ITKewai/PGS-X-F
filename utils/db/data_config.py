@@ -532,7 +532,10 @@ def _deserialize_io_row(field: str, ind: int, row: Sequence[Any]) -> None:
                 first += MAX_EXPRINT
                 for j in range(MAX_EXPROPER + 1):
                     val = row[first + j] if first + j < len(row) else 0.0
-                    data_config.IO_Param[k].exprrealval[j] = _to_float(val, 0.0)
+                    if hasattr(data_config.IO_Param[k], "exprrealval"):
+                        data_config.IO_Param[k].exprrealval[j] = _to_float(val, 0.0)
+                    else:
+                        logging.debug(f"IO_Param[{k}] non ha exprrealval in questa versione")  # TODO: gestire meglio
         else:
             # default EXPRINT a -1
             for j in range(MAX_EXPRINT + 1):
@@ -1590,6 +1593,11 @@ def run_io_expr_scan(iotype: int, ind_target: int = None, verbose: bool = False)
                         #     logging.info('xERR_001')
                         continue
                     not_val, opnd_val, oper_val = data_config.IO_DI_List[Ind].exprintval[i:i + 3]
+                    try:
+                        _ = [IO_EXPR_NONE, IO_EXPR_VAL, IO_EXPR_NOTVAL]
+                    except NameError:
+                        logging.debug('Costanti IO_EXPR_NONE, IO_EXPR_VAL, IO_EXPR_NOTVAL non definite in questa versione!') # TODO: gestire meglio
+                        continue
                     if not_val in [IO_EXPR_NONE, IO_EXPR_VAL, IO_EXPR_NOTVAL]:
                         group_num = ((i - 1) // 3)  # + 1
                         if opnd_val == ind_target:
@@ -2319,7 +2327,11 @@ def custom_function():
         for axisInd in range(0, MAX_ASSE):
             AxisParamIntVals = data_config.Axis_Param[axisInd].intval
             to_check = [ASSE_INT_INDSHH, ASSE_INT_INDSH, ASSE_INT_INDSL, ASSE_INT_INDSLL, ASSE_INT_INDSH0, ASSE_INT_INDSL0]
-            to_check.extend([ASSE_INT_FREE_71, ASSE_INT_FREE_72, ASSE_INT_OPTPARAM1IND, ASSE_INT_OPTPARAM2IND, ASSE_INT_OPTPARAM3IND])
+            try:
+                to_check.extend([ASSE_INT_FREE_71, ASSE_INT_FREE_72, ASSE_INT_OPTPARAM1IND, ASSE_INT_OPTPARAM2IND, ASSE_INT_OPTPARAM3IND])
+            except NameError:
+                logging.debug("⚠️ Alcuni parametri opzionali non sono definiti nella versione corrente.")  # TODO: gestire meglio
+                pass
             for idx in to_check:
                 idx_name = Type_AxisParam_Map["_intval"][idx]
                 if AxisParamIntVals[idx] != -1:
@@ -2796,8 +2808,11 @@ def custom_function():
             "REAL_ARCHIMETER_C3",
         ]
         for idx_name in _:
-            if data_config.ParamRealType[globals()[idx_name]] != -1:
-                logging.warning(f"⚠️ Config\t→\tArchimetro\t→\t{idx_name.replace('REAL_', '')} deve essere impostato -")
+            try:
+                if data_config.ParamRealType[globals()[idx_name]] != -1:
+                    logging.warning(f"⚠️ Config\t→\tArchimetro\t→\t{idx_name.replace('REAL_', '')} deve essere impostato -")
+            except KeyError:
+                logging.debug(f"⚠️ Impossibile controllare il parametro {idx_name}, chiave non trovata") # TODO: gestire meglio
         logging.info("🔍 Fine controllo parametri archimetro.")
 
     def check_bypass_unused() -> None:

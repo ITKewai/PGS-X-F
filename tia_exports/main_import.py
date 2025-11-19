@@ -237,48 +237,61 @@ def process_excel(filepath: str, out):
 # 🔸 Main
 # ==============================
 def main():
-    print("=== Selezione cartella sorgente ===")
+    print("=== Generazione automatica tia_constants per ogni cartella valida ===")
 
-    # Elenca tutte le sottocartelle nella directory corrente (escludendo hidden)
-    subfolders = [d for d in os.listdir(BASE_DIR)
-                  if os.path.isdir(os.path.join(BASE_DIR, d)) and not d.startswith('.')]
+    # Trova tutte le sottocartelle
+    subfolders = [
+        d for d in os.listdir(BASE_DIR)
+        if os.path.isdir(os.path.join(BASE_DIR, d)) and not d.startswith('.')
+    ]
 
     if not subfolders:
         print("❌ Nessuna sottocartella trovata.")
         return
 
-    # Mostra elenco numerato
-    for i, folder in enumerate(subfolders, start=1):
-        print(f"[{i}] {folder.replace('_', '.')}")
+    for folder in subfolders:
+        exports_dir = os.path.join(BASE_DIR, folder)
 
-    # Chiedi all'utente di scegliere
-    while True:
-        choice = input("Scegli il numero della versione da importare: ")
-        if choice.isdigit() and 1 <= int(choice) <= len(subfolders):
-            selected_folder = subfolders[int(choice) - 1]
-            break
-        print("⚠️ Scelta non valida, riprova.")
+        # Cerca file validi nella cartella
+        file_list = os.listdir(exports_dir)
+        valid_files = [
+            f for f in file_list
+            if f.lower().endswith((".udt", ".db", ".xlsx"))
+        ]
 
-    # Imposta EXPORTS_DIR sulla cartella scelta
-    exports_dir = os.path.join(BASE_DIR, selected_folder)
-    print(f"\n📂 Cartella selezionata: {exports_dir}")
+        # Se la cartella non contiene file validi → ignora
+        if not valid_files:
+            print(f"⚠️  Ignorata: {folder} (nessun file udt/db/xlsx)")
+            continue
 
-    output_file = os.path.join(BASE_DIR, selected_folder + "/tia_constants.py")
-    print(f"📤 Generazione in corso... ({output_file})")
+        # Nome file output con versione
+        output_file = os.path.join(
+            exports_dir,
+            f"tia_constants_{folder}.py"
+        )
 
-    with open(output_file, "w", encoding="utf-8") as out:
-        out.write("# Auto-generato da main_import.py\n\n")
-        for filename in os.listdir(exports_dir):
-            filepath = os.path.join(exports_dir, filename)
-            lower = filename.lower()
-            if lower.endswith(".udt"):
-                process_udt_file(filepath, out)
-            elif lower.endswith(".db"):
-                process_db_file(filepath, out)
-            elif lower.endswith(".xlsx"):
-                process_excel(filepath, out)
+        print(f"\n📂 Cartella valida: {folder}")
+        print(f"   → Generazione file: {output_file}")
 
-    print(f"✅ File generato: {output_file}")
+        with open(output_file, "w", encoding="utf-8") as out:
+            out.write("# Auto-generato da main_import.py\n")
+            out.write(f"# Versione: {folder}\n\n")
+
+            for filename in valid_files:
+                filepath = os.path.join(exports_dir, filename)
+                lower = filename.lower()
+
+                if lower.endswith(".udt"):
+                    process_udt_file(filepath, out)
+                elif lower.endswith(".db"):
+                    process_db_file(filepath, out)
+                elif lower.endswith(".xlsx"):
+                    process_excel(filepath, out)
+
+        print(f"   ✅ Creato: {output_file}")
+
+    print("\n🎉 Generazione completata!")
+
 
 
 if __name__ == "__main__":

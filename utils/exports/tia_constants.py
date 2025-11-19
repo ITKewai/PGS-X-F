@@ -1,4 +1,5 @@
 # Auto-generato da main_import.py
+# Versione: 0_25_45_2
 
 # --- DB DATA_CONFIG.db ---
 class DATA_CONFIG:
@@ -161,6 +162,7 @@ class DATA_CONFIG:
         self.UM_FC_Imp = [0.0] * (MAX_UM + 1)  # Array[0.."MAX_UM"] of Real
         self._defaults['UM_FC_Imp'] = [0.0] * (MAX_UM + 1)
 
+
 class Type_StatParam:
     """
     Estratto da: PlcDataType.udt
@@ -204,6 +206,7 @@ class Type_StatParam:
     def __repr__(self):
         fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
         return f"<Type_StatParam {fields}>"
+
 
 
 class Type_Stat:
@@ -251,6 +254,7 @@ class Type_Stat:
         return f"<Type_Stat {fields}>"
 
 
+
 class Type_ToolsetOutputParam:
     """
     Estratto da: PlcDataType.udt
@@ -276,6 +280,7 @@ class Type_ToolsetOutputParam:
     def __repr__(self):
         fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
         return f"<Type_ToolsetOutputParam {fields}>"
+
 
 
 class Type_AlarmParam:
@@ -305,6 +310,7 @@ class Type_AlarmParam:
         return f"<Type_AlarmParam {fields}>"
 
 
+
 class Type_Teach:
     """
     Estratto da: PlcDataType.udt
@@ -327,6 +333,7 @@ class Type_Teach:
     def __repr__(self):
         fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
         return f"<Type_Teach {fields}>"
+
 
 
 class Type_Seq:
@@ -449,6 +456,7 @@ class Type_Seq:
         return f"<Type_Seq {fields}>"
 
 
+
 class Type_PIDParam:
     """
     Estratto da: PlcDataType.udt
@@ -471,6 +479,7 @@ class Type_PIDParam:
     def __repr__(self):
         fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
         return f"<Type_PIDParam {fields}>"
+
 
 
 class Type_PID:
@@ -509,6 +518,7 @@ class Type_PID:
         return f"<Type_PID {fields}>"
 
 
+
 class Type_OutputParam:
     """
     Estratto da: PlcDataType.udt
@@ -537,6 +547,7 @@ class Type_OutputParam:
     def __repr__(self):
         fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
         return f"<Type_OutputParam {fields}>"
+
 
 
 class Type_Output:
@@ -599,6 +610,7 @@ class Type_Output:
         return f"<Type_Output {fields}>"
 
 
+
 class Type_Motor:
     """
     Estratto da: PlcDataType.udt
@@ -656,6 +668,7 @@ class Type_Motor:
         return f"<Type_Motor {fields}>"
 
 
+
 class Type_MaintParam:
     """
     Estratto da: PlcDataType.udt
@@ -681,6 +694,7 @@ class Type_MaintParam:
     def __repr__(self):
         fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
         return f"<Type_MaintParam {fields}>"
+
 
 
 class Type_ToolsetParam:
@@ -728,6 +742,7 @@ class Type_ToolsetParam:
         return f"<Type_ToolsetParam {fields}>"
 
 
+
 class Type_IOParam:
     """
     Estratto da: PlcDataType.udt
@@ -771,6 +786,7 @@ class Type_IOParam:
     def __repr__(self):
         fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
         return f"<Type_IOParam {fields}>"
+
 
 
 class Type_IO:
@@ -821,6 +837,7 @@ class Type_IO:
         return f"<Type_IO {fields}>"
 
 
+
 class Type_InputParam:
     """
     Estratto da: PlcDataType.udt
@@ -852,6 +869,7 @@ class Type_InputParam:
     def __repr__(self):
         fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
         return f"<Type_InputParam {fields}>"
+
 
 
 class Type_Input:
@@ -887,6 +905,7 @@ class Type_Input:
         return f"<Type_Input {fields}>"
 
 
+
 class Type_FeedbackParam:
     """
     Estratto da: PlcDataType.udt
@@ -918,6 +937,7 @@ class Type_FeedbackParam:
     def __repr__(self):
         fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
         return f"<Type_FeedbackParam {fields}>"
+
 
 
 class Type_Feedback:
@@ -965,6 +985,7 @@ class Type_Feedback:
         return f"<Type_Feedback {fields}>"
 
 
+
 class Type_AxisParam:
     """
     Estratto da: PlcDataType.udt
@@ -1005,6 +1026,7 @@ class Type_AxisParam:
     def __repr__(self):
         fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
         return f"<Type_AxisParam {fields}>"
+
 
 
 class Type_Axis:
@@ -1166,6 +1188,7 @@ class Type_Axis:
         return f"<Type_Axis {fields}>"
 
 
+
 class Type_IORef:
     """
     Estratto da: PlcDataType.udt
@@ -1194,6 +1217,7 @@ class Type_IORef:
     def __repr__(self):
         fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
         return f"<Type_IORef {fields}>"
+
 
 
 class Type_DataLoggerBuffer:
@@ -1236,6 +1260,7 @@ class Type_DataLoggerBuffer:
     def __repr__(self):
         fields = ', '.join(f"{k}={getattr(self, k)}" for k in self._defaults.keys())
         return f"<Type_DataLoggerBuffer {fields}>"
+
 
 
 class Type_LongString:

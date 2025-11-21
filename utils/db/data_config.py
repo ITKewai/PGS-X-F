@@ -2155,7 +2155,7 @@ def custom_function():
         Controlla limiti e flag per ogni asse.
         Stampa warning prima del gruppo di riferimenti.
         """
-        logging.debug("IN: check_axis_flag")
+        logging.info("🔍 Avvio controllo flag assi...")
 
         def _axis_label_from_int_idx(int_idx: int) -> str:
             try:
@@ -2267,7 +2267,7 @@ def custom_function():
                 out_lines.append(f"[ASSE {axisInd:02d}] {axis_name}")
                 out_lines.extend(local_buf)
 
-        logging.debug("OUT: check_axis_flag")
+        logging.info("🔍 Fine controllo flag assi.")
         return out_lines
 
     def check_duplicate_do_ao_usage():
@@ -2275,7 +2275,7 @@ def custom_function():
         Controlla se una DO/AO è referenziata in più punti nel progetto.
         Usa run_io_scan per verificare dove viene utilizzata ogni uscita.
         """
-        logging.debug(f'🔍Avvio controllo duplicati DO AO...')
+        logging.info(f'🔍Avvio controllo duplicati DO AO...')
         duplicates = {}
 
         for iotype, label in [(IO_DO, "DO"), (IO_AO, "AO")]:
@@ -2289,7 +2289,7 @@ def custom_function():
                     logging.warning(f"⚠️ {label}[{idx}] {io_name or ''} usato in più punti:")
                     for u in used_in:
                         logging.warning(f"   ↳ {u}")
-        logging.debug(f'🔍Fine controllo duplicati DO AO...')
+        logging.info(f'🔍Fine controllo duplicati DO AO...')
         return duplicates
 
     def check_duplicate_obj_usage(verbose: bool = True) -> dict:
@@ -2297,7 +2297,7 @@ def custom_function():
         Controlla se input, output o feedback sono usati in più assi diversi.
         Restituisce un dict con le duplicazioni trovate.
         """
-        logging.debug(f'🔍Avvio controllo duplicati Input/Output/Feedback...')
+        logging.info(f'🔍Avvio controllo duplicati Input/Output/Feedback...')
         result = {
             "feedback": {},
             "input": {},
@@ -2351,11 +2351,11 @@ def custom_function():
                 for cat, items in duplicates.items():
                     for ind, axes in items.items():
                         logging.warning(f" - {cat.upper()}[{ind}] usato in: {', '.join(axes)}")
-        logging.debug('🔍 Fine controllo duplicati Input/Output/Feedback.')
+        logging.info('🔍 Fine controllo duplicati Input/Output/Feedback.')
         return duplicates
 
     def clean_di_axis_check() -> None:
-        logging.debug("🔍 Avvio controllo axis_flag_checks...")
+        logging.info("🔍 Avvio controllo axis_flag_checks...")
         for axisInd in range(0, MAX_ASSE):
             AxisParamIntVals = data_config.Axis_Param[axisInd].intval
             to_check = [ASSE_INT_INDSHH, ASSE_INT_INDSH, ASSE_INT_INDSL, ASSE_INT_INDSLL, ASSE_INT_INDSH0, ASSE_INT_INDSL0]
@@ -2371,7 +2371,7 @@ def custom_function():
                     origin = Type_AxisParam_Map["intval"][idx_name]["origin"]
                     axis_name = get_axis_name(Ind=axisInd)
                     logging.warning(f"⚠️ {origin.format(axisInd, axis_name)}\t→\t{display}\t[{AxisParamIntVals[idx]}] {get_io_name(iotype=IO_DI, Ind=AxisParamIntVals[idx])}")
-        logging.debug("🔍 Fine controllo axis_flag_checks...")
+        logging.info("🔍 Fine controllo axis_flag_checks...")
 
     def duplicate_io_address(verbose: bool = True) -> dict[str, dict[tuple[str, int, int], list[tuple[int, str]]]]:
         """
@@ -2387,7 +2387,7 @@ def custom_function():
             ...
           }
         """
-        logging.debug("🔍 Avvio controllo indirizzi duplicati...")
+        logging.info("🔍 Avvio controllo indirizzi duplicati...")
 
         # --- helper interno ---
         def _check(io_list, label: str):
@@ -2437,10 +2437,10 @@ def custom_function():
         _check(data_config.IO_AI_List, "AI")
         _check(data_config.IO_DO_List, "DO")
         _check(data_config.IO_AO_List, "AO")
-        logging.debug("🔍 Fine controllo indirizzi duplicati...")
+        logging.info("🔍 Fine controllo indirizzi duplicati...")
 
     def check_forbidden_ao_do_usage() -> None:
-        logging.debug("🔍 Avvio controllo indirizzi safety...")
+        logging.info("🔍 Avvio controllo indirizzi safety...")
         fAddresses = []
 
         def build_forbidden_addresses(start: int, next_address: int, modules: int) -> list[str]:
@@ -2489,7 +2489,7 @@ def custom_function():
                 if addr_str in fAddresses:
                     io_name = get_io_name(iotype=IO_AO, Ind=Ind)
                     logging.warning(f"⚠️ Safety non permesso in AO [{Ind}] {io_name} at address {addr_str}")
-        logging.debug("🔍 Fine controllo indirizzi safety...")
+        logging.info("🔍 Fine controllo indirizzi safety...")
 
     def check_axis_um() -> list[tuple[int, str, int, int, str]]:
         """
@@ -2500,7 +2500,7 @@ def custom_function():
         Restituisce:
             [(index, axis_name, tipo_asse, tipo_fb, fb_name), ...]
         """
-        logging.debug("🔍 Avvio controllo unità di misura assi...")
+        logging.info("🔍 Avvio controllo unità di misura assi...")
         mismatches: list[tuple[int, str, int, int, str]] = []
 
         for axisInd in range(0, MAX_ASSE):
@@ -2529,7 +2529,7 @@ def custom_function():
             for idx, axis_name, t_ass, t_fb, fb_name in mismatches:
                 logging.warning(f"   → [{idx:02d}] {axis_name:<20} ASSE={t_ass:<3}  FB={t_fb:<3}  ({fb_name})")
 
-        logging.debug("🔍 Fine controllo unità di misura assi.")
+        logging.info("🔍 Fine controllo unità di misura assi.")
         return mismatches
 
     def check_duplicate_funaxis() -> dict[int, list[int]]:
@@ -2540,7 +2540,7 @@ def custom_function():
         Restituisce un dict:
             { axis_index: [funInd1, funInd2, ...], ... }
         """
-        logging.debug("🔍 Avvio controllo duplicati AxisFunInd...")
+        logging.info("🔍 Avvio controllo duplicati AxisFunInd...")
         duplicates: dict[int, list[int]] = {}
         seen: dict[int, int] = {}
 
@@ -2564,11 +2564,11 @@ def custom_function():
                 fun_str = ", ".join([f"{Type_AxisFunInd[fi]}" for fi in fun_list])
                 logging.warning(f"   → {axis_name:<20} (axisOil {axisInd}) usato in FunInd: {fun_str}")
 
-        logging.debug("🔍 Fine controllo duplicati AxisFunInd.")
+        logging.info("🔍 Fine controllo duplicati AxisFunInd.")
         return duplicates
 
     def check_lat_sup() -> None:
-        logging.debug("🔍 Avvio controllo supporti laterali")
+        logging.info("🔍 Avvio controllo supporti laterali")
         _ = [FUN_AXIS_PRESIDESUPP, FUN_AXIS_BENDSIDESUPP]
         maxSupp = 0.0
         for i in _:
@@ -2612,10 +2612,10 @@ def custom_function():
             if data_config.ParamRealType[idx] != -1:
                 logging.warning(f"⚠️ Config\t→\tLat\t→\t{label.replace('REAL_', '')} deve essere impostato -")
 
-        logging.debug("🔍 Fine controllo supporti laterali...")
+        logging.info("🔍 Fine controllo supporti laterali...")
 
     def check_oil_temp() -> None:
-        logging.debug("🔍 Inizio controllo olio...")
+        logging.info("🔍 Inizio controllo olio...")
         # il numero rappresenta il tipo di dato MISURA_*
         _ = {
             ASSE_REAL_SRTUP: -1,
@@ -2657,10 +2657,10 @@ def custom_function():
             if diff:
                 logging.warning(f"wrong\ttype: {axisOil.typval}")
                 logging.warning("replace:\ttype: [-1,-1,-1,-1,1,1,1,1,1,1,1,1,1,1,10,-1,-1,10,2,2,2,2,10,2,2,2,2,-1,-1,-1,-1,-1,-1,-1,-1,-1,2,2,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]")
-        logging.debug("🔍 Fine controllo olio...")
+        logging.info("🔍 Fine controllo olio...")
 
     def check_release() -> None:
-        logging.debug("🔍 Inizio controllo sgancio...")
+        logging.info("🔍 Inizio controllo sgancio...")
         if data_config.AxisFunInd[FUN_AXIS_DE] == -1:
             logging.warning("Indice DE non configurato in Params > Functions")
             return
@@ -2685,10 +2685,10 @@ def custom_function():
         # controllo quota apertura sgancio
         if data_config.Axis_Param[data_config.AxisFunInd[FUN_AXIS_PINCH]].realval[ASSE_REAL_SHH] <= data_config.Axis_Param[data_config.AxisFunInd[FUN_AXIS_PINCH]].realval[ASSE_REAL_SL]:
             logging.warning(f"⚠️ {pinchName}.HH è minore o uguale a {pinchName}.L quota reset automatico")
-        logging.debug("🔍 Fine controllo sgancio...")
+        logging.info("🔍 Fine controllo sgancio...")
 
     def check_safety() -> None:
-        logging.debug("🔍 Inizio controllo safety...")
+        logging.info("🔍 Inizio controllo safety...")
         if data_config.ParamInt[INT_HOLDTORUNTYPE] != SAFETY_INT:
             logging.warning("⚠️ Hold to run non impostato su INT")
         for i in range(0, MAX_ASSE):
@@ -2696,10 +2696,10 @@ def custom_function():
             axis_name = data_config.Axis_Name[i] or f"AXIS_{i}"
             if axis.intval[ASSE_INT_HOLDTORUNTYPE] == ASSE_HOLDTORUNTYPE_NONE:
                 logging.warning(f"⚠️ [{i}]{axis_name} Hold to run non impostato")
-        logging.debug("🔍 Fine controllo safety...")
+        logging.info("🔍 Fine controllo safety...")
 
     def check_rotation() -> None:
-        logging.debug("🔍 Inizio controllo rotazione...")
+        logging.info("🔍 Inizio controllo rotazione...")
         axisInd = data_config.AxisFunInd[FUN_AXIS_ROT]
         if axisInd != -1:
             axis = data_config.Axis_Param[axisInd]
@@ -2714,10 +2714,10 @@ def custom_function():
                 logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SH]]['display']} non impostato a 500.0 ma a {axis.realval[ASSE_REAL_SH]}")
             if axis.realval[ASSE_REAL_SL] != -500:
                 logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SL]]['display']} non impostato a -500.0 ma a {axis.realval[ASSE_REAL_SL]}")
-        logging.debug("🔍 Fine controllo rotazione...")
+        logging.info("🔍 Fine controllo rotazione...")
 
     def geometry_check() -> None:
-        logging.debug("🔍 Inizio controllo geometria...")
+        logging.info("🔍 Inizio controllo geometria...")
         model = data_config.ParamString[0][-4:]
         model_width = model[:2] + '00'
         top_roll_diameter = model[2:] + '0'
@@ -2740,10 +2740,10 @@ def custom_function():
             logging.warning(f"⚠️ Modello macchina {model}, diametro rullo superiore maggiore di quello in geo: {data_config.ParamReal[REAL_TROUTERDIAM]}")
         elif top_roll_diameter < data_config.ParamReal[REAL_TROUTERDIAM]:
             logging.warning(f"⚠️ Modello macchina {model}, diametro rullo superiore minore di quello in geo: {data_config.ParamReal[REAL_TROUTERDIAM]}")
-        logging.debug("🔍 Fine controllo geometria...")
+        logging.info("🔍 Fine controllo geometria...")
 
     def check_axis_speed_master_slave() -> None:
-        logging.debug("🔍 Inizio controllo velocità master/slave..")
+        logging.info("🔍 Inizio controllo velocità master/slave..")
         for i in range(0, MAX_ASSE):
             slaveAxis = data_config.Axis_Param[i]
             slaveAxisName = get_axis_name(i)
@@ -2757,10 +2757,10 @@ def custom_function():
                         if int(masterAxis.realval[x]) != int(slaveAxis.realval[x]):
                             logging.warning(f"⚠️ [{i}]{slaveAxisName} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][x]]['display']} diverso da [{masterAxisInd}]{masterAxisName}")
         # TODO: controllare anche che sia 5.0 e 2.0 MAXVEL
-        logging.debug("🔍 Fine controllo velocità master/slave...")
+        logging.info("🔍 Fine controllo velocità master/slave...")
 
     def check_de_tilt() -> None:
-        logging.debug("🔍 Inizio controllo auto tilt...")
+        logging.info("🔍 Inizio controllo auto tilt...")
         axisTiltInd = data_config.AxisFunInd[FUN_AXIS_TILT]
         axisDeInd = data_config.AxisFunInd[FUN_AXIS_DE]
 
@@ -2779,10 +2779,10 @@ def custom_function():
             logging.warning(f"⚠️ [{axisDeInd}]{axisDe_name} TIMEOUT MAN non impostato (tempo di inclinazione automatico DE DOWN)")
         if axisTilt.intval[ASSE_INT_TIMEOUT1] != 0:
             logging.warning(f"⚠️ [{axisTiltInd}]{axisTilt_name} ritardo inclinazione in manuale impostato, interferenza con DE DOWN, impostare a 0")
-        logging.debug("🔍 Fine controllo auto tilt...")
+        logging.info("🔍 Fine controllo auto tilt...")
 
     def check_stop_alarms() -> None:
-        logging.debug("🔍 Inizio controllo stop allarmi...")
+        logging.info("🔍 Inizio controllo stop allarmi...")
         normalstop = [0, 2, 3, 4, 6, 7, 28, 29, 32, 33, 83]
         safetyStop = [110, 111, 115, 116, 118, 120, 121, 124, 128, 129, 130, 131, 132, 133, 134, 135, 136, 149, 150,
                       151, 152, 153, 154, 155, 156, 157, 158, 159, 184, 186, 187]
@@ -2796,10 +2796,10 @@ def custom_function():
             alarmName = data_config.Alarm_Name[i] or f"ALARM_{i}"
             if alarm.intval[ALARM_INT_MODE] != ALARM_SAFETYSTOP:
                 logging.warning(f"⚠️ [{i}]{alarmName} non è configurato come SAFETYSTOP")
-        logging.debug("🔍 Fine controllo stop allarmi...")
+        logging.info("🔍 Fine controllo stop allarmi...")
 
     def check_axis_speed() -> None:
-        logging.debug("🔍 Inizio controllo coerenza velocità asse...")
+        logging.info("🔍 Inizio controllo coerenza velocità asse...")
         for axisInd in range(0, MAX_ASSE):
             axis = data_config.Axis_Param[axisInd]
             axis_name = data_config.Axis_Name[axisInd] or f"AXIS_{axisInd}"
@@ -2821,7 +2821,7 @@ def custom_function():
                 logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_MASTERMULT]]['display']} impostato a {axis.realval[ASSE_REAL_MASTERMULT]} diverso da 5.0")
             if axis.realval[ASSE_REAL_MASTERDELTAMIN] < 2.0:
                 logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_MASTERDELTAMIN]]['display']} impostato a {axis.realval[ASSE_REAL_MASTERDELTAMIN]} inferiore a 2.0")
-        logging.debug("🔍 Fine controllo coerenza velocità asse...")
+        logging.info("🔍 Fine controllo coerenza velocità asse...")
 
     def check_archimeter_params() -> None:
         logging.info("🔍 Inizio controllo parametri archimetro...")

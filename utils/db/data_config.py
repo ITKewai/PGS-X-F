@@ -1391,9 +1391,26 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None, 
                             logging.info(txt)
                 else:
                     logging.warning(f'{idx_name} non definito')
+            if OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_ATV340:
+                custom_params = {
+                    "OUTPUT_INT_DIG1IND": "DIG1 ATV340 TORQUE",
+                    "OUTPUT_INT_DIG2IND": "DIG2 ATV340 ALARM",
+                    "OUTPUT_INT_CCIND": "CC ATV340 THERMALFAN",
+                }
+                for idx_name, display in custom_params.items():
+                    idx = next((k for k, v in Type_OutputParam_Map["_intval"].items() if v == idx_name), None)
+                    if idx is not None:
+                        if OutputParamIntVals[idx] == ind_target:
+                            origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
+                            txt = f"{origin.format(outputInd)}\t→\t{display}"
+                            _return.append(txt)
+                            if verbose:
+                                logging.info(txt)
+                    else:
+                        logging.warning(f'{idx_name} non definito')
         elif iotype == IO_DO:
             OutputParamIntVals = data_config.Output_Param[outputInd].intval
-            if OutputParamIntVals[OUTPUT_INT_TIPO] not in [OUTPUT_ADV, OUTPUT_PSLCAN]:
+            if OutputParamIntVals[OUTPUT_INT_TIPO] not in [OUTPUT_ADV, OUTPUT_PSLCAN, OUTPUT_ATV340]:
                 for idx, val in enumerate(OutputParamIntVals):
                     idx_name = Type_OutputParam_Map["_intval"][idx]
                     output_Type = Type_OutputParam_Map["intval"][idx_name].get("type", [])
@@ -1433,6 +1450,21 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None, 
                 for idx_name, display in custom_params.items():
                     idx = next((k for k, v in Type_OutputParam_Map["_intval"].items() if v == idx_name),
                                None)
+                    if idx is not None:
+                        if OutputParamIntVals[idx] == ind_target:
+                            origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
+                            txt = f"{origin.format(outputInd)}\t→\t{display}"
+                            _return.append(txt)
+                            if verbose:
+                                logging.info(txt)
+                    else:
+                        logging.warning(f'{idx_name} non definito')
+            elif OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_ATV340:
+                custom_params = {
+                    "OUTPUT_INT_ANA2IND": "ANA2 ATV340 START FAN",
+                }
+                for idx_name, display in custom_params.items():
+                    idx = next((k for k, v in Type_OutputParam_Map["_intval"].items() if v == idx_name), None)
                     if idx is not None:
                         if OutputParamIntVals[idx] == ind_target:
                             origin = Type_OutputParam_Map["intval"][idx_name]["origin"]

@@ -27,5 +27,5 @@ ASTER MULT impostato a 1.7 diverso da 5.0
 ⚠️ [4]AXIS_4 ha il parametro MASTER DELTAMIN impostato a 2.0 inveriore a 2.0
 ⚠️ [5]VS ha il parametro MAX SPEED (BW) impostato a 108.33299 maggiore di
 # TODO: se sshock abscorver è attivo devo avere anche disable nei param con di che è SW
-
+# TODO: check se file capacita su pulpito ha commessa giusta, se indice azzeramento corrisponde al digitale di azzeramento
 """

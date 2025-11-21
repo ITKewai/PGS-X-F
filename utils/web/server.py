@@ -37,6 +37,395 @@ from utils.db.data_config import (
 from utils.yaml.data.core import make_axis_sys_addr, make_alarm_sys_addr
 from utils.exports.tia_constants import HEADER_SN
 
+INDEX_HTML = """<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <title>PGS-X-F – Web console</title>
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color-scheme: dark;
+    }
+    body {
+      margin: 0;
+      background: #050810;
+      color: #e5e7eb;
+      display: flex;
+      min-height: 100vh;
+      align-items: stretch;
+      justify-content: center;
+    }
+    #app {
+      width: 100%;
+      max-width: 1100px;
+      margin: 1.5rem;
+      border-radius: 18px;
+      border: 1px solid #1f2937;
+      background: radial-gradient(circle at top left, #111827 0, #020617 45%);
+      box-shadow: 0 18px 45px rgba(0,0,0,0.6);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    header {
+      padding: 0.75rem 1.5rem;
+      border-bottom: 1px solid #111827;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(to right, rgba(15,23,42,0.9), rgba(15,23,42,0.3));
+    }
+    header h1 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin: 0;
+      color: #9ca3af;
+    }
+    header .pill {
+      font-size: 0.75rem;
+      padding: 0.15rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid #374151;
+      background: rgba(17,24,39,0.8);
+      color: #9ca3af;
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(0, 3fr) minmax(260px, 2fr);
+      gap: 0;
+      min-height: 480px;
+    }
+    @media (max-width: 900px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+    .console {
+      padding: 1rem 1.25rem;
+      background: radial-gradient(circle at top left, #020617 0, #000 55%);
+      border-right: 1px solid #111827;
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.78rem;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .console-line {
+      line-height: 1.45;
+    }
+    .console-line.system { color: #6b7280; }
+    .console-line.ok { color: #22c55e; }
+    .console-line.error { color: #f97373; }
+    .console-line.cmd { color: #e5e7eb; }
+    .console .prompt {
+      color: #4ade80;
+    }
+    .controls {
+      padding: 1rem 1.25rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .section-title {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #9ca3af;
+      margin-bottom: 0.35rem;
+    }
+    .card {
+      border-radius: 14px;
+      border: 1px solid #111827;
+      background: rgba(15,23,42,0.85);
+      padding: 0.75rem 0.9rem;
+    }
+    .row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 0.35rem;
+      flex-wrap: wrap;
+    }
+    label {
+      font-size: 0.75rem;
+      color: #9ca3af;
+    }
+    input, select {
+      background: #020617;
+      border-radius: 999px;
+      border: 1px solid #1f2937;
+      padding: 0.35rem 0.7rem;
+      font-size: 0.78rem;
+      color: #e5e7eb;
+      outline: none;
+      min-width: 0;
+      flex: 1;
+    }
+    input:focus, select:focus {
+      border-color: #22c55e;
+      box-shadow: 0 0 0 1px rgba(34,197,94,0.35);
+    }
+    button {
+      border-radius: 999px;
+      border: 1px solid #16a34a;
+      background: radial-gradient(circle at top left, #22c55e, #15803d);
+      color: #022c22;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.4rem 0.9rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    button.secondary {
+      border-color: #4b5563;
+      background: #020617;
+      color: #e5e7eb;
+      font-weight: 500;
+    }
+    button:active {
+      transform: translateY(1px);
+    }
+    small.hint {
+      font-size: 0.7rem;
+      color: #6b7280;
+      display: block;
+      margin-top: 0.25rem;
+    }
+    footer {
+      border-top: 1px solid #111827;
+      padding: 0.35rem 1.25rem 0.5rem;
+      font-size: 0.7rem;
+      color: #4b5563;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>PGS-X-F · Web console</h1>
+    <div class="pill" id="status-pill">config: sconosciuto</div>
+  </header>
+  <main>
+    <div class="console" id="console"></div>
+    <div class="controls">
+      <div class="card">
+        <div class="section-title">Config</div>
+        <div class="row">
+          <label for="config-path">Percorso config.yaml (opzionale)</label>
+        </div>
+        <div class="row">
+          <input id="config-path" placeholder="es. C:/progetti/PGS/config.yaml o lascia vuoto per ./config.yaml" />
+        </div>
+        <div class="row">
+          <button id="btn-load-config">Carica config</button>
+          <button class="secondary" id="btn-status">Status</button>
+        </div>
+        <small class="hint">Uguale alla scelta del config nel main CLI. Se non specifichi nulla usa il config.yaml nella cartella di esecuzione.</small>
+      </div>
+
+      <div class="card">
+        <div class="section-title">Ricerca IO (menu 1..4)</div>
+        <div class="row">
+          <label for="io-type">Tipo</label>
+          <select id="io-type">
+            <option value="DI">DI</option>
+            <option value="AI">AI</option>
+            <option value="DO">DO</option>
+            <option value="AO">AO</option>
+            <option value="RI">RI</option>
+          </select>
+          <label for="io-index">Indice</label>
+          <input id="io-index" type="number" min="0" step="1" placeholder="es. 123" />
+        </div>
+        <div class="row">
+          <button id="btn-io-search">Cerca</button>
+        </div>
+        <small class="hint">Chiama /api/io/search?type=DI&index=123 come nel main quando scegli 1..4.</small>
+      </div>
+
+      <div class="card">
+        <div class="section-title">System (menu 5)</div>
+        <div class="row">
+          <label for="system-kind">Kind</label>
+          <select id="system-kind">
+            <option value="AXIS">AXIS</option>
+            <option value="ALARM">ALARM</option>
+          </select>
+        </div>
+        <div class="row">
+          <label for="system-field">Campo</label>
+          <input id="system-field" placeholder="es. UP, DOWN, MASTER, MASK..." />
+        </div>
+        <div class="row">
+          <label for="system-index">Indice</label>
+          <input id="system-index" type="number" min="0" step="1" placeholder="es. 1" />
+        </div>
+        <div class="row">
+          <button id="btn-system-search">Cerca SYSTEM</button>
+        </div>
+        <small class="hint">Wrapper di /api/system/search. Usa gli stessi parametri che useresti nel CLI.</small>
+      </div>
+
+      <div class="card">
+        <div class="section-title">FREE & CHECK (menu 7 e 6)</div>
+        <div class="row">
+          <label for="free-type">FREE type (opzionale)</label>
+          <select id="free-type">
+            <option value="">Tutti</option>
+            <option value="DI">DI</option>
+            <option value="AI">AI</option>
+            <option value="DO">DO</option>
+            <option value="AO">AO</option>
+            <option value="RI">RI</option>
+          </select>
+        </div>
+        <div class="row">
+          <button id="btn-free-scan">FREE scan</button>
+          <button class="secondary" id="btn-check">CHECK custom_function()</button>
+        </div>
+        <small class="hint">Replica la voce 7 (FREE) e 6 (CHECK) del menu CLI.</small>
+      </div>
+    </div>
+  </main>
+  <footer>
+    <span id="footer-version">Versione: sconosciuta</span>
+    <span>Web layer · same core di main.py</span>
+  </footer>
+</div>
+
+<script>
+  const consoleEl = document.getElementById('console');
+  const statusPill = document.getElementById('status-pill');
+  const footerVersion = document.getElementById('footer-version');
+
+  function appendLine(text, klass) {
+    const line = document.createElement('div');
+    line.className = 'console-line ' + (klass || '');
+    line.innerHTML = '<span class="prompt">&gt;&nbsp;</span>' + text;
+    consoleEl.appendChild(line);
+    consoleEl.scrollTop = consoleEl.scrollHeight;
+  }
+
+  function appendRaw(text, klass) {
+    const line = document.createElement('div');
+    line.className = 'console-line ' + (klass || '');
+    line.textContent = text;
+    consoleEl.appendChild(line);
+    consoleEl.scrollTop = consoleEl.scrollHeight;
+  }
+
+  function pretty(obj) {
+    try {
+      return JSON.stringify(obj, null, 2);
+    } catch (e) {
+      return String(obj);
+    }
+  }
+
+  async function callApi(method, url, body) {
+    appendLine(method + ' ' + url, 'cmd');
+    const opts = { method, headers: {} };
+    if (body) {
+      opts.headers['Content-Type'] = 'application/json';
+      opts.body = JSON.stringify(body);
+    }
+    try {
+      const res = await fetch(url, opts);
+      const data = await res.json();
+      if (!res.ok || data.ok === false) {
+        appendRaw(pretty(data), 'error');
+      } else {
+        appendRaw(pretty(data), 'ok');
+      }
+      return data;
+    } catch (err) {
+      appendRaw('Errore di rete: ' + err, 'error');
+      throw err;
+    }
+  }
+
+  async function refreshStatus() {
+    const data = await callApi('GET', '/api/status');
+    if (data && data.version) {
+      footerVersion.textContent = 'Versione: ' + data.version;
+    }
+    if (data && data.config_loaded) {
+      statusPill.textContent = 'config: caricato (' + (data.config_path || 'n/d') + ')';
+      statusPill.style.borderColor = '#22c55e';
+      statusPill.style.color = '#bbf7d0';
+    } else {
+      statusPill.textContent = 'config: non caricato';
+      statusPill.style.borderColor = '#f97373';
+      statusPill.style.color = '#fecaca';
+    }
+  }
+
+  document.getElementById('btn-status').addEventListener('click', () => {
+    refreshStatus();
+  });
+
+  document.getElementById('btn-load-config').addEventListener('click', async () => {
+    const path = document.getElementById('config-path').value.trim();
+    const body = path ? { path } : {};
+    await callApi('POST', '/api/config/load', body);
+    await refreshStatus();
+  });
+
+  document.getElementById('btn-io-search').addEventListener('click', async () => {
+    const type = document.getElementById('io-type').value;
+    const idx = document.getElementById('io-index').value;
+    if (idx === '') {
+      appendRaw('Indice IO mancante', 'error');
+      return;
+    }
+    const url = '/api/io/search?type=' + encodeURIComponent(type) + '&index=' + encodeURIComponent(idx);
+    await callApi('GET', url);
+  });
+
+  document.getElementById('btn-system-search').addEventListener('click', async () => {
+    const kind = document.getElementById('system-kind').value;
+    const field = document.getElementById('system-field').value.trim();
+    const idx = document.getElementById('system-index').value;
+    if (!field || idx === '') {
+      appendRaw('Campo e indice SYSTEM sono obbligatori', 'error');
+      return;
+    }
+    const params = new URLSearchParams({
+      kind,
+      field,
+      index: idx
+    });
+    const url = '/api/system/search?' + params.toString();
+    await callApi('GET', url);
+  });
+
+  document.getElementById('btn-free-scan').addEventListener('click', async () => {
+    const type = document.getElementById('free-type').value;
+    let url = '/api/free/scan';
+    if (type) {
+      url += '?type=' + encodeURIComponent(type);
+    }
+    await callApi('GET', url);
+  });
+
+  document.getElementById('btn-check').addEventListener('click', async () => {
+    await callApi('GET', '/api/check');
+  });
+
+  appendRaw('PGS-X-F web console pronta. Usa i pannelli a destra come useresti il menu di main.py.', 'system');
+  refreshStatus();
+</script>
+</body>
+</html>
+"""
+
+
 # -----------------------------------------------------------------------------
 # Stato globale minimale per il server
 # -----------------------------------------------------------------------------
@@ -178,6 +567,11 @@ def _run_custom_checks_capture() -> List[str]:
 # -----------------------------------------------------------------------------
 def create_app() -> Flask:
     app = Flask(__name__)
+
+    @app.get("/")
+    def index():
+        # Pagina che emula la console
+        return INDEX_HTML
 
     exe_cfg = load_exe_config()
     debug = bool(exe_cfg.get("debug", False))

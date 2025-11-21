@@ -2783,7 +2783,7 @@ def custom_function():
 
     def check_stop_alarms() -> None:
         logging.debug("🔍 Inizio controllo stop allarmi...")
-        normalstop = [0, 2, 3, 4, 5, 7, 28, 29, 32, 33, 83]
+        normalstop = [0, 2, 3, 4, 6, 7, 28, 29, 32, 33, 83]
         safetyStop = [110, 111, 115, 116, 118, 120, 121, 124, 128, 129, 130, 131, 132, 133, 134, 135, 136, 149, 150,
                       151, 152, 153, 154, 155, 156, 157, 158, 159, 184, 186, 187]
         for i in normalstop:
@@ -2819,8 +2819,8 @@ def custom_function():
                 logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro velocità massima impostato a 0.0")
             if axis.realval[ASSE_REAL_MASTERMULT] != 5.0:
                 logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_MASTERMULT]]['display']} impostato a {axis.realval[ASSE_REAL_MASTERMULT]} diverso da 5.0")
-            if axis.realval[ASSE_REAL_MASTERDELTAMIN] < 3.0:
-                logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_MASTERDELTAMIN]]['display']} impostato a {axis.realval[ASSE_REAL_MASTERDELTAMIN]} inveriore a 2.0")
+            if axis.realval[ASSE_REAL_MASTERDELTAMIN] < 2.0:
+                logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_MASTERDELTAMIN]]['display']} impostato a {axis.realval[ASSE_REAL_MASTERDELTAMIN]} inferiore a 2.0")
         logging.debug("🔍 Fine controllo coerenza velocità asse...")
 
     def check_archimeter_params() -> None:

@@ -253,15 +253,26 @@ def main():
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except SystemExit as e:
-        code = e.code if isinstance(e.code, int) else 1
-        if code not in (0, None):
-            logging.info(f"\n[EXIT] Codice: {code}")
-        _pause_if_frozen()
-        sys.exit(code)
-    except Exception as e:
-        logging.error(f"\n[Errore inatteso]: {e}")
-        _pause_if_frozen()
+    cfg = load_exe_config()
+    if cfg.get("webServer", False):
+        # modalità web
+        from utils.web.server import app
+        try:
+            app.run(host="0.0.0.0", port=5000, debug=cfg.get("debug", False))
+        except Exception as e:
+            logging.error(f"\n[Errore inatteso]: {e}")
+            _pause_if_frozen()
         sys.exit(1)
+    else:
+        try:
+            main()
+        except SystemExit as e:
+            code = e.code if isinstance(e.code, int) else 1
+            if code not in (0, None):
+                logging.info(f"\n[EXIT] Codice: {code}")
+            _pause_if_frozen()
+            sys.exit(code)
+        except Exception as e:
+            logging.error(f"\n[Errore inatteso]: {e}")
+            _pause_if_frozen()
+            sys.exit(1)

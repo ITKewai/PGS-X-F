@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import logging
 import os
+import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -35,6 +36,13 @@ from utils.db.data_config import (
 )
 from utils.yaml.data.core import make_axis_sys_addr, make_alarm_sys_addr
 from utils.exports.tia_constants import HEADER_SN
+import utils.yaml.download as yaml_download
+from utils.yaml.download import (
+    _build_download_url,
+    _download_to_config,
+    fetch_again,
+    save_version,
+)
 
 INDEX_HTML = """<!DOCTYPE html>
 <html lang="it">
@@ -142,6 +150,8 @@ INDEX_HTML = """<!DOCTYPE html>
 
   let state = 'WAIT_CONFIG_MODE';
   let ctx = {};
+  let hasLastUrl = false;
+  let snAvailable = false;
 
   function appendLine(text, klass) {
     const line = document.createElement('div');
@@ -186,39 +196,53 @@ INDEX_HTML = """<!DOCTYPE html>
     }
   }
 
-  async function refreshStatus() {
-    try {
-      const data = await callApi('GET', '/api/status');
-      let cfg = 'non caricato';
-      if (data && data.config_loaded) {
-        cfg = 'caricato';
-        if (data.config_path) cfg += ' (' + data.config_path + ')';
+    async function refreshStatus() {
+      try {
+        const data = await callApi('GET', '/api/status');
+        let cfg = 'non caricato';
+        if (data && data.config_loaded) {
+          cfg = 'caricato';
+          if (data.config_path) cfg += ' (' + data.config_path + ')';
+        }
+        const ver = data && data.version ? data.version : 'n/d';
+        statusRight.textContent = 'config: ' + cfg + ' · versione: ' + ver;
+    
+        snAvailable = !!(data && data.sn);
+        hasLastUrl = !!(data && data.has_last_url);
+    
+        if (snAvailable) {
+          statusLeft.textContent = 'PGS-X-F Web CLI · SN: ' + data.sn;
+        } else {
+          statusLeft.textContent = 'PGS-X-F Web CLI';
+        }
+      } catch (e) {
+        // già loggato in console
       }
-      const ver = data && data.version ? data.version : 'n/d';
-      statusRight.textContent = 'config: ' + cfg + ' · versione: ' + ver;
-      if (data && data.sn) {
-        statusLeft.textContent = 'PGS-X-F Web CLI · SN: ' + data.sn;
-      }
-    } catch (e) {
-      // già loggato in console
     }
+
+
+function printConfigQuestion() {
+  const lines = [
+    '',
+    "Selezione sorgente file 'config.yaml'",
+    "  [1] Usa file locale (cartella corrente)",
+    "  [2] Scarica file da rete",
+  ];
+
+  if (hasLastUrl) {
+    lines.push("  [3] Aggiorna file da rete (ultimo URL)");
+  }
+  if (snAvailable) {
+    lines.push("  [4] Save (backup versionato per SN corrente)");
   }
 
-  function printConfigQuestion() {
-    appendRaw(
-      [
-        '',
-        '=== CONFIG ===',
-        'Vuoi usare il config:',
-        '1) Locale (file config.yaml su questo PC / PGS_CONFIG_PATH)',
-        '2) Scaricarlo da indirizzo IP',
-        '',
-        'Digita 1 o 2 e premi Invio.',
-        ''
-      ].join('\\n'),
-      'system'
-    );
-  }
+  lines.push('');
+  lines.push('Scelta (1-4):');
+  lines.push('');
+
+  appendRaw(lines.join('\\n'), 'system');
+}
+
 
   function printMenu() {
     appendRaw(
@@ -244,175 +268,236 @@ INDEX_HTML = """<!DOCTYPE html>
     printMenu();
   }
 
-  async function handleEnter(rawCmd) {
-    const cmd = (rawCmd || '').trim();
-    if (!cmd) return;
+async function handleEnter(rawCmd) {
+  const cmd = (rawCmd || '').trim();
 
-    appendLine(cmd, 'cmd');
+  // Comportamento "Invio" come nel CLI:
+  // - se siamo nel menu principale e premi Invio vuoto -> riapre la scelta config
+  if (!cmd) {
+    if (state === 'WAIT_MAIN_CHOICE') {
+      appendRaw('', 'system');
+      state = 'WAIT_CONFIG_MODE';
+      printConfigQuestion();
+    }
+    return;
+  }
 
-    switch (state) {
-      case 'WAIT_CONFIG_MODE': {
-        if (cmd === '1' || cmd.toLowerCase() === 'l') {
-          appendRaw('Uso config locale (config.yaml / PGS_CONFIG_PATH)...', 'system');
-          await callApi('POST', '/api/config/load', {});
-          await refreshStatus();
-          state = 'WAIT_MAIN_CHOICE';
-          printMenu();
-        } else if (cmd === '2' || cmd.toLowerCase() === 'r') {
-          state = 'WAIT_REMOTE_IP';
-          appendRaw('Inserisci indirizzo IP del server config (es. 10.0.0.10):', 'system');
-        } else {
-          appendRaw('Scelta non valida. Usa 1 (locale) o 2 (IP).', 'error');
-          printConfigQuestion();
-        }
-        break;
-      }
+  appendLine(cmd, 'cmd');
 
-      case 'WAIT_REMOTE_IP': {
-        if (!cmd) {
-          appendRaw('IP vuoto, riprova.', 'error');
-          appendRaw('Inserisci indirizzo IP del server config (es. 10.0.0.10):', 'system');
-          break;
-        }
-        ctx.remoteIp = cmd;
-        appendRaw('Scarico config da IP ' + ctx.remoteIp + '...', 'system');
-        await callApi('POST', '/api/config/prepare', {
-          mode: 'remote',
-          ip: ctx.remoteIp
-        });
+  switch (state) {
+    // --- Fase CONFIG: replica choose_and_prepare_config() ---
+    case 'WAIT_CONFIG_MODE': {
+      if (cmd === '1' || cmd.toLowerCase() === 'l') {
+        appendRaw('Uso config locale (config.yaml / PGS_CONFIG_PATH)...', 'system');
+        await callApi('POST', '/api/config/load', {});
         await refreshStatus();
         state = 'WAIT_MAIN_CHOICE';
         printMenu();
-        break;
-      }
 
-      case 'WAIT_MAIN_CHOICE': {
-        if (['1','2','3','4'].includes(cmd)) {
-          ctx.menu = parseInt(cmd, 10);
-          state = 'WAIT_IO_TYPE';
-          appendRaw('Tipo IO? [DI/DO/AI/AO/RI]', 'system');
-        } else if (cmd === '5') {
-          state = 'WAIT_SYSTEM_KIND';
-          appendRaw('SYSTEM kind? [AXIS/ALARM]', 'system');
-        } else if (cmd === '6') {
-          appendRaw('Eseguo CHECK custom_function()...', 'system');
-          await callApi('GET', '/api/check');
-          resetFlow();
-        } else if (cmd === '7') {
-          state = 'WAIT_FREE_TYPE';
-          appendRaw('FREE scan: specifica tipo [DI/DO/AI/AO/RI] oppure lascia vuoto e premi solo Invio per tutti.', 'system');
-        } else if (cmd === '8') {
-          appendRaw('Reset menu.', 'system');
-          resetFlow();
-        } else if (cmd.toLowerCase() === 'status') {
-          await refreshStatus();
-        } else if (cmd.toLowerCase().startsWith('config ')) {
-          const path = cmd.slice('config '.length).trim();
-          appendRaw('Carico config da: ' + path, 'system');
-          await callApi('POST', '/api/config/load', { path });
-          await refreshStatus();
-        } else if (cmd.toLowerCase() === 'config') {
-          appendRaw('Carico config predefinito (./config.yaml o PGS_CONFIG_PATH)...', 'system');
-          await callApi('POST', '/api/config/load', {});
-          await refreshStatus();
+      } else if (cmd === '2' || cmd.toLowerCase() === 'r') {
+        state = 'WAIT_REMOTE_IP';
+        appendRaw('Inserisci indirizzo/IP (es: 10.3.73.177):', 'system');
+
+      } else if (cmd === '3') {
+        appendRaw('Aggiorno file da rete (ultimo URL)...', 'system');
+        await callApi('POST', '/api/config/prepare', { mode: 'refresh' });
+        await refreshStatus();
+        state = 'WAIT_MAIN_CHOICE';
+        printMenu();
+
+      } else if (cmd === '4') {
+        if (!snAvailable) {
+          appendRaw('Opzione [4] non disponibile: SN non caricato, carica prima un config valido.', 'error');
+          printConfigQuestion();
         } else {
-          appendRaw('Scelta non valida. Usa 1,5,6,7,8 oppure comandi: status, config, config <percorso>', 'error');
+          state = 'WAIT_SAVE_VERSION';
+          appendRaw('Versione progetto:', 'system');
         }
+
+      } else {
+        appendRaw('Opzione non valida. Usa 1 (locale), 2 (rete), 3 (refresh), 4 (save).', 'error');
+        printConfigQuestion();
+      }
+      break;
+    }
+
+    case 'WAIT_SAVE_VERSION': {
+      if (!cmd) {
+        appendRaw('Versione vuota, riprova.', 'error');
+        appendRaw('Versione progetto:', 'system');
         break;
       }
+      appendRaw('Salvo versione ' + cmd + '...', 'system');
+      await callApi('POST', '/api/config/prepare', {
+        mode: 'save',
+        version: cmd,
+      });
+      await refreshStatus();
+      state = 'WAIT_MAIN_CHOICE';
+      printMenu();
+      break;
+    }
 
-      case 'WAIT_IO_TYPE': {
-        const t = cmd.toUpperCase();
-        if (!['DI','DO','AI','AO','RI'].includes(t)) {
-          appendRaw('Tipo IO non valido. Valori ammessi: DI, DO, AI, AO, RI.', 'error');
-          appendRaw('Tipo IO? [DI/DO/AI/AO/RI]', 'system');
-        } else {
-          ctx.ioType = t;
-          state = 'WAIT_IO_INDEX';
-          appendRaw('Indice IO (numero intero):', 'system');
-        }
+    case 'WAIT_REMOTE_IP': {
+      if (!cmd) {
+        appendRaw('IP vuoto, riprova.', 'error');
+        appendRaw('Inserisci indirizzo/IP (es: 10.3.73.177):', 'system');
         break;
       }
+      ctx.remoteIp = cmd;
+      appendRaw('Scarico config da IP ' + ctx.remoteIp + '...', 'system');
+      await callApi('POST', '/api/config/prepare', {
+        mode: 'remote',
+        ip: ctx.remoteIp,
+      });
+      await refreshStatus();
+      state = 'WAIT_MAIN_CHOICE';
+      printMenu();
+      break;
+    }
 
-      case 'WAIT_IO_INDEX': {
-        const idx = parseInt(cmd, 10);
-        if (Number.isNaN(idx)) {
-          appendRaw('Indice non numerico, riprova.', 'error');
-          appendRaw('Indice IO (numero intero):', 'system');
-        } else {
-          appendRaw(`Cerco IO ${ctx.ioType} index ${idx}...`, 'system');
-          await callApi('GET', '/api/io/search?type=' + encodeURIComponent(ctx.ioType) + '&index=' + encodeURIComponent(idx));
-          resetFlow();
-        }
-        break;
+    // --- MENU principale: replica while True del CLI ---
+    case 'WAIT_MAIN_CHOICE': {
+      if (['1','2','3','4'].includes(cmd)) {
+        ctx.menu = parseInt(cmd, 10);
+        state = 'WAIT_IO_TYPE';
+        appendRaw('Tipo IO? [DI/DO/AI/AO/RI]', 'system');
+
+      } else if (cmd === '5') {
+        state = 'WAIT_SYSTEM_KIND';
+        appendRaw('SYSTEM kind? [AXIS/ALARM]', 'system');
+
+      } else if (cmd === '6') {
+        appendRaw('Eseguo CHECK custom_function()...', 'system');
+        await callApi('GET', '/api/check');
+        resetFlow();
+
+      } else if (cmd === '7') {
+        state = 'WAIT_FREE_TYPE';
+        appendRaw('FREE scan: specifica tipo [DI/DO/AI/AO/RI] oppure lascia vuoto e premi solo Invio per tutti.', 'system');
+
+      } else if (cmd === '8') {
+        appendRaw('Reset menu.', 'system');
+        resetFlow();
+
+      } else if (cmd.toLowerCase() === 'status') {
+        await refreshStatus();
+
+      } else if (cmd.toLowerCase().startsWith('config ')) {
+        const path = cmd.slice('config '.length).trim();
+        appendRaw('Carico config da: ' + path, 'system');
+        await callApi('POST', '/api/config/load', { path });
+        await refreshStatus();
+
+      } else if (cmd.toLowerCase() === 'config') {
+        appendRaw('Carico config predefinito (./config.yaml o PGS_CONFIG_PATH)...', 'system');
+        await callApi('POST', '/api/config/load', {});
+        await refreshStatus();
+
+      } else {
+        appendRaw('Scelta non valida. Usa 1..8 oppure comandi: status, config, config <percorso>.', 'error');
       }
+      break;
+    }
 
-      case 'WAIT_SYSTEM_KIND': {
-        const kind = cmd.toUpperCase();
-        if (!['AXIS','ALARM'].includes(kind)) {
-          appendRaw('kind non valido. Ammessi: AXIS o ALARM.', 'error');
-          appendRaw('SYSTEM kind? [AXIS/ALARM]', 'system');
-        } else {
-          ctx.kind = kind;
-          state = 'WAIT_SYSTEM_FIELD';
-          appendRaw('Campo SYSTEM (es. UP, DOWN, MASTER, MASK...):', 'system');
-        }
-        break;
+    // --- IO search (menu 1..4) ---
+    case 'WAIT_IO_TYPE': {
+      const t = cmd.toUpperCase();
+      if (!['DI','DO','AI','AO','RI'].includes(t)) {
+        appendRaw('Tipo IO non valido. Valori ammessi: DI, DO, AI, AO, RI.', 'error');
+        appendRaw('Tipo IO? [DI/DO/AI/AO/RI]', 'system');
+      } else {
+        ctx.ioType = t;
+        state = 'WAIT_IO_INDEX';
+        appendRaw('Indice IO (numero intero):', 'system');
       }
+      break;
+    }
 
-      case 'WAIT_SYSTEM_FIELD': {
-        if (!cmd) {
-          appendRaw('Campo vuoto, riprova.', 'error');
-          appendRaw('Campo SYSTEM (es. UP, DOWN, MASTER, MASK...):', 'system');
-        } else {
-          ctx.field = cmd.toUpperCase();
-          state = 'WAIT_SYSTEM_INDEX';
-          appendRaw('Indice SYSTEM (numero intero, es. 1):', 'system');
-        }
-        break;
-      }
-
-      case 'WAIT_SYSTEM_INDEX': {
-        const idx = parseInt(cmd, 10);
-        if (Number.isNaN(idx)) {
-          appendRaw('Indice non numerico, riprova.', 'error');
-          appendRaw('Indice SYSTEM (numero intero, es. 1):', 'system');
-        } else {
-          appendRaw(`Cerco SYSTEM kind=${ctx.kind} field=${ctx.field} index=${idx}...`, 'system');
-          const params = new URLSearchParams({
-            kind: ctx.kind,
-            field: ctx.field,
-            index: String(idx)
-          });
-          await callApi('GET', '/api/system/search?' + params.toString());
-          resetFlow();
-        }
-        break;
-      }
-
-      case 'WAIT_FREE_TYPE': {
-        const t = cmd.toUpperCase();
-        if (!cmd) {
-          appendRaw('FREE scan di tutti i tipi...', 'system');
-          await callApi('GET', '/api/free/scan');
-          resetFlow();
-        } else if (!['DI','DO','AI','AO','RI'].includes(t)) {
-          appendRaw('Tipo IO non valido. Valori ammessi: DI, DO, AI, AO, RI, oppure premi solo Invio per tutti.', 'error');
-          appendRaw('FREE scan: specifica tipo [DI/DO/AI/AO/RI] oppure premi solo Invio per tutti.', 'system');
-        } else {
-          appendRaw('FREE scan tipo ' + t + '...', 'system');
-          await callApi('GET', '/api/free/scan?type=' + encodeURIComponent(t));
-          resetFlow();
-        }
-        break;
-      }
-
-      default: {
-        appendRaw('Stato interno sconosciuto, resetto il menu.', 'error');
+    case 'WAIT_IO_INDEX': {
+      const idx = parseInt(cmd, 10);
+      if (Number.isNaN(idx)) {
+        appendRaw('Indice non numerico, riprova.', 'error');
+        appendRaw('Indice IO (numero intero):', 'system');
+      } else {
+        appendRaw(`Cerco IO ${ctx.ioType} index ${idx}...`, 'system');
+        await callApi('GET',
+          '/api/io/search?type=' + encodeURIComponent(ctx.ioType) +
+          '&index=' + encodeURIComponent(idx)
+        );
         resetFlow();
       }
+      break;
+    }
+
+    // --- SYSTEM (AXIS / ALARM) ---
+    case 'WAIT_SYSTEM_KIND': {
+      const kind = cmd.toUpperCase();
+      if (!['AXIS','ALARM'].includes(kind)) {
+        appendRaw('kind non valido. Ammessi: AXIS o ALARM.', 'error');
+        appendRaw('SYSTEM kind? [AXIS/ALARM]', 'system');
+      } else {
+        ctx.kind = kind;
+        state = 'WAIT_SYSTEM_FIELD';
+        appendRaw('Campo SYSTEM (es. UP, DOWN, MASTER, MASK...):', 'system');
+      }
+      break;
+    }
+
+    case 'WAIT_SYSTEM_FIELD': {
+      if (!cmd) {
+        appendRaw('Campo SYSTEM vuoto, riprova.', 'error');
+        appendRaw('Campo SYSTEM (es. UP, DOWN, MASTER, MASK...):', 'system');
+      } else {
+        ctx.field = cmd.toUpperCase();
+        state = 'WAIT_SYSTEM_INDEX';
+        appendRaw('Indice SYSTEM (numero intero, es. 1):', 'system');
+      }
+      break;
+    }
+
+    case 'WAIT_SYSTEM_INDEX': {
+      const idx = parseInt(cmd, 10);
+      if (Number.isNaN(idx)) {
+        appendRaw('Indice non numerico, riprova.', 'error');
+        appendRaw('Indice SYSTEM (numero intero, es. 1):', 'system');
+      } else {
+        appendRaw(`Cerco SYSTEM kind=${ctx.kind} field=${ctx.field} index=${idx}...`, 'system');
+        const params = new URLSearchParams({
+          kind: ctx.kind,
+          field: ctx.field,
+          index: String(idx),
+        });
+        await callApi('GET', '/api/system/search?' + params.toString());
+        resetFlow();
+      }
+      break;
+    }
+
+    // --- FREE scan ---
+    case 'WAIT_FREE_TYPE': {
+      const t = cmd.toUpperCase();
+      if (!cmd) {
+        appendRaw('FREE scan: tutti i tipi...', 'system');
+        await callApi('GET', '/api/free/scan');
+        resetFlow();
+      } else if (!['DI','DO','AI','AO','RI'].includes(t)) {
+        appendRaw('Tipo IO non valido per FREE. Valori ammessi: DI, DO, AI, AO, RI oppure vuoto per tutti.', 'error');
+        appendRaw('FREE scan: specifica tipo [DI/DO/AI/AO/RI] oppure lascia vuoto e premi solo Invio per tutti.', 'system');
+      } else {
+        appendRaw('FREE scan tipo ' + t + '...', 'system');
+        await callApi('GET', '/api/free/scan?type=' + encodeURIComponent(t));
+        resetFlow();
+      }
+      break;
+    }
+
+    default: {
+      appendRaw('Stato interno sconosciuto, resetto il menu.', 'error');
+      resetFlow();
     }
   }
+}
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -540,7 +625,8 @@ def _run_custom_checks_capture() -> List[str]:
         lines.append(str(msg))
 
     # custom_function accetta un logger? Nel dubbio usiamo wrapper
-    custom_function(logger=_log_line)
+    # custom_function(logger=_log_line)
+    custom_function()
     return lines
 
 
@@ -575,20 +661,25 @@ def create_app() -> Flask:
         - se il config è caricato
         - path del config
         - SN (se disponibile)
+        - se esiste un last_url per il refresh
         """
         version_info = get_version_info()
+
+        try:
+            sn_value = data_config.Config_Header[HEADER_SN]
+        except Exception:
+            sn_value = None
+
+        has_last_url = bool(getattr(yaml_download, "last_url", ""))
+
         return jsonify(
             {
                 "ok": True,
-                # "version": version_info.get("version"),
                 "version": version_info,
-                # "build": version_info.get("build"),
-                "build": version_info,
                 "config_loaded": _CONFIG_LOADED,
                 "config_path": str(_CONFIG_PATH) if _CONFIG_PATH else None,
-                "sn": data_config.Config_Header.get(HEADER_SN, None)
-                if _CONFIG_LOADED
-                else None,
+                "sn": sn_value,
+                "has_last_url": has_last_url,
             }
         )
 
@@ -609,56 +700,96 @@ def create_app() -> Flask:
             logging.exception("Errore durante il caricamento del config.yaml")
             return jsonify({"ok": False, "error": str(e)}), 500
 
-
     @app.post("/api/config/prepare")
     def api_config_prepare():
         """
-        Prepara il config come la CLI:
-        - mode="local": usa _load_yaml_config() (locale)
-        - mode="remote": scarica config.yaml da IP e poi lo carica.
-        Nota: adatta la logica di download alla tua infrastruttura se necessario.
+        Prepara il config come la CLI (choose_and_prepare_config):
+        - mode="local"   -> usa _load_yaml_config() sul file locale
+        - mode="remote"  -> scarica config.yaml da IP/URL usando _build_download_url + _download_to_config
+        - mode="refresh" -> rifà il download da last_url (fetch_again)
+        - mode="save"    -> salva "config {sn} {ver} {date}.yaml" come nel CLI
         """
         payload = request.get_json(silent=True) or {}
         mode = payload.get("mode", "local")
         ip = payload.get("ip")
         url = payload.get("url")
-        dest_path = payload.get("dest_path")
+        version = payload.get("version") or payload.get("ver")
 
         try:
             if mode == "local":
-                info = _load_yaml_config(dest_path)
+                # semplice reload locale
+                info = _load_yaml_config()
                 return jsonify({"ok": True, "mode": "local", **info})
 
-            if mode == "remote":
-                if not ip and not url:
-                    return jsonify({"ok": False, "error": "ip o url sono obbligatori per mode=remote."}), 400
-
-                # import lazy per non avere dipendenza hard su requests
-                try:
-                    import requests  # type: ignore[import-not-found]
-                except Exception as e:
-                    return jsonify({"ok": False, "error": f"requests non disponibile: {e}"}), 500
+            elif mode == "remote":
+                if not (ip or url):
+                    return jsonify(
+                        {"ok": False, "error": "Serve 'ip' o 'url' per mode=remote."}
+                    ), 400
 
                 if not url:
-                    url = f"http://{ip}/config.yaml"
+                    # stesse regole del CLI: IP -> URL completo
+                    url = _build_download_url(ip)
 
-                cfg_path = Path(dest_path) if dest_path else Path.cwd() / "config.yaml"
-
-                try:
-                    resp = requests.get(url, timeout=5)
-                    resp.raise_for_status()
-                except Exception as e:
-                    return jsonify({"ok": False, "error": f"Errore nel download da {url}: {e}"}), 502
-
-                try:
-                    cfg_path.write_bytes(resp.content)
-                except Exception as e:
-                    return jsonify({"ok": False, "error": f"Errore nel salvataggio di {cfg_path}: {e}"}), 500
-
+                # usa la stessa funzione del CLI: scarica su config.yaml e aggiorna last_url
+                cfg_path = _download_to_config(url)
                 info = _load_yaml_config(str(cfg_path))
                 return jsonify({"ok": True, "mode": "remote", "source": url, **info})
 
-            return jsonify({"ok": False, "error": f"mode non valido: {mode}"}), 400
+            elif mode == "refresh":
+                # equivalente a fetch_again() del CLI
+                cfg_path = fetch_again()
+                if cfg_path is None:
+                    return jsonify(
+                        {
+                            "ok": False,
+                            "error": "Nessun URL precedente: usa prima mode=remote.",
+                        }
+                    ), 400
+
+                info = _load_yaml_config(str(cfg_path))
+                return jsonify(
+                    {
+                        "ok": True,
+                        "mode": "refresh",
+                        "source": getattr(yaml_download, "last_url", None),
+                        **info,
+                    }
+                )
+
+            elif mode == "save":
+                if not version:
+                    return jsonify(
+                        {
+                            "ok": False,
+                            "error": "Campo 'version' mancante per mode=save.",
+                        }
+                    ), 400
+
+                try:
+                    sn_value = data_config.Config_Header[HEADER_SN]
+                except Exception:
+                    return jsonify(
+                        {
+                            "ok": False,
+                            "error": "SN non disponibile: carica prima un config valido.",
+                        }
+                    ), 400
+
+                today = datetime.datetime.now().strftime("%Y%m%d")
+                ok = save_version(sn=sn_value, ver=version, date=today)
+                return jsonify(
+                    {
+                        "ok": ok,
+                        "mode": "save",
+                        "sn": sn_value,
+                        "version": version,
+                        "date": today,
+                    }
+                )
+
+            else:
+                return jsonify({"ok": False, "error": f"mode non valido: {mode}"}), 400
 
         except FileNotFoundError as e:
             return jsonify({"ok": False, "error": str(e)}), 404

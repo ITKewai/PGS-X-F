@@ -45,8 +45,6 @@ def main():
 
     config = load_exe_config()
 
-    logging.info(get_version_info())
-
     cfg_path = choose_and_prepare_config(sn)
 
     try:

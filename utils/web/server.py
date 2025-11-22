@@ -41,7 +41,7 @@ INDEX_HTML = """<!DOCTYPE html>
 <html lang="it">
 <head>
   <meta charset="utf-8" />
-  <title>PGS-X-F – Web console</title>
+  <title>PGS-X-F – Web CLI</title>
   <style>
     :root {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -49,7 +49,7 @@ INDEX_HTML = """<!DOCTYPE html>
     }
     body {
       margin: 0;
-      background: #050810;
+      background: #020617;
       color: #e5e7eb;
       display: flex;
       min-height: 100vh;
@@ -58,251 +58,94 @@ INDEX_HTML = """<!DOCTYPE html>
     }
     #app {
       width: 100%;
-      max-width: 1100px;
-      margin: 1.5rem;
-      border-radius: 18px;
-      border: 1px solid #1f2937;
-      background: radial-gradient(circle at top left, #111827 0, #020617 45%);
-      box-shadow: 0 18px 45px rgba(0,0,0,0.6);
+      height: 100vh;        /* prende TUTTA l’altezza */
+      margin: 0;            /* niente margini */
+      border-radius: 0;     /* niente bordi arrotondati, stile terminale pieno */
+      border: none;         /* volendo puoi tenere il bordo se ti piace */
+      background: #020617;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
-    }
-    header {
-      padding: 0.75rem 1.5rem;
-      border-bottom: 1px solid #111827;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: linear-gradient(to right, rgba(15,23,42,0.9), rgba(15,23,42,0.3));
-    }
-    header h1 {
-      font-size: 0.95rem;
-      font-weight: 600;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      margin: 0;
-      color: #9ca3af;
-    }
-    header .pill {
-      font-size: 0.75rem;
-      padding: 0.15rem 0.6rem;
-      border-radius: 999px;
-      border: 1px solid #374151;
-      background: rgba(17,24,39,0.8);
-      color: #9ca3af;
-    }
-    main {
-      display: grid;
-      grid-template-columns: minmax(0, 3fr) minmax(260px, 2fr);
-      gap: 0;
-      min-height: 480px;
-    }
-    @media (max-width: 900px) {
-      main {
-        grid-template-columns: 1fr;
-      }
     }
     .console {
-      padding: 1rem 1.25rem;
-      background: radial-gradient(circle at top left, #020617 0, #000 55%);
-      border-right: 1px solid #111827;
+      padding: 0.9rem 1.1rem;
       font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size: 0.78rem;
+      font-size: 0.8rem;
       overflow-y: auto;
       white-space: pre-wrap;
       word-break: break-word;
+      flex: 1;
     }
     .console-line {
       line-height: 1.45;
     }
-    .console-line.system { color: #6b7280; }
+    .console-line.system { color: #9ca3af; }
     .console-line.ok { color: #22c55e; }
     .console-line.error { color: #f97373; }
     .console-line.cmd { color: #e5e7eb; }
-    .console .prompt {
+    .prompt {
       color: #4ade80;
     }
-    .controls {
-      padding: 1rem 1.25rem 1.25rem;
+    .status-bar {
+      border-top: 1px solid #111827;
+      padding: 0.25rem 1.1rem;
+      font-size: 0.7rem;
+      color: #6b7280;
       display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-    .section-title {
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-      color: #9ca3af;
-      margin-bottom: 0.35rem;
-    }
-    .card {
-      border-radius: 14px;
-      border: 1px solid #111827;
-      background: rgba(15,23,42,0.85);
-      padding: 0.75rem 0.9rem;
-    }
-    .row {
-      display: flex;
-      gap: 0.5rem;
+      justify-content: space-between;
       align-items: center;
-      margin-bottom: 0.35rem;
-      flex-wrap: wrap;
+      background: rgba(15,23,42,0.85);
     }
-    label {
-      font-size: 0.75rem;
-      color: #9ca3af;
+    .cmd-bar {
+      border-top: 1px solid #111827;
+      padding: 0.45rem 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(15,23,42,0.95);
     }
-    input, select {
+    .cmd-bar span {
+      font-family: "JetBrains Mono", ui-monospace;
+      font-size: 0.8rem;
+      color: #4ade80;
+    }
+    .cmd-input {
+      flex: 1;
       background: #020617;
       border-radius: 999px;
       border: 1px solid #1f2937;
       padding: 0.35rem 0.7rem;
-      font-size: 0.78rem;
+      font-size: 0.8rem;
       color: #e5e7eb;
       outline: none;
-      min-width: 0;
-      flex: 1;
     }
-    input:focus, select:focus {
+    .cmd-input:focus {
       border-color: #22c55e;
       box-shadow: 0 0 0 1px rgba(34,197,94,0.35);
-    }
-    button {
-      border-radius: 999px;
-      border: 1px solid #16a34a;
-      background: radial-gradient(circle at top left, #22c55e, #15803d);
-      color: #022c22;
-      font-size: 0.78rem;
-      font-weight: 600;
-      padding: 0.4rem 0.9rem;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    button.secondary {
-      border-color: #4b5563;
-      background: #020617;
-      color: #e5e7eb;
-      font-weight: 500;
-    }
-    button:active {
-      transform: translateY(1px);
-    }
-    small.hint {
-      font-size: 0.7rem;
-      color: #6b7280;
-      display: block;
-      margin-top: 0.25rem;
-    }
-    footer {
-      border-top: 1px solid #111827;
-      padding: 0.35rem 1.25rem 0.5rem;
-      font-size: 0.7rem;
-      color: #4b5563;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
     }
   </style>
 </head>
 <body>
 <div id="app">
-  <header>
-    <h1>PGS-X-F · Web console</h1>
-    <div class="pill" id="status-pill">config: sconosciuto</div>
-  </header>
-  <main>
-    <div class="console" id="console"></div>
-    <div class="controls">
-      <div class="card">
-        <div class="section-title">Config</div>
-        <div class="row">
-          <label for="config-path">Percorso config.yaml (opzionale)</label>
-        </div>
-        <div class="row">
-          <input id="config-path" placeholder="es. C:/progetti/PGS/config.yaml o lascia vuoto per ./config.yaml" />
-        </div>
-        <div class="row">
-          <button id="btn-load-config">Carica config</button>
-          <button class="secondary" id="btn-status">Status</button>
-        </div>
-        <small class="hint">Uguale alla scelta del config nel main CLI. Se non specifichi nulla usa il config.yaml nella cartella di esecuzione.</small>
-      </div>
-
-      <div class="card">
-        <div class="section-title">Ricerca IO (menu 1..4)</div>
-        <div class="row">
-          <label for="io-type">Tipo</label>
-          <select id="io-type">
-            <option value="DI">DI</option>
-            <option value="AI">AI</option>
-            <option value="DO">DO</option>
-            <option value="AO">AO</option>
-            <option value="RI">RI</option>
-          </select>
-          <label for="io-index">Indice</label>
-          <input id="io-index" type="number" min="0" step="1" placeholder="es. 123" />
-        </div>
-        <div class="row">
-          <button id="btn-io-search">Cerca</button>
-        </div>
-        <small class="hint">Chiama /api/io/search?type=DI&index=123 come nel main quando scegli 1..4.</small>
-      </div>
-
-      <div class="card">
-        <div class="section-title">System (menu 5)</div>
-        <div class="row">
-          <label for="system-kind">Kind</label>
-          <select id="system-kind">
-            <option value="AXIS">AXIS</option>
-            <option value="ALARM">ALARM</option>
-          </select>
-        </div>
-        <div class="row">
-          <label for="system-field">Campo</label>
-          <input id="system-field" placeholder="es. UP, DOWN, MASTER, MASK..." />
-        </div>
-        <div class="row">
-          <label for="system-index">Indice</label>
-          <input id="system-index" type="number" min="0" step="1" placeholder="es. 1" />
-        </div>
-        <div class="row">
-          <button id="btn-system-search">Cerca SYSTEM</button>
-        </div>
-        <small class="hint">Wrapper di /api/system/search. Usa gli stessi parametri che useresti nel CLI.</small>
-      </div>
-
-      <div class="card">
-        <div class="section-title">FREE & CHECK (menu 7 e 6)</div>
-        <div class="row">
-          <label for="free-type">FREE type (opzionale)</label>
-          <select id="free-type">
-            <option value="">Tutti</option>
-            <option value="DI">DI</option>
-            <option value="AI">AI</option>
-            <option value="DO">DO</option>
-            <option value="AO">AO</option>
-            <option value="RI">RI</option>
-          </select>
-        </div>
-        <div class="row">
-          <button id="btn-free-scan">FREE scan</button>
-          <button class="secondary" id="btn-check">CHECK custom_function()</button>
-        </div>
-        <small class="hint">Replica la voce 7 (FREE) e 6 (CHECK) del menu CLI.</small>
-      </div>
-    </div>
-  </main>
-  <footer>
-    <span id="footer-version">Versione: sconosciuta</span>
-    <span>Web layer · same core di main.py</span>
-  </footer>
+  <div class="console" id="console"></div>
+  <div class="status-bar">
+    <span id="status-left">PGS-X-F Web CLI</span>
+    <span id="status-right">config: sconosciuto · versione: n/d</span>
+  </div>
+  <form class="cmd-bar" id="cmd-form">
+    <span>&gt;</span>
+    <input id="cmd-input" class="cmd-input" autocomplete="off" placeholder="digita qui e premi Invio..." />
+  </form>
 </div>
 
 <script>
   const consoleEl = document.getElementById('console');
-  const statusPill = document.getElementById('status-pill');
-  const footerVersion = document.getElementById('footer-version');
+  const statusLeft = document.getElementById('status-left');
+  const statusRight = document.getElementById('status-right');
+  const form = document.getElementById('cmd-form');
+  const input = document.getElementById('cmd-input');
+
+  let state = 'WAIT_MAIN_CHOICE';
+  let ctx = {};
 
   function appendLine(text, klass) {
     const line = document.createElement('div');
@@ -321,11 +164,8 @@ INDEX_HTML = """<!DOCTYPE html>
   }
 
   function pretty(obj) {
-    try {
-      return JSON.stringify(obj, null, 2);
-    } catch (e) {
-      return String(obj);
-    }
+    try { return JSON.stringify(obj, null, 2); }
+    catch (e) { return String(obj); }
   }
 
   async function callApi(method, url, body) {
@@ -351,75 +191,194 @@ INDEX_HTML = """<!DOCTYPE html>
   }
 
   async function refreshStatus() {
-    const data = await callApi('GET', '/api/status');
-    if (data && data.version) {
-      footerVersion.textContent = 'Versione: ' + data.version;
-    }
-    if (data && data.config_loaded) {
-      statusPill.textContent = 'config: caricato (' + (data.config_path || 'n/d') + ')';
-      statusPill.style.borderColor = '#22c55e';
-      statusPill.style.color = '#bbf7d0';
-    } else {
-      statusPill.textContent = 'config: non caricato';
-      statusPill.style.borderColor = '#f97373';
-      statusPill.style.color = '#fecaca';
+    try {
+      const data = await callApi('GET', '/api/status');
+      let cfg = 'non caricato';
+      if (data && data.config_loaded) {
+        cfg = 'caricato';
+        if (data.config_path) cfg += ' (' + data.config_path + ')';
+      }
+      const ver = data && data.version ? data.version : 'n/d';
+      statusRight.textContent = 'config: ' + cfg + ' · versione: ' + ver;
+      if (data && data.sn) {
+        statusLeft.textContent = 'PGS-X-F Web CLI · SN: ' + data.sn;
+      }
+    } catch(e) {
+      // già loggato in console
     }
   }
 
-  document.getElementById('btn-status').addEventListener('click', () => {
-    refreshStatus();
-  });
+  function printMenu() {
+    appendRaw(
+      [
+        '',
+        '=== MENU PRINCIPALE ===',
+        '1) Ricerca IO (menu 1..4) -> chiede tipo IO + indice',
+        '5) SYSTEM (AXIS/ALARM)',
+        '6) CHECK custom_function()',
+        '7) FREE scan',
+        '8) Esci / reset menu',
+        ''
+      ].join('\\n'),
+      'system'
+    );
+  }
 
-  document.getElementById('btn-load-config').addEventListener('click', async () => {
-    const path = document.getElementById('config-path').value.trim();
-    const body = path ? { path } : {};
-    await callApi('POST', '/api/config/load', body);
-    await refreshStatus();
-  });
+  function resetFlow() {
+    ctx = {};
+    state = 'WAIT_MAIN_CHOICE';
+    printMenu();
+  }
 
-  document.getElementById('btn-io-search').addEventListener('click', async () => {
-    const type = document.getElementById('io-type').value;
-    const idx = document.getElementById('io-index').value;
-    if (idx === '') {
-      appendRaw('Indice IO mancante', 'error');
-      return;
+  async function handleEnter(rawCmd) {
+    const cmd = (rawCmd || '').trim();
+    if (!cmd) return;
+
+    appendLine(cmd, 'cmd'); // echo comando
+
+    switch (state) {
+      case 'WAIT_MAIN_CHOICE': {
+        if (['1','2','3','4'].includes(cmd)) {
+          ctx.menu = parseInt(cmd, 10);
+          state = 'WAIT_IO_TYPE';
+          appendRaw('Tipo IO? [DI/DO/AI/AO/RI]', 'system');
+        } else if (cmd === '5') {
+          state = 'WAIT_SYSTEM_KIND';
+          appendRaw('SYSTEM kind? [AXIS/ALARM]', 'system');
+        } else if (cmd === '6') {
+          appendRaw('Eseguo CHECK custom_function()...', 'system');
+          await callApi('GET', '/api/check');
+          resetFlow();
+        } else if (cmd === '7') {
+          state = 'WAIT_FREE_TYPE';
+          appendRaw('FREE scan: specifica tipo [DI/DO/AI/AO/RI] oppure lascia vuoto e premi solo Invio per tutti.', 'system');
+        } else if (cmd === '8') {
+          appendRaw('Reset menu.', 'system');
+          resetFlow();
+        } else if (cmd.toLowerCase() === 'status') {
+          await refreshStatus();
+        } else if (cmd.toLowerCase().startsWith('config ')) {
+          const path = cmd.slice('config '.length).trim();
+          appendRaw('Carico config da: ' + path, 'system');
+          await callApi('POST', '/api/config/load', { path });
+          await refreshStatus();
+        } else if (cmd.toLowerCase() === 'config') {
+          appendRaw('Carico config predefinito (./config.yaml o PGS_CONFIG_PATH)...', 'system');
+          await callApi('POST', '/api/config/load', {});
+          await refreshStatus();
+        } else {
+          appendRaw('Scelta non valida. Usa 1,5,6,7,8 oppure comandi: status, config, config <percorso>', 'error');
+        }
+        break;
+      }
+
+      case 'WAIT_IO_TYPE': {
+        const t = cmd.toUpperCase();
+        if (!['DI','DO','AI','AO','RI'].includes(t)) {
+          appendRaw('Tipo IO non valido. Valori ammessi: DI, DO, AI, AO, RI.', 'error');
+          appendRaw('Tipo IO? [DI/DO/AI/AO/RI]', 'system');
+        } else {
+          ctx.ioType = t;
+          state = 'WAIT_IO_INDEX';
+          appendRaw('Indice IO (numero intero):', 'system');
+        }
+        break;
+      }
+
+      case 'WAIT_IO_INDEX': {
+        const idx = parseInt(cmd, 10);
+        if (Number.isNaN(idx)) {
+          appendRaw('Indice non numerico, riprova.', 'error');
+          appendRaw('Indice IO (numero intero):', 'system');
+        } else {
+          appendRaw(`Cerco IO ${ctx.ioType} index ${idx}...`, 'system');
+          await callApi('GET', '/api/io/search?type=' + encodeURIComponent(ctx.ioType) + '&index=' + encodeURIComponent(idx));
+          resetFlow();
+        }
+        break;
+      }
+
+      case 'WAIT_SYSTEM_KIND': {
+        const kind = cmd.toUpperCase();
+        if (!['AXIS','ALARM'].includes(kind)) {
+          appendRaw('kind non valido. Ammessi: AXIS o ALARM.', 'error');
+          appendRaw('SYSTEM kind? [AXIS/ALARM]', 'system');
+        } else {
+          ctx.kind = kind;
+          state = 'WAIT_SYSTEM_FIELD';
+          appendRaw('Campo SYSTEM (es. UP, DOWN, MASTER, MASK...):', 'system');
+        }
+        break;
+      }
+
+      case 'WAIT_SYSTEM_FIELD': {
+        if (!cmd) {
+          appendRaw('Campo vuoto, riprova.', 'error');
+          appendRaw('Campo SYSTEM (es. UP, DOWN, MASTER, MASK...):', 'system');
+        } else {
+          ctx.field = cmd.toUpperCase();
+          state = 'WAIT_SYSTEM_INDEX';
+          appendRaw('Indice SYSTEM (numero intero, es. 1):', 'system');
+        }
+        break;
+      }
+
+      case 'WAIT_SYSTEM_INDEX': {
+        const idx = parseInt(cmd, 10);
+        if (Number.isNaN(idx)) {
+          appendRaw('Indice non numerico, riprova.', 'error');
+          appendRaw('Indice SYSTEM (numero intero, es. 1):', 'system');
+        } else {
+          appendRaw(`Cerco SYSTEM kind=${ctx.kind} field=${ctx.field} index=${idx}...`, 'system');
+          const params = new URLSearchParams({
+            kind: ctx.kind,
+            field: ctx.field,
+            index: String(idx),
+          });
+          await callApi('GET', '/api/system/search?' + params.toString());
+          resetFlow();
+        }
+        break;
+      }
+
+      case 'WAIT_FREE_TYPE': {
+        const t = cmd.toUpperCase();
+        if (!cmd) {
+          appendRaw('FREE scan di tutti i tipi...', 'system');
+          await callApi('GET', '/api/free/scan');
+          resetFlow();
+        } else if (!['DI','DO','AI','AO','RI'].includes(t)) {
+          appendRaw('Tipo IO non valido. Valori ammessi: DI, DO, AI, AO, RI, oppure premi solo Invio per tutti.', 'error');
+          appendRaw('FREE scan: specifica tipo [DI/DO/AI/AO/RI] oppure premi solo Invio per tutti.', 'system');
+        } else {
+          appendRaw('FREE scan tipo ' + t + '...', 'system');
+          await callApi('GET', '/api/free/scan?type=' + encodeURIComponent(t));
+          resetFlow();
+        }
+        break;
+      }
+
+      default: {
+        // fallback: reset
+        appendRaw('Stato interno sconosciuto, resetto il menu.', 'error');
+        resetFlow();
+      }
     }
-    const url = '/api/io/search?type=' + encodeURIComponent(type) + '&index=' + encodeURIComponent(idx);
-    await callApi('GET', url);
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const value = input.value;
+    input.value = '';
+    await handleEnter(value);
   });
 
-  document.getElementById('btn-system-search').addEventListener('click', async () => {
-    const kind = document.getElementById('system-kind').value;
-    const field = document.getElementById('system-field').value.trim();
-    const idx = document.getElementById('system-index').value;
-    if (!field || idx === '') {
-      appendRaw('Campo e indice SYSTEM sono obbligatori', 'error');
-      return;
-    }
-    const params = new URLSearchParams({
-      kind,
-      field,
-      index: idx
-    });
-    const url = '/api/system/search?' + params.toString();
-    await callApi('GET', url);
-  });
-
-  document.getElementById('btn-free-scan').addEventListener('click', async () => {
-    const type = document.getElementById('free-type').value;
-    let url = '/api/free/scan';
-    if (type) {
-      url += '?type=' + encodeURIComponent(type);
-    }
-    await callApi('GET', url);
-  });
-
-  document.getElementById('btn-check').addEventListener('click', async () => {
-    await callApi('GET', '/api/check');
-  });
-
-  appendRaw('PGS-X-F web console pronta. Usa i pannelli a destra come useresti il menu di main.py.', 'system');
+  // bootstrap
+  appendRaw('PGS-X-F Web CLI pronta.', 'system');
+  appendRaw('Comandi extra: status | config | config <percorso>', 'system');
+  printMenu();
   refreshStatus();
+  input.focus();
 </script>
 </body>
 </html>

@@ -1418,7 +1418,7 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None, 
                         if val == ind_target:
                             display = Type_OutputParam_Map["intval"][idx_name]["display"]
                             origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
-                            txt = f"{origin.format(idx)}\t→\t{display}"
+                            txt = f"{origin.format(outputInd)}\t→\t{display}"
                             _return.append(txt)
                             if verbose:
                                 logging.info(txt)
@@ -1501,7 +1501,7 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None, 
                             display = Type_OutputParam_Map["intval"][idx_name]["display"]
                             origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
                             if verbose:
-                                logging.info(f"{origin.format(idx)}\t→\t{display}")
+                                logging.info(f"{origin.format(outputInd)}\t→\t{display}")
             if OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_PSLCAN:
                 custom_params = {
                     "OUTPUT_INT_ADDPARAM2": "STATUS1 PSLCAN",
@@ -1529,7 +1529,7 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None, 
                             display = Type_OutputParam_Map["intval"][idx_name]["display"]
                             origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
                             if verbose:
-                                logging.info(f"{origin.format(idx)}\t→\t{display}")
+                                logging.info(f"{origin.format(outputInd)}\t→\t{display}")
             if OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_PSLCAN:
                 custom_params = {
                     "OUTPUT_INT_ANA1IND": "ANA1",

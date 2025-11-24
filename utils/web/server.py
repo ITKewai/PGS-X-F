@@ -207,7 +207,12 @@ INDEX_HTML = """<!DOCTYPE html>
         const ver = data && data.version ? data.version : 'n/d';
         statusRight.textContent = 'config: ' + cfg + ' · versione: ' + ver;
     
-        snAvailable = !!(data && data.sn);
+        snAvailable = !!(
+          data &&
+          data.config_loaded &&
+          data.sn !== null &&
+          data.sn !== -1
+        );
         hasLastUrl = !!(data && data.has_last_url);
     
         if (snAvailable) {
@@ -287,39 +292,40 @@ async function handleEnter(rawCmd) {
   switch (state) {
     // --- Fase CONFIG: replica choose_and_prepare_config() ---
     case 'WAIT_CONFIG_MODE': {
-      if (cmd === '1' || cmd.toLowerCase() === 'l') {
-        appendRaw('Uso config locale (config.yaml / PGS_CONFIG_PATH)...', 'system');
-        await callApi('POST', '/api/config/load', {});
-        await refreshStatus();
-        state = 'WAIT_MAIN_CHOICE';
-        printMenu();
+        if (cmd === '1' || cmd.toLowerCase() === 'l') {
+          appendRaw('Uso config locale (config.yaml / PGS_CONFIG_PATH)...', 'system');
+          let res;
+          try {
+            res = await callApi('POST', '/api/config/load', {});
+          } catch (e) {
+            // errore di rete: resta nella scelta config
+            appendRaw('Errore di rete nel caricamento del config.', 'error');
+            printConfigQuestion();
+            break;
+          }
+          await refreshStatus();
 
-      } else if (cmd === '2' || cmd.toLowerCase() === 'r') {
-        state = 'WAIT_REMOTE_IP';
-        appendRaw('Inserisci indirizzo/IP (es: 10.3.73.177):', 'system');
+          if (!res || res.ok === false) {
+            // file mancante o parsing fallito -> stessa domanda di nuovo
+            appendRaw('Config non caricato. Controlla il file/percorso e riprova.', 'error');
+            state = 'WAIT_CONFIG_MODE';
+            printConfigQuestion();
+          } else {
+            // solo se è andato bene vado al menu
+            state = 'WAIT_MAIN_CHOICE';
+            printMenu();
+          }
 
-      } else if (cmd === '3') {
-        appendRaw('Aggiorno file da rete (ultimo URL)...', 'system');
-        await callApi('POST', '/api/config/prepare', { mode: 'refresh' });
-        await refreshStatus();
-        state = 'WAIT_MAIN_CHOICE';
-        printMenu();
+        } else if (cmd === '2' || cmd.toLowerCase() === 'r') {
+          state = 'WAIT_REMOTE_IP';
+          appendRaw('Inserisci indirizzo IP del server config (es. 10.0.0.10):', 'system');
 
-      } else if (cmd === '4') {
-        if (!snAvailable) {
-          appendRaw('Opzione [4] non disponibile: SN non caricato, carica prima un config valido.', 'error');
-          printConfigQuestion();
         } else {
-          state = 'WAIT_SAVE_VERSION';
-          appendRaw('Versione progetto:', 'system');
+          appendRaw('Scelta non valida. Usa 1 (locale) o 2 (rete).', 'error');
+          printConfigQuestion();
         }
-
-      } else {
-        appendRaw('Opzione non valida. Usa 1 (locale), 2 (rete), 3 (refresh), 4 (save).', 'error');
-        printConfigQuestion();
+        break;
       }
-      break;
-    }
 
     case 'WAIT_SAVE_VERSION': {
       if (!cmd) {
@@ -338,23 +344,41 @@ async function handleEnter(rawCmd) {
       break;
     }
 
-    case 'WAIT_REMOTE_IP': {
-      if (!cmd) {
-        appendRaw('IP vuoto, riprova.', 'error');
-        appendRaw('Inserisci indirizzo/IP (es: 10.3.73.177):', 'system');
+      case 'WAIT_REMOTE_IP': {
+        if (!cmd) {
+          appendRaw('IP vuoto, riprova.', 'error');
+          appendRaw('Inserisci indirizzo IP del server config (es. 10.0.0.10):', 'system');
+          break;
+        }
+        ctx.remoteIp = cmd;
+        appendRaw('Scarico config da IP ' + ctx.remoteIp + '...', 'system');
+
+        let res;
+        try {
+          res = await callApi('POST', '/api/config/prepare', {
+            mode: 'remote',
+            ip: ctx.remoteIp
+          });
+        } catch (e) {
+          appendRaw('Errore di rete nel download del config.', 'error');
+          state = 'WAIT_CONFIG_MODE';
+          printConfigQuestion();
+          break;
+        }
+
+        await refreshStatus();
+
+        if (!res || res.ok === false) {
+          appendRaw('Download/config da rete fallito. Controlla IP/URL e riprova.', 'error');
+          state = 'WAIT_CONFIG_MODE';
+          printConfigQuestion();
+        } else {
+          state = 'WAIT_MAIN_CHOICE';
+          printMenu();
+        }
         break;
       }
-      ctx.remoteIp = cmd;
-      appendRaw('Scarico config da IP ' + ctx.remoteIp + '...', 'system');
-      await callApi('POST', '/api/config/prepare', {
-        mode: 'remote',
-        ip: ctx.remoteIp,
-      });
-      await refreshStatus();
-      state = 'WAIT_MAIN_CHOICE';
-      printMenu();
-      break;
-    }
+
 
     // --- MENU principale: replica while True del CLI ---
     case 'WAIT_MAIN_CHOICE': {

@@ -2562,7 +2562,7 @@ def custom_function():
             for axisInd, fun_list in duplicates.items():
                 axis_name = getattr(data_config.Axis_Param[axisInd], "name", f"AXIS[{axisInd}]")
                 fun_str = ", ".join([f"{Type_AxisFunInd[fi]}" for fi in fun_list])
-                logging.warning(f"   → {axis_name:<20} (axisOil {axisInd}) usato in FunInd: {fun_str}")
+                logging.warning(f"   → {axis_name:<20} ({axisInd}) usato in FunInd: {fun_str}")
 
         logging.info("🔍 Fine controllo duplicati AxisFunInd.")
         return duplicates

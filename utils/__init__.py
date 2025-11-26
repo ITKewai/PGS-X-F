@@ -30,4 +30,6 @@ ASTER MULT impostato a 1.7 diverso da 5.0
 # TODO: check se file capacita su pulpito ha commessa giusta, se indice azzeramento corrisponde al digitale di azzeramento
 # TODO: chech valori nell asse oil
 #TODO: debug mode on senza passare da config.json
+se presendi indirizzi radiocomando come principale inpunt, dare wwarnign se NEW_CONSOLE è disabilitato
+# TODO: controllo che feedback val max e min siano coerenti 40-27000
 """

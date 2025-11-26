@@ -69,12 +69,11 @@ logger.debug('IN: building data_config class')
 data_config: DATA_CONFIG = DATA_CONFIG()  # type: ignore[name-defined]
 logger.debug('OUT: loading data_config class')
 
-# data_config.IO_DI_List: list[Type_IOParam] = []
-data_config.IO_DI_List = []
-data_config.IO_DO_List = []
-data_config.IO_AI_List = []
-data_config.IO_AO_List = []
-data_config.IO_RI_List = []
+data_config.IO_DI_List: list[Type_IOParam] = []
+data_config.IO_DO_List: list[Type_IOParam] = []
+data_config.IO_AI_List: list[Type_IOParam] = []
+data_config.IO_AO_List: list[Type_IOParam] = []
+data_config.IO_RI_List: list[Type_IOParam] = []
 
 
 # ------------------------------
@@ -2893,7 +2892,7 @@ def custom_function():
 
         logging.info("🔍 Fine controllo bypass unused...")
 
-    def check_remotecontrol():
+    def check_remote_control():
         logging.info("🔍 Inizio controllo remote control...")
         count = 0
         REMOTE_RANGES_MED = [
@@ -2906,8 +2905,8 @@ def custom_function():
             range(2030, 2031),  # solo 2030
         ]
         for diParam in data_config.IO_DI_List:
-            if diParam. == IO_TYPE_PNET:
-                addr1 = diParam[IO_INT_ADDR1]
+            if diParam.intval[IO_INT_ADDRTYPE] == IO_TYPE_PNET:
+                addr1 = diParam.intval[IO_INT_ADDR1]
                 for addr1 in REMOTE_RANGES_BIG or addr1 in REMOTE_RANGES_BIG:
                     count += 1
 
@@ -2915,14 +2914,14 @@ def custom_function():
         if isNewRemoteControl:
             logging.info('Rilevati più di 6 I/O di remote control, configurazione nuova')
             if not data_config.ParamBool[BOOL_NEWCONSOLE]:
-                logging.warning("⚠️ Config\t→\tConsole\t→\tNEWCONSOLE deve essere impostato a True")
-
+                logging.warning(f"⚠️ {Config_Map['ParamBool'][Config_Map['_ParamBool'][BOOL_NEWCONSOLE]]['origin'].format(Config_Map['ParamBool'][Config_Map['_ParamBool'][BOOL_NEWCONSOLE]]['display'])} deve essere impostato a True")
+        # TODO: aggiujngere controlli assi radiodisplay
         logging.info("🔍 Fine controllo remote control...")
 
     foo = [check_axis_flag, check_duplicate_do_ao_usage, check_duplicate_obj_usage, clean_di_axis_check, duplicate_io_address,
            check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release, check_safety, check_rotation,
            geometry_check, check_axis_speed_master_slave, check_forbidden_ao_do_usage, check_de_tilt, check_stop_alarms, check_axis_speed,
-           check_archimeter_params, check_bypass_unused, check_remotecontrol]
+           check_archimeter_params, check_bypass_unused, check_remote_control]
     for func in foo:
         logging.info('-' * 60)
         func()

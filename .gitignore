@@ -6,3 +6,4 @@ dist/PSG-X-Finder.exe
 .github/copilot-instructions.md
 /.vscode
 config.json
+dist/

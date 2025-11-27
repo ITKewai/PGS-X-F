@@ -1,5 +1,5 @@
 # Auto-generato da main_import.py
-# Versione: 0_25_26_1
+__version__ = '0.25.26.1'
 
 # --- DB DATA_CONFIG.db ---
 class DATA_CONFIG:

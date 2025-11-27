@@ -31,5 +31,6 @@ ASTER MULT impostato a 1.7 diverso da 5.0
 # TODO: chech valori nell asse oil
 #TODO: debug mode on senza passare da config.json
 se presendi indirizzi radiocomando come principale inpunt, dare wwarnign se NEW_CONSOLE è disabilitato
-# TODO: controllo che feedback val max e min siano coerenti 40-27000
+# TODO: controllo che feedback val max e min siano coerenti 40TODO: aggiungere last ip in config.json
+# todo: aggiungere fix cosi si collega sempre al last ip
 """

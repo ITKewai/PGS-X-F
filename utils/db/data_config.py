@@ -2651,6 +2651,8 @@ def custom_function():
         if data_config.AxisFunInd[FUN_AXIS_OILTEMP] != -1:
             axisOil = data_config.Axis_Param[data_config.AxisFunInd[FUN_AXIS_OILTEMP]]
             for i, value in _.items():
+                if i == ASSE_REAL_BWVMAX or i == ASSE_REAL_FWVMAX or i == ASSE_REAL_DSMAXUP or i == ASSE_REAL_DSMAXDOWN:
+                    continue
                 if axisOil.typval[i] != value:
                     logging.warning(f'now:{axisOil.typval[i]} shoudbe:{_[i]} id: {i}')
                     diff = True

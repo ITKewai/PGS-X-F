@@ -275,7 +275,7 @@ def main():
 
         with open(output_file, "w", encoding="utf-8") as out:
             out.write("# Auto-generato da main_import.py\n")
-            out.write(f"# Versione: {folder}\n\n")
+            out.write(f"__version__ = '{folder.replace('_', '.')}'\n\n")
 
             for filename in valid_files:
                 filepath = os.path.join(exports_dir, filename)
@@ -291,7 +291,6 @@ def main():
         print(f"   ✅ Creato: {output_file}")
 
     print("\n🎉 Generazione completata!")
-
 
 
 if __name__ == "__main__":

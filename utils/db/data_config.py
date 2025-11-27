@@ -2915,7 +2915,48 @@ def custom_function():
             logging.info('Rilevati più di 6 I/O di remote control, configurazione nuova')
             if not data_config.ParamBool[BOOL_NEWCONSOLE]:
                 logging.warning(f"⚠️ {Config_Map['ParamBool'][Config_Map['_ParamBool'][BOOL_NEWCONSOLE]]['origin'].format(Config_Map['ParamBool'][Config_Map['_ParamBool'][BOOL_NEWCONSOLE]]['display'])} deve essere impostato a True")
-        # TODO: aggiujngere controlli assi radiodisplay
+
+            # asse -> (type,row,col,ntot,ndec,rowimp,colimp,ntotimp,ndecimp)
+            expected_map: dict[int, tuple[int, int, int, int, int, int, int, int, int]] = {
+                0: (0, 1, 19, 6, 1, 1, 19, 6, 3),
+                2: (0, 1, 1, 6, 0, 1, 1, 6, 2),
+                16: (1, -1, -1, -1, -1, -1, -1, -1, -1),
+                1: (0, 1, 7, 6, 1, 1, 7, 6, 3),
+                17: (1, -1, -1, -1, -1, -1, -1, -1, -1),
+                3: (0, 1, 13, 6, 1, 1, 13, 6, 3),
+                19: (1, -1, -1, -1, -1, -1, -1, -1, -1),
+            }
+
+            # indici degli int da controllare (stessi usati in Axis_Param[intval])
+            label_indices = [
+                ASSE_INT_LABELTYPE,
+                ASSE_INT_LABELROW,
+                ASSE_INT_LABELCOL,
+                ASSE_INT_LABELNTOT,
+                ASSE_INT_LABELNDEC,
+                ASSE_INT_LABELROWIMP,
+                ASSE_INT_LABELCOLIMP,
+                ASSE_INT_LABELNTOTIMP,
+                ASSE_INT_LABELNDECIMP,
+            ]
+
+            for axisInd, expected_tuple in expected_map.items():
+                if axisInd >= MAX_ASSE:
+                    logging.warning(f"[{axisInd}] AXIS_OUT_OF_RANGE: MAX_ASSE={MAX_ASSE}")
+                    continue
+
+                axis = data_config.Axis_Param[axisInd]
+                axis_name = data_config.Axis_Name[axisInd] or f"AXIS_{axisInd}"
+
+                for label_idx, expected_value in zip(label_indices, expected_tuple):
+                    display = Type_AxisParam_Map["intval"][Type_AxisParam_Map["_intval"][label_idx]]["display"]
+                    origin = Type_AxisParam_Map["intval"][Type_AxisParam_Map["_intval"][label_idx]]["origin"]
+
+                    current_value = axis.intval[label_idx]
+
+                    if current_value != expected_value:
+                        logging.warning(f"{origin.format(axisInd, axis_name)} ha il valore {display} impostato a {current_value} invece che {expected_value}")
+
         logging.info("🔍 Fine controllo remote control...")
 
     foo = [check_axis_flag, check_duplicate_do_ao_usage, check_duplicate_obj_usage, clean_di_axis_check, duplicate_io_address,

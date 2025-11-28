@@ -9,3 +9,4 @@ config.json
 dist/
 version_info.txt
 config_old.yaml
+test.spec.bak

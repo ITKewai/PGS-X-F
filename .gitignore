@@ -8,3 +8,4 @@ dist/PSG-X-Finder.exe
 config.json
 dist/
 version_info.txt
+config_old.yaml

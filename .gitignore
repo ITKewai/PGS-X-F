@@ -7,3 +7,4 @@ dist/PSG-X-Finder.exe
 /.vscode
 config.json
 dist/
+version_info.txt

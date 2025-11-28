@@ -10,7 +10,7 @@ __author__ = "ITKewai"
 __company__ = ""
 __product__ = "PSG-X-FindIndex"
 __copyright__ = f"Autore: {__author__} © 2025 {__company__}"
-
+# todo: fare che carica versione da variabili
 
 def get_version_info() -> str:
     """Ritorna una stringa formattata con le info di versione."""

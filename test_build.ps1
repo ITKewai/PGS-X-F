@@ -1,4 +1,6 @@
 # powershell -ExecutionPolicy Bypass -File .\test_build.ps1
+# nel compiler in Command Parameters aggiungi: -ExecutionPolicy Bypass
+
 # build_all_versions.ps1
 # Script locale per buildare tutte le versioni:
 # - prende tutti i tia_constants_*.py in tia_exports/**/

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Modulo per gestire il download del file config.yaml.
-Compatibile con i percorsi e le logiche di PSG-X-FindIndex.
+Compatibile con i percorsi e le logiche di PGS-X-FindIndex.
 """
 
 from __future__ import annotations

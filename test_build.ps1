@@ -6,7 +6,7 @@
 # - prende tutti i tia_constants_*.py in tia_exports/**/
 # - li copia su utils/exports/tia_constants.py
 # - rigenera version_info.txt
-# - builda un EXE per ognuno con nome PSG-X-Finder-Beta-VERSIONE
+# - builda un EXE per ognuno con nome PGS-X-Finder-Beta-VERSIONE
 
 # Fermati se qualcosa va storto
 $ErrorActionPreference = "Stop"
@@ -67,8 +67,8 @@ foreach ($file in $tiaFiles) {
     }
 
     # 3) Rigenera test.spec partendo SEMPRE dal backup originale
-    Write-Host ">>> Aggiorno test.spec per nome eseguibile PSG-X-Finder-Beta-$version"
-    (Get-Content "test.spec.bak") -replace "PSG-X-Finder-Beta", "PSG-X-Finder-Beta-$version" |
+    Write-Host ">>> Aggiorno test.spec per nome eseguibile PGS-X-Finder-Beta-$version"
+    (Get-Content "test.spec.bak") -replace "PGS-X-Finder-Beta", "PGS-X-Finder-Beta-$version" |
         Set-Content "test.spec"
 
     # 4) Lancia PyInstaller

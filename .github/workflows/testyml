@@ -50,8 +50,8 @@ jobs:
             python make_version_file.py
 
             # 3) Modifica il nome EXE nel test.spec:
-            #    da PSG-X-Finder-Beta -> PSG-X-Finder-Beta-VERSIONE
-            (Get-Content "test.spec.bak") -replace "PSG-X-Finder-Beta", "PSG-X-Finder-Beta-$version" |
+            #    da PGS-X-Finder-Beta -> PGS-X-Finder-Beta-VERSIONE
+            (Get-Content "test.spec.bak") -replace "PGS-X-Finder-Beta", "PGS-X-Finder-Beta-$version" |
               Set-Content "test.spec"
 
             # 4) Build con PyInstaller usando lo .spec modificato

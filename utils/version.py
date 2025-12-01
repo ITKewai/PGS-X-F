@@ -23,7 +23,7 @@ def get_version_info() -> str:
 def get_pgs_version() -> str:
     path = get_run_dir(prefer_cwd=True) / "utils" / "exports" / "tia_constants.py"
 
-    if not os.path.isfile(path):
+    if not path.is_file():
         return "0.0.0"
 
     with open(path, "r", encoding="utf-8") as f:

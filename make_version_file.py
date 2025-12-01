@@ -1,10 +1,11 @@
 # make_version_file.py
 from pathlib import Path
-from main import __version__, __pgs_version__, __author__, __company__, __product__, __copyright__
+
+from utils.version import get_pgs_version, __version__, __company__, __product__, __copyright__
 
 # costruisco tuple (major, minor, patch, build)
 ver_tuple = tuple(map(int, __version__.split(".")))
-pgs_ver_tuple = tuple(map(int, __pgs_version__.split(".")))
+pgs_ver_tuple = tuple(map(int, get_pgs_version().split(".")))
 while len(ver_tuple) < 4:  # PyInstaller vuole sempre 4 campi
     ver_tuple += (0,)
 

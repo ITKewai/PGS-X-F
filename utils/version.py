@@ -12,9 +12,16 @@ __company__ = ""
 __product__ = "PGS-X-FindIndex"
 __copyright__ = f"Autore: {__author__} © 2025 {__company__}"
 
+from utils.paths import get_config_path, get_run_dir
+
 
 def get_version_info() -> str:
-    path = os.path.join("utils", "exports", "tia_constants.py")
+    """Ritorna una stringa formattata con le info di versione."""
+    return f"{__product__} v{__version__} [PGS {get_pgs_version()}]"
+
+
+def get_pgs_version() -> str:
+    path = get_run_dir(prefer_cwd=True) / "utils" / "exports" / "tia_constants.py"
 
     if not os.path.isfile(path):
         return "0.0.0"
@@ -22,10 +29,8 @@ def get_version_info() -> str:
     with open(path, "r", encoding="utf-8") as f:
         content = f.read()
 
-    match = re.search(r'__version__\s*=\s*["\'](.+?)["\']', content)
-    pgs_version = match.group(1) if match else "0.0.0"
-    """Ritorna una stringa formattata con le info di versione."""
-    return f"{__product__} v{__version__} [PGS {pgs_version}]"
+        match = re.search(r'__version__\s*=\s*["\'](.+?)["\']', content)
+        return match.group(1) if match else "0.0.0"
 
 
 def short() -> str:

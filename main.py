@@ -5,7 +5,7 @@ import logging
 import sys
 
 from utils.exe.config import load_exe_config
-from utils.version import __version__, __pgs_version__, __author__, __company__, __product__, __copyright__, get_version_info
+from utils.version import get_version_info
 from utils.yaml.data.core import make_axis_sys_addr, make_alarm_sys_addr
 from utils.yaml.data.costants import AXIS_GROUPS_ORDER, ALARM_GROUPS_ORDER, SYSTEM_TYPE, SYSTEM_TYPE_REV
 from utils.yaml.download import *

@@ -27,7 +27,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='PGS-X-Finder-Beta-0_25_50_0',          # Nome del tuo exe
+    name='PGS-X-Finder-Beta',          # Nome del tuo exe
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

@@ -15,6 +15,7 @@ Write-Host ">>> Script build_all_versions.ps1 avviato..."
 
 # Vai nella cartella dove sta lo script (radice repo)
 Set-Location $PSScriptRoot
+$root = $PSScriptRoot   # <- QUI definisco la root UNA VOLTA per tutte
 
 # Controlli base
 if (-not (Test-Path "test.spec")) {
@@ -71,12 +72,22 @@ foreach ($file in $tiaFiles) {
     (Get-Content "test.spec.bak") -replace "PGS-X-Finder-Beta", "PGS-X-Finder-Beta-$version" |
         Set-Content "test.spec"
 
+    # 3.5) Workpath dedicata per versione (così PyInstaller non ricicla l'Analysis)
+    $workPath = Join-Path $root ("build\test_" + $version)
+
+    # pulisco SOLO la cartella di workpath della versione corrente (ignore error se bloccata)
+    if (Test-Path $workPath) {
+        Write-Host ">>> Pulisco workpath '$workPath'..." -ForegroundColor DarkYellow
+        Remove-Item $workPath -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
     # 4) Lancia PyInstaller
     Write-Host ">>> Lancio PyInstaller per versione $version ..."
-    pyinstaller "test.spec" --noconfirm
+    pyinstaller ".\test.spec" --noconfirm --workpath "$workPath"
 
     if ($LASTEXITCODE -ne 0) {
         Write-Error "PyInstaller ha fallito per versione $version (exit code $LASTEXITCODE)."
+        exit $LASTEXITCODE
     }
 
     Write-Host ">>> Build per versione $version COMPLETATA."

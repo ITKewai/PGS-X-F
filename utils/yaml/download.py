@@ -14,11 +14,11 @@ import requests
 import warnings as _warnings
 from urllib3.exceptions import InsecureRequestWarning
 
+from utils.exe.config import get_param, update_param
 from utils.paths import get_config_path
 
 _warnings.simplefilter("ignore", InsecureRequestWarning)
 
-last_url = ''
 
 
 def _build_download_url(addr: str) -> str:
@@ -73,7 +73,6 @@ def _download_to_config(url: str) -> Path:
     Scarica su <cwd>/config.yaml, facendo prima un backup in config_old.yaml.
     Se config_old.yaml esiste già, viene sovrascritto con l'attuale config.yaml.
     """
-    global last_url
     cfg_path = get_config_path("config.yaml", prefer_cwd=True)
     backup_path = cfg_path.with_name("config_old.yaml")
 
@@ -88,7 +87,9 @@ def _download_to_config(url: str) -> Path:
 
     # --- Download nuovo file ---
     download_file(url, cfg_path)
-    last_url = url
+    lastUrl = get_param('lastUrl')
+    if lastUrl != url:
+        update_param('lastUrl', lastUrl)
     return cfg_path
 
 
@@ -97,15 +98,14 @@ def choose_and_prepare_config(sn: str = None) -> Path:
     Chiede all'utente se usare il config locale o scaricarlo.
     Ritorna il percorso finale del file pronto.
     """
-    global last_url
+    lastUrl = get_param('lastUrl')
     cfg_path = get_config_path("config.yaml", prefer_cwd=True)
-
     while True:
         logging.info('')
         logging.info("Selezione sorgente file 'config.yaml'")
         logging.info("  [1] Usa file locale (cartella corrente)")
         logging.info("  [2] Scarica file da rete")
-        if last_url:
+        if lastUrl:
             logging.info("  [3] Aggiorna file da rete (ultimo URL)")
         if sn:
             logging.info("  [4] Save")
@@ -129,7 +129,7 @@ def choose_and_prepare_config(sn: str = None) -> Path:
                 return cfg_path
             logging.info(f"❌ File locale non trovato o corrotto: {cfg_path}\n")
             continue
-        elif choice == "3" and last_url:
+        elif choice == "3" and lastUrl:
             res = fetch_again()
             if res is not None:
                 return res
@@ -148,14 +148,14 @@ def fetch_again(again: bool = False) -> Path | None:
     REFRESH: riscarica il config dallo stesso URL usato l'ultima volta.
     Ritorna il Path del config aggiornato, oppure None se non disponibile/errore.
     """
-    global last_url
-    if not last_url:
+    lastUrl = get_param("lastUrl")
+    if not lastUrl:
         logging.info("⚠️ Nessun URL precedente: usa l'opzione [2] almeno una volta.")
         return None
 
     try:
-        logging.info(f"🔁 Refresh da: {last_url}")
-        return _download_to_config(last_url)
+        logging.info(f"🔁 Refresh da: {lastUrl}")
+        return _download_to_config(lastUrl)
     except Exception as e:
         logging.info(f"❌ Errore durante il refresh")
         return None

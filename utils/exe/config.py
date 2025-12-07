@@ -1,12 +1,13 @@
 import json
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Union
 
 DEFAULT_CONFIG: Dict[str, bool] = {
     "debug": False,
     "webServer": False,  # <-- FLAG WEBSERVER
     "autoPlcIp": False,
     "logToFile": False,
+    "lastUrl": ""
 }
 
 
@@ -50,3 +51,26 @@ def load_exe_config(path: str | Path | None = None) -> Dict[str, bool]:
         save_exe_config(cfg, p)
 
     return {k: bool(cfg.get(k, v)) for k, v in DEFAULT_CONFIG.items()}
+
+
+def get_param(name: str) -> Union[str, bool]:
+    """Restituisce lo stato del parametro `name`.
+    Il parametro deve essere presente in DEFAULT_CONFIG; il valore è letto dal file di configurazione.
+    Solleva KeyError se `name` non è un parametro di default.
+    """
+    if name not in DEFAULT_CONFIG:
+        raise KeyError(f"Parametro non riconosciuto: {name}")
+    cfg = load_exe_config()
+    return bool(cfg.get(name, DEFAULT_CONFIG[name]))
+
+
+def update_param(name: str, value: Union[str, bool]) -> None:
+    """Aggiorna il parametro `name` con il valore `value`.
+    Il parametro deve essere presente in DEFAULT_CONFIG.
+    Solleva KeyError se `name` non è un parametro di default.
+    """
+    if name not in DEFAULT_CONFIG:
+        raise KeyError(f"Parametro non riconosciuto: {name}")
+    cfg = load_exe_config()
+    cfg[name] = value
+    save_exe_config(cfg)

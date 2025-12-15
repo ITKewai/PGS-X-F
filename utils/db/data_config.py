@@ -16,11 +16,12 @@ from typing import Any, List, Dict, Sequence, Optional
 
 from utils.exe.config import load_exe_config
 from utils.exports.tia_constants_map import *
+from utils.version import get_pgsx_version
 from utils.yaml.data.core import make_axis_sys_addr
 from utils.yaml.data.costants import BASE_AXIS, AXIS_GROUP_STEP, ALARM_GROUP_STEP, AXIS_GROUPS_ORDER
 from utils.yaml.load import load_yaml
 from utils.exports.tia_constants import *  # noqa: F401,F403  (porta DATA_CONFIG, MAX_*, costanti simboliche, UDT, ecc.)
-
+from utils.exports.tia_constants import __version__ as ver
 # 🎨 Codici colore ANSI
 RESET = "\033[0m"
 GRAY = "\033[90m"
@@ -2172,12 +2173,12 @@ def custom_function():
                 return "??"
 
         axis_pairs = [
-            (ASSE_INT_INDSHH, ASSE_BOOL_ENABSHH),
-            (ASSE_INT_INDSH, ASSE_BOOL_ENABSH),
-            (ASSE_INT_INDSL, ASSE_BOOL_ENABSL),
-            (ASSE_INT_INDSLL, ASSE_BOOL_ENABSLL),
-            (ASSE_INT_INDSH0, ASSE_BOOL_ENABSH0),
-            (ASSE_INT_INDSL0, ASSE_BOOL_ENABSL0),
+            (ASSE_INT_INDSHH, ASSE_BOOL_ENABSHH, ASSE_REAL_SHH),
+            (ASSE_INT_INDSH, ASSE_BOOL_ENABSH, ASSE_REAL_SH),
+            (ASSE_INT_INDSL, ASSE_BOOL_ENABSL, ASSE_REAL_SL),
+            (ASSE_INT_INDSLL, ASSE_BOOL_ENABSLL, ASSE_REAL_SLL),
+            (ASSE_INT_INDSH0, ASSE_BOOL_ENABSH0, ASSE_REAL_SH0),
+            (ASSE_INT_INDSL0, ASSE_BOOL_ENABSL0, ASSE_REAL_SL0),
         ]
 
         AXIS_SYS_CODE = {
@@ -2202,13 +2203,15 @@ def custom_function():
             try:
                 AxisParamIntVals = data_config.Axis_Param[axisInd].intval
                 AxisParamBoolVals = data_config.Axis_Param[axisInd].boolval
+                AxisParamRealVals = data_config.Axis_Param[axisInd].realval
             except Exception:
+                logging.critical(f"Errore lettura parametri asse {axisInd}")
                 continue
 
             axis_name = get_axis_name(Ind=axisInd)
             local_buf: list[str] = []
 
-            for int_idx, bool_idx in axis_pairs:
+            for int_idx, bool_idx, real_idx in axis_pairs:
                 if int_idx >= len(AxisParamIntVals) or bool_idx >= len(AxisParamBoolVals):
                     continue
 
@@ -2216,7 +2219,7 @@ def custom_function():
                 flag = AxisParamBoolVals[bool_idx]
                 label = _axis_label_from_int_idx(int_idx)
                 sys_idx = _sys_index_for(axisInd, label)
-
+                value = ''
                 refs: list[str] = []
                 try:
                     if di_val > 0:
@@ -2229,6 +2232,8 @@ def custom_function():
                 except Exception:
                     pass
 
+                value = AxisParamRealVals[real_idx]
+
                 if refs or di_val > 0:
                     # ⚠️ warning PRIMA
                     if not flag and (di_val > 0 or refs):
@@ -2236,7 +2241,7 @@ def custom_function():
                             f"  ⚠️  Flag {label} disattivo ma {label}={di_val if di_val > 0 else 'SYS'} è impostato/usato")
 
                     # header label
-                    local_buf.append(f"    ↳ Axes\t→\t[{axisInd}]{axis_name}\t→\t{label}")
+                    local_buf.append(f"    ↳ Axes\t→\t[{axisInd}]{axis_name}\t→\t{label}" + (f"\t({value})" if value else ""))
                     for ref in refs:
                         local_buf.append(f"        ↳ {ref}")
 
@@ -2789,6 +2794,8 @@ def custom_function():
         normalstop = [0, 2, 3, 4, 6, 7, 28, 29, 32, 33, 83]
         safetyStop = [110, 111, 115, 116, 118, 120, 121, 124, 128, 129, 130, 131, 132, 133, 134, 135, 136, 149, 150,
                       151, 152, 153, 154, 155, 156, 157, 158, 159, 184, 186, 187]
+        if get_pgsx_version()[1] >= 25:
+            safetyStop = [126, 127, 131,133,134,136,137,140,141,142,144,145,146,147,148,149,150,151,152,165,166,167,168,169,170,171,172,172,174,175]
         for i in normalstop:
             alarm = data_config.Alarm_Param[i]
             alarmName = data_config.Alarm_Name[i] or f"ALARM_{i}"

@@ -33,4 +33,6 @@ ASTER MULT impostato a 1.7 diverso da 5.0
 se presendi indirizzi radiocomando come principale inpunt, dare wwarnign se NEW_CONSOLE è disabilitato
 # TODO: controllo che feedback val max e min siano coerenti 40TODO: aggiungere last ip in config.json
 # todo: aggiungere fix cosi si collega sempre al last ip
+# TODO: controllare che se presente feedback encoder su espulsore deve rimanere tipo XXX cosi non perde quota una volta spenta e acceso
+# TODO: verificare che la numerazione allarmi sia corretta (COD)
 """

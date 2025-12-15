@@ -23,3 +23,8 @@ def get_version_info() -> str:
 def short() -> str:
     """Ritorna una versione compatta: solo nome prodotto e versione."""
     return f"{__product__} v{__version__}"
+
+
+def get_pgsx_version() -> list:
+    """Ritorna una stringa di configurazione della versione."""
+    return [int(part) for part in pgs_version.split('.')]

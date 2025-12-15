@@ -50,7 +50,7 @@ def load_exe_config(path: str | Path | None = None) -> Dict[str, bool]:
     if changed:
         save_exe_config(cfg, p)
 
-    return {k: bool(cfg.get(k, v)) for k, v in DEFAULT_CONFIG.items()}
+    return {k: cfg.get(k, v) for k, v in DEFAULT_CONFIG.items()}
 
 
 def get_param(name: str) -> Union[str, bool]:
@@ -61,7 +61,7 @@ def get_param(name: str) -> Union[str, bool]:
     if name not in DEFAULT_CONFIG:
         raise KeyError(f"Parametro non riconosciuto: {name}")
     cfg = load_exe_config()
-    return bool(cfg.get(name, DEFAULT_CONFIG[name]))
+    return cfg.get(name, DEFAULT_CONFIG[name])
 
 
 def update_param(name: str, value: Union[str, bool]) -> None:

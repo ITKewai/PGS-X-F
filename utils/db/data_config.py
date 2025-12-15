@@ -2706,9 +2706,10 @@ def custom_function():
         if axisInd != -1:
             axis = data_config.Axis_Param[axisInd]
             axis_name = data_config.Axis_Name[axisInd] or f"AXIS_{axisInd}"
-            for i in [ASSE_REAL_SMAX, ASSE_REAL_SHH]:
-                if axis.realval[i] != 999999:
-                    logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][i]]['display']} non impostato a +999999.0 ma a {axis.realval[i]}")
+            if axis.realval[ASSE_REAL_SMAX] != 999999:
+                logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SMAX]]['display']} non impostato a +999999.0 ma a {axis.realval[ASSE_REAL_SMAX]}")
+            if axis.realval[ASSE_REAL_SHH] > 10000:
+                logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SHH]]['display']} non impostato correttamente, valore troppo alto: {axis.realval[ASSE_REAL_SHH]}")
             for i in [ASSE_REAL_SMIN, ASSE_REAL_SLL]:
                 if axis.realval[i] != -999999:
                     logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][i]]['display']} non impostato a -999999.0 ma a {axis.realval[i]}")

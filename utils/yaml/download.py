@@ -89,7 +89,7 @@ def _download_to_config(url: str) -> Path:
     download_file(url, cfg_path)
     lastUrl = get_param('lastUrl')
     if lastUrl != url:
-        update_param('lastUrl', lastUrl)
+        update_param('lastUrl', url)
     return cfg_path
 
 

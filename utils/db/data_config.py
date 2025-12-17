@@ -1748,7 +1748,7 @@ def run_io_scan(iotype: int, ind_target: int = None, verbose: bool = False) -> L
         # campo In del DO
         for Ind in range(0, len(data_config.IO_DO_List)):
             if data_config.IO_DO_List[Ind].intval[IO_INT_ININD] == ind_target:
-                txt = f"IO\t→\tDI\t→\t[{Ind}] {get_io_name(iotype=IO_DI, Ind=Ind)}\t→\tIn"
+                txt = f"IO\t→\tDO\t→\t[{Ind}] {get_io_name(iotype=IO_DO, Ind=Ind)}\t→\tIn"
                 _return.append(txt)
                 if verbose:
                     logging.info(txt)

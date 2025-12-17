@@ -8,7 +8,7 @@ import re
 from utils.exports.tia_constants import __version__ as pgs_version
 
 
-__version__ = "1.0.3.4"
+__version__ = "1.0.3.5"
 __author__ = "ITKewai"
 __company__ = ""
 __product__ = "PGS-X-FindIndex"

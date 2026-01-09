@@ -2361,14 +2361,18 @@ def custom_function():
 
     def clean_di_axis_check() -> None:
         logging.info("🔍 Avvio controllo axis_flag_checks...")
+        major, minor, patch, build = get_pgsx_version()
         for axisInd in range(0, MAX_ASSE):
             AxisParamIntVals = data_config.Axis_Param[axisInd].intval
             to_check = [ASSE_INT_INDSHH, ASSE_INT_INDSH, ASSE_INT_INDSL, ASSE_INT_INDSLL, ASSE_INT_INDSH0, ASSE_INT_INDSL0]
-            try:
-                to_check.extend([ASSE_INT_FREE_71, ASSE_INT_FREE_72, ASSE_INT_OPTPARAM1IND, ASSE_INT_OPTPARAM2IND, ASSE_INT_OPTPARAM3IND])
-            except NameError:
-                logging.debug("⚠️ Alcuni parametri opzionali non sono definiti nella versione corrente.")  # TODO: gestire meglio
-                pass
+            if patch >= 53:
+                to_check.extend([ASSE_INT_OPTPARAM1IND, ASSE_INT_OPTPARAM2IND, ASSE_INT_OPTPARAM3IND])
+            else:
+                try:
+                    to_check.extend([ASSE_INT_FREE_71, ASSE_INT_FREE_72, ASSE_INT_OPTPARAM1IND, ASSE_INT_OPTPARAM2IND, ASSE_INT_OPTPARAM3IND])
+                except NameError:
+                    logging.debug("⚠️ Alcuni parametri opzionali non sono definiti nella versione corrente.")  # TODO: gestire meglio
+                    pass
             for idx in to_check:
                 idx_name = Type_AxisParam_Map["_intval"][idx]
                 if AxisParamIntVals[idx] != -1:
@@ -2930,11 +2934,11 @@ def custom_function():
             expected_map: dict[int, tuple[int, int, int, int, int, int, int, int, int]] = {
                 0: (0, 1, 19, 6, 1, 1, 19, 6, 3),
                 2: (0, 1, 1, 6, 0, 1, 1, 6, 2),
-                16: (1, -1, -1, -1, -1, -1, -1, -1, -1),
+                16: ([-1, 1], -1, -1, -1, -1, -1, -1, -1, -1),
                 1: (0, 1, 7, 6, 1, 1, 7, 6, 3),
-                17: (1, -1, -1, -1, -1, -1, -1, -1, -1),
+                17: ([-1, 1], -1, -1, -1, -1, -1, -1, -1, -1),
                 3: (0, 1, 13, 6, 1, 1, 13, 6, 3),
-                19: (1, -1, -1, -1, -1, -1, -1, -1, -1),
+                19: ([-1, 1], -1, -1, -1, -1, -1, -1, -1, -1),
             }
 
             # indici degli int da controllare (stessi usati in Axis_Param[intval])
@@ -2963,16 +2967,35 @@ def custom_function():
                     origin = Type_AxisParam_Map["intval"][Type_AxisParam_Map["_intval"][label_idx]]["origin"]
 
                     current_value = axis.intval[label_idx]
-
-                    if current_value != expected_value:
-                        logging.warning(f"{origin.format(axisInd, axis_name)} ha il valore {display} impostato a {current_value} invece che {expected_value}")
+                    if isinstance(expected_value, list):
+                        if current_value not in expected_value:
+                            logging.warning(f"{origin.format(axisInd, axis_name)} ha il valore {display} impostato a {current_value} invece che uno tra {expected_value}")
+                    else:
+                        if current_value != expected_value:
+                            logging.warning(f"{origin.format(axisInd, axis_name)} ha il valore {display} impostato a {current_value} invece che {expected_value}")
 
         logging.info("🔍 Fine controllo remote control...")
+
+    def check_axis_sp() -> None:
+        logging.info("🔍 Inizio controllo rapporti feedback...")
+        for axisInd in range(0, MAX_ASSE):
+            axis = data_config.Axis_Param[axisInd]
+            axis_name = data_config.Axis_Name[axisInd] or f"AXIS_{axisInd}"
+            for val in [ASSE_INT_P1, ASSE_INT_P2]:
+                if axis.intval[val] != -1:
+                    logging.info(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['intval'][Type_AxisParam_Map['_intval'][val]]['display']} impostato a {axis.intval[val]}")
+        logging.info("🔍 Fine controllo rapporti feedback...")
+
+    def check_feedback_ratios() -> None:
+        ...
+
+    def check_tilt_max_lateral() -> None:
+        ...
 
     foo = [check_axis_flag, check_duplicate_do_ao_usage, check_duplicate_obj_usage, clean_di_axis_check, duplicate_io_address,
            check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release, check_safety, check_rotation,
            geometry_check, check_axis_speed_master_slave, check_forbidden_ao_do_usage, check_de_tilt, check_stop_alarms, check_axis_speed,
-           check_archimeter_params, check_bypass_unused, check_remote_control]
+           check_archimeter_params, check_bypass_unused, check_remote_control, check_feedback_ratios, check_axis_sp, check_tilt_max_lateral]
     for func in foo:
         logging.info('-' * 60)
         func()

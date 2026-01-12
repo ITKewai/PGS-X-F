@@ -35,4 +35,7 @@ se presendi indirizzi radiocomando come principale inpunt, dare wwarnign se NEW_
 # todo: aggiungere fix cosi si collega sempre al last ip
 # TODO: controllare che se presente feedback encoder su espulsore deve rimanere tipo XXX cosi non perde quota una volta spenta e acceso
 # TODO: verificare che la numerazione allarmi sia corretta (COD)
+
+# TODO: SE METTO INDICE 0 MI TROVA TROPPA ROBA
+# TODO: controllare
 """

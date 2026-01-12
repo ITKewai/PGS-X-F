@@ -12,7 +12,7 @@ import sys
 import json
 
 from pathlib import Path
-from typing import Any, List, Dict, Sequence, Optional
+from typing import Any, List, Dict, Sequence, Optional, Tuple
 
 from utils.exe.config import load_exe_config
 from utils.exports.tia_constants_map import *
@@ -2057,6 +2057,25 @@ def decode_sys_addr(ind_target: int):
     return sysname
 
 
+def get_expr_from_di(ind: int) -> List[Tuple[int, int, int]]:
+    """
+    Ritorna una lista di tuple (not_val, opnd_val, oper_val) per ogni gruppo
+    di espressione associato al DI specificato.
+    """
+    expr_list = []
+    if 0 <= ind < len(data_config.IO_DI_List):
+        di_param = data_config.IO_DI_List[ind]
+        if di_param.intval[IO_INT_ADDRTYPE] == IO_TYPE_CALC:
+            exprintval = di_param.exprintval
+            if len(exprintval) > 1:
+                for i in range(1, len(exprintval), 3):
+                    if i + 2 < len(exprintval):
+                        not_val = exprintval[i]
+                        opnd_val = exprintval[i + 1]
+                        oper_val = exprintval[i + 2]
+                        expr_list.append((not_val, opnd_val, oper_val))
+    return expr_list
+
 def run_free_scan(iotype: int):
     """
     Scansiona tutti gli IO di un certo tipo (DI/DO/AI/AO)
@@ -2992,10 +3011,29 @@ def custom_function():
     def check_tilt_max_lateral() -> None:
         ...
 
+    def check_alarm_sys_addr():
+        logging.info("🔍 Inizio controllo allarmi con indirizzi di sistema...")
+        #pinchingPS = 97
+        pinchingPS_IO = [16481, 16549, 16484, 16485, 16551, 16552]
+        major, minor, patch, build = get_pgsx_version()
+        if patch >= 50:
+            #pinchingPS = 113
+            pinchingPS_IO = [16497, 16565, 16500, 16501, 16567, 16568]
+        alarmPinching_IN = data_config.Alarm_Param[pinchingPS].intval[ALARM_INT_INDIN]
+        if alarmPinching_IN != -1:
+            exprGroup = get_expr_from_di(alarmPinching_IN)
+            if exprGroup:
+                for index, data in enumerate(exprGroup):
+                    if data[1] == -1:
+                        continue
+                    if data[1] not in pinchingPS_IO:
+                        logging.warning(f"⚠️ Alarm Pinching usa un indirizzo IO di sistema {data[1]} errato")
+        logging.info("🔍 Fine controllo allarmi con indirizzi di sistema...")
+
     foo = [check_axis_flag, check_duplicate_do_ao_usage, check_duplicate_obj_usage, clean_di_axis_check, duplicate_io_address,
            check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release, check_safety, check_rotation,
            geometry_check, check_axis_speed_master_slave, check_forbidden_ao_do_usage, check_de_tilt, check_stop_alarms, check_axis_speed,
-           check_archimeter_params, check_bypass_unused, check_remote_control, check_feedback_ratios, check_axis_sp, check_tilt_max_lateral]
+           check_archimeter_params, check_bypass_unused, check_remote_control, check_feedback_ratios, check_axis_sp, check_tilt_max_lateral, check_alarm_sys_addr]
     for func in foo:
         logging.info('-' * 60)
         func()
@@ -3005,7 +3043,7 @@ def custom_function():
 if __name__ == "__main__":
     populate_from_yaml_file("../../config.yaml")
     custom_function()
-    run_io_search(IO_DI, 2506, verbose=True)
+    #run_io_search(IO_DI, 2506, verbose=True)
     while True:
         logging.info(", ".join([f"{name.replace('IO_', '')}={globals()[name]}" for name in ["IO_DI", "IO_AI", "IO_DO", "IO_AO", "IO_RI"]]))
         _type = input()

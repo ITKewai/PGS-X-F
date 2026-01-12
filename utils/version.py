@@ -5,6 +5,8 @@ Modulo che contiene le informazioni di versione e metadati del progetto PGS-X-Fi
 """
 import os
 import re
+from typing import List
+
 from utils.exports.tia_constants import __version__ as pgs_version
 
 
@@ -25,6 +27,6 @@ def short() -> str:
     return f"{__product__} v{__version__}"
 
 
-def get_pgsx_version() -> list:
-    """Ritorna una stringa di configurazione della versione."""
+def get_pgsx_version() -> list[int]:
+    """Ritorna la versione come (major, minor, patch, build)."""
     return [int(part) for part in pgs_version.split('.')]

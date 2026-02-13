@@ -3013,11 +3013,11 @@ def custom_function():
 
     def check_alarm_sys_addr():
         logging.info("🔍 Inizio controllo allarmi con indirizzi di sistema...")
-        #pinchingPS = 97
+        pinchingPS = 97
         pinchingPS_IO = [16481, 16549, 16484, 16485, 16551, 16552]
         major, minor, patch, build = get_pgsx_version()
         if patch >= 50:
-            #pinchingPS = 113
+            #inchingPS = 113
             pinchingPS_IO = [16497, 16565, 16500, 16501, 16567, 16568]
         alarmPinching_IN = data_config.Alarm_Param[pinchingPS].intval[ALARM_INT_INDIN]
         if alarmPinching_IN != -1:
@@ -3029,6 +3029,15 @@ def custom_function():
                     if data[1] not in pinchingPS_IO:
                         logging.warning(f"⚠️ Alarm Pinching usa un indirizzo IO di sistema {data[1]} errato")
         logging.info("🔍 Fine controllo allarmi con indirizzi di sistema...")
+
+    def seq_check() -> None:
+        logging.info("🔍 Inizio controllo sequenze...")
+        for Input in data_config.Input_Param:
+            if Input.intval[IO_INT_ADDRTYPE] == IO_INT_TYPE_SEQ:
+                seq_index = Input.intval[IO_INT_ADDR1]
+                if seq_index < 0 or seq_index >= MAX_SEQ:
+                    input_name = data_config.Input_Name[data_config.IO_DI_List.index(Input)] or f"INPUT_{data_config.IO_DI_List.index(Input)}"
+                    logging.warning(f"⚠️ {input_name} ha un indice di sequenza non valido: {seq_index}")
 
     foo = [check_axis_flag, check_duplicate_do_ao_usage, check_duplicate_obj_usage, clean_di_axis_check, duplicate_io_address,
            check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release, check_safety, check_rotation,
@@ -3044,15 +3053,15 @@ if __name__ == "__main__":
     populate_from_yaml_file("../../config.yaml")
     custom_function()
     #run_io_search(IO_DI, 2506, verbose=True)
-    while True:
-        logging.info(", ".join([f"{name.replace('IO_', '')}={globals()[name]}" for name in ["IO_DI", "IO_AI", "IO_DO", "IO_AO", "IO_RI"]]))
-        _type = input()
-        _target = input('Target:')
-
-        try:
-            _type = int(_type)
-            _target = int(_target)
-        except:
-            continue
-
-        run_io_search(_type, _target, verbose=True)
+    # while True:
+    #     logging.info(", ".join([f"{name.replace('IO_', '')}={globals()[name]}" for name in ["IO_DI", "IO_AI", "IO_DO", "IO_AO", "IO_RI"]]))
+    #     _type = input()
+    #     _target = input('Target:')
+    #
+    #     try:
+    #         _type = int(_type)
+    #         _target = int(_target)
+    #     except:
+    #         continue
+    #
+    #     run_io_search(_type, _target, verbose=True)

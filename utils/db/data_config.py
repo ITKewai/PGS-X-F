@@ -3032,17 +3032,15 @@ def custom_function():
 
     def seq_check() -> None:
         logging.info("🔍 Inizio controllo sequenze...")
-        for Input in data_config.Input_Param:
-            if Input.intval[IO_INT_ADDRTYPE] == IO_INT_TYPE_SEQ:
-                seq_index = Input.intval[IO_INT_ADDR1]
-                if seq_index < 0 or seq_index >= MAX_SEQ:
-                    input_name = data_config.Input_Name[data_config.IO_DI_List.index(Input)] or f"INPUT_{data_config.IO_DI_List.index(Input)}"
-                    logging.warning(f"⚠️ {input_name} ha un indice di sequenza non valido: {seq_index}")
-
+        for idx, Input in enumerate(data_config.Input_Param):
+            seq = Input.intval[INPUT_INT_SEQID]
+            if seq != -1:
+                logging.info(f"L'input [{idx}]{Input.name} ha la sequenza impostata su {seq}")
+        logging.info("🔍 Fine controllo sequenze...")
     foo = [check_axis_flag, check_duplicate_do_ao_usage, check_duplicate_obj_usage, clean_di_axis_check, duplicate_io_address,
            check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release, check_safety, check_rotation,
            geometry_check, check_axis_speed_master_slave, check_forbidden_ao_do_usage, check_de_tilt, check_stop_alarms, check_axis_speed,
-           check_archimeter_params, check_bypass_unused, check_remote_control, check_feedback_ratios, check_axis_sp, check_tilt_max_lateral, check_alarm_sys_addr]
+           check_archimeter_params, check_bypass_unused, check_remote_control, check_feedback_ratios, check_axis_sp, check_tilt_max_lateral, check_alarm_sys_addr, seq_check]
     for func in foo:
         logging.info('-' * 60)
         func()

@@ -1,5 +1,5 @@
 # Auto-generato da main_import.py
-__version__ = '0.25.40.1'
+__version__ = '0.25.50.0'
 
 # --- DB DATA_CONFIG.db ---
 class DATA_CONFIG:
@@ -706,9 +706,9 @@ class Type_ToolsetParam:
         intval (Array[0.."MAX_TOOLSETINT"] of Int := [4(-1)]):
         realvalcfg (Array[0.."MAX_TOOLSETREAL"] of Real):
         realval (Array[0.."MAX_TOOLSETREAL"] of Real):
-        fcval (Array[0.."MAX_TOOLSETREAL"] of Real := [10(1.0)]):
+        fcval (Array[0.."MAX_TOOLSETREAL"] of Real := [20(1.0)]):
         offsetval (Array[0.."MAX_TOOLSETREAL"] of Real):
-        typval (Array[0.."MAX_TOOLSETREAL"] of Int := [10(-1)]):
+        typval (Array[0.."MAX_TOOLSETREAL"] of Int := [20(-1)]):
         output (Array[0.."MAX_TOOLSETOUTPUT"] of "Type_ToolsetOutputParam" := [([2(-1)], [()]), ([2(-1)], [()]), ([2(-1)], [()]), ([2(-1)], [()])]):
     """
     def __init__(self):
@@ -721,11 +721,11 @@ class Type_ToolsetParam:
         self._defaults['realvalcfg'] = [0.0] * (MAX_TOOLSETREAL + 1)
         self.realval = [0.0] * (MAX_TOOLSETREAL + 1)  # Array[0.."MAX_TOOLSETREAL"] of Real
         self._defaults['realval'] = [0.0] * (MAX_TOOLSETREAL + 1)
-        self.fcval = [0.0] * (MAX_TOOLSETREAL + 1)  # Array[0.."MAX_TOOLSETREAL"] of Real := [10(1.0)]
+        self.fcval = [0.0] * (MAX_TOOLSETREAL + 1)  # Array[0.."MAX_TOOLSETREAL"] of Real := [20(1.0)]
         self._defaults['fcval'] = [0.0] * (MAX_TOOLSETREAL + 1)
         self.offsetval = [0.0] * (MAX_TOOLSETREAL + 1)  # Array[0.."MAX_TOOLSETREAL"] of Real
         self._defaults['offsetval'] = [0.0] * (MAX_TOOLSETREAL + 1)
-        self.typval = [-1] * (MAX_TOOLSETREAL + 1)  # Array[0.."MAX_TOOLSETREAL"] of Int := [10(-1)]
+        self.typval = [-1] * (MAX_TOOLSETREAL + 1)  # Array[0.."MAX_TOOLSETREAL"] of Int := [20(-1)]
         self._defaults['typval'] = [-1] * (MAX_TOOLSETREAL + 1)
         self.output = None  # Array[0.."MAX_TOOLSETOUTPUT"] of "Type_ToolsetOutputParam" := [([2(-1)], [()]), ([2(-1)], [()]), ([2(-1)], [()]), ([2(-1)], [()])]
         self._defaults['output'] = None
@@ -752,8 +752,8 @@ class Type_IOParam:
         boolval (Array[0.."MAX_IOBOOL"] of Bool):
         intval (Array[0.."MAX_IOINT"] of Int := [9(-1)]):
         dintval (Array[0.."MAX_IODINT"] of DInt):
-        realvalcfg (Array[0.."MAX_IOREAL"] of Real := [3(0.0), 3(1.0)]):
-        realval (Array[0.."MAX_IOREAL"] of Real := [3(0.0), 3(1.0)]):
+        realvalcfg (Array[0.."MAX_IOREAL"] of Real := [3(0.0), 1.0]):
+        realval (Array[0.."MAX_IOREAL"] of Real := [3(0.0), 1.0]):
         exprintval (Array[0.."MAX_EXPRINT"] of Int := [25(-1)]): typ + (not, opnd, oper) x 8
         exprrealval (Array[0.."MAX_EXPROPER"] of Real):
     """
@@ -767,9 +767,9 @@ class Type_IOParam:
         self._defaults['intval'] = [-1] * (MAX_IOINT + 1)
         self.dintval = [-1] * (MAX_IODINT + 1)  # Array[0.."MAX_IODINT"] of DInt
         self._defaults['dintval'] = [-1] * (MAX_IODINT + 1)
-        self.realvalcfg = [0.0] * (MAX_IOREAL + 1)  # Array[0.."MAX_IOREAL"] of Real := [3(0.0), 3(1.0)]
+        self.realvalcfg = [0.0] * (MAX_IOREAL + 1)  # Array[0.."MAX_IOREAL"] of Real := [3(0.0), 1.0]
         self._defaults['realvalcfg'] = [0.0] * (MAX_IOREAL + 1)
-        self.realval = [0.0] * (MAX_IOREAL + 1)  # Array[0.."MAX_IOREAL"] of Real := [3(0.0), 3(1.0)]
+        self.realval = [0.0] * (MAX_IOREAL + 1)  # Array[0.."MAX_IOREAL"] of Real := [3(0.0), 1.0]
         self._defaults['realval'] = [0.0] * (MAX_IOREAL + 1)
         self.exprintval = [-1] * (MAX_EXPRINT + 1)  # Array[0.."MAX_EXPRINT"] of Int := [25(-1)] // typ + (not, opnd, oper) x 8
         self._defaults['exprintval'] = [-1] * (MAX_EXPRINT + 1)
@@ -1537,7 +1537,7 @@ BOOL_DEAUTO = 4
 BOOL_ROUNDOLOGO = 5  # era BOOL_SHOWROLLSSPEED - era BOOL_STARTSENSOR
 BOOL_DEFPROGTYPE = 9
 BOOL_EBEXT = 10  # era BOOL_EB
-BOOL_JOBS = 11
+BOOL_EBNODIST = 11  # era BOOL_JOBS
 BOOL_QUALITY = 12
 BOOL_COUNTER = 13
 BOOL_DRAWINGMAND = 14
@@ -1596,8 +1596,8 @@ REAL_F = 25  # typ = 0
 REAL_G = 26  # typ = 0
 REAL_S = 27  # typ = 0
 REAL_STARTSENSORDIST = 28  # typ = 0
-REAL_RESETPINCHPOS = 29  # era REAL_TSDELTADOWN
-REAL_RESETBENDPOS = 30  # era REAL_TSDELTADOUP
+REAL_BFSUPADJ = 29  # era REAL_RESETPINCHPOS, era REAL_TSDELTADOWN
+REAL_BFINFADJ = 30  # era REAL_RESETBENDPOS, era REAL_TSDELTADOUP
 REAL_K = 31  # era REAL_TSMINL
 REAL_EXTDIST = 32  # typ = 0
 REAL_LREFFCYLAREA = 33  # typ=8
@@ -1631,7 +1631,7 @@ INT_SN = 0
 SETTING_INT_UM = 0
 SETTING_INT_LANG = 1
 SETTING_INT_TIMEOUTPOWEROFF = 2
-SETTING_BOOL_FREE_0 = 0  # era SETTING_BOOL_FEEDSIDE
+SETTING_BOOL_LOADMODE = 0  # era SETTING_BOOL_FEEDSIDE
 SETTING_BOOL_FLAGGEO = 1  # era SETTING_BOOL_ORIENT
 SETTING_BOOL_FLAGPROGMOD = 2
 STRING_MODEL = 0  # PARAM
@@ -1890,14 +1890,12 @@ MAX_PID = 3
 MAX_ASSE = 47
 MAX_MOTORE = 7
 DIM_STRINGUMNAME = 8
-MAX_ALARM = 191  # da v.0.24
+MAX_ALARM = 223  # da v.25.45, erano 191 da v.0.24
 MAX_STOP = 31
 MAX_MAINT = 31  # era 15 prima di 6436
 MAX_ASSEFUNIND = 71  # era 54 prima di modifiche 6436
-MAX_STATOBOOL = 135  # era 127 in v.0.18
 MAX_UM = 12  # aggiunti MISURA_GRAD e MISURA_NUM
 MAX_PARAMSTRING = 3
-MAX_PARAMBOOL = 63  # da 59 a 63 in v.0.25.28
 MAX_PARAMINT = 79  # era 72 nella v.0.18
 MAX_PARAMREAL = 79  # era 62 nella v.0.18
 MAX_IO = 623
@@ -1925,7 +1923,7 @@ MAX_PIDREAL = 6
 MAX_CMDBOOL = 32  # era 27
 MAX_CMDINT = 11  # era 10 - aggiunto CMDINT_JOBLASTOP
 MAX_CMDDINT = 1
-MAX_CMDREAL = 3  # era 1 prima di 6498
+MAX_CMDREAL = 5  # era 3 prima di APPLYRESET, era 1 prima di 6498
 DIM_STRINGID = 5
 MAX_STATOOUTINT = 7
 MAX_STATOOUTDINT = 1
@@ -2076,7 +2074,7 @@ HDR_CAPACITY = 9
 REAL_B2ANG = 47
 BOOL_USER = 36  # era BOOL_SIMGRAPH
 BOOL_INTERPCALCTYPE = 37  # era BOOL_SIMCALC
-MAX_WARNING = 95  # da v.0.24
+MAX_WARNING = 111  # da v.25.45, erano 95 da v.0.24
 ALARM_WARNING = 2
 STATOINT_IND_LASTWARNING = 6
 BOOL_IND_DISABLEBP1 = 26  # Disabilitazione generale BP
@@ -2300,12 +2298,12 @@ BOOL_WT = 42
 BOOL_ALIGNSASSELECT = 43  # Possibilità di selezione SAS o SAS2
 BOOL_CURRFEEDSIDE = 44
 BOOL_CURRORIENT = 45
-INT_RECYCVALVEIND = 66  # INT_ALIGN_CENTFASTSPEED
-INT_RECYCVALVETIMEOUT = 67  # INT_ALIGN_CENTSLOWSPEED
-INT_PINCHPRESSSPEED = 68  # INT_ALIGN_ROTFASTSPEED
-INT_AVGDT_IND = 70
-INT_NHDT_IND = 71
-INT_RESETTYPE = 72  # INT_ALIGN_NUMCENT
+INT_JOBTYPE = 66  # era INT_RECYCVALVEIND; INT_ALIGN_CENTFASTSPEED
+INT_FREE_67 = 67  # era INT_RECYCVALVETIMEOUT; INT_ALIGN_CENTSLOWSPEED
+INT_PINCHPRESSSPEED = 68  # era INT_ALIGN_ROTFASTSPEED
+ASSE_INT_BWVSLOW2 = 70  # era INT_AVGDT_IND
+ASSE_INT_FWVSLOW2 = 71  # era INT_NHDT_IND
+INT_RESETTYPE = 72  # era INT_ALIGN_NUMCENT
 REAL_ALIGN_CENTDIST1 = 49
 REAL_ALIGN_CENTDIST2 = 50
 REAL_ALIGN_CENTDIST3 = 51
@@ -2341,8 +2339,7 @@ ALIGN_B = 2
 ALIGN_NONE = 0
 ALIGN_SWITCH = 10
 COD_ALIGN = 3300
-COD_ALIGNSTART = 3301
-COD_ALIGNWAIT = 3302
+COD_ALIGNRESET = 3302
 COD_WIZARD_WT = 4015
 OUTPUT_ADV = 5
 OUTPUT_PSLCAN = 6
@@ -2445,10 +2442,10 @@ TABSTAT_FIRST = 4  # prima colonna variabile (fisse: Rot,L,R;P, Speed non è ind
 STATOINT_IND_TABSTATLAST = 7
 REAL_DELTAOFFSET = 9  # offset delta per assi in movimento
 CMDBOOL_TABSTAT_REQ = 18
-CMDBOOL_FREE_19 = 19  # era CMDBOOL_TABSTAT_ACK
+CMDBOOL_APPLYROT_END = 19  # era CMDBOOL_TABSTAT_ACK
 CMDREAL_AUTOPROGLENGTH = 1
-CMDBOOL_FREE_20 = 20  # era CMDBOOL_SETTINGS_REQ
-CMDBOOL_FREE_21 = 21  # era CMDBOOL_SETTINGS_ACK
+CMDBOOL_REPEATEND_END = 20  # era CMDBOOL_SETTINGS_REQ
+CMDBOOL_APPLYRESET_END = 21  # era CMDBOOL_SETTINGS_ACK
 CMDBOOL_FREE_22 = 22  # era CMDBOOL_PROG_ACK
 CMDBOOL_FREE_23 = 23  # era CMDBOOL_SIM_ACK
 CMDBOOL_TABSTAT2_REQ = 24
@@ -2586,7 +2583,7 @@ FB_INT_TIPO = 0
 FB_INT_TIPOMISURA = 1
 FB_INT_RESETIND = 2  # era FB_INT_GATEIND
 FB_INT_ININD = 3
-FB_INT_ERRIND = 4
+FB_INT_OPT = 4  # era FB_INT_ERRIND
 FB_REAL_DEADBAND = 0
 FB_REAL_RATIO = 1
 FB_REAL_SCALESUP = 2
@@ -2601,7 +2598,7 @@ RT_C3S = 30  # 6321, 6322
 PP_ROUNDO = 0  # come wCNC4
 PP_FACCIN1 = 1  # 6293,6295,6498
 PP_FACCIN2 = 2  # 6436
-INT_RTTYPE = 69  # INT_ALIGN_ROTSLOWSPEED
+INT_RTTYPE = 69  # era INT_ALIGN_ROTSLOWSPEED
 ALIGN_PRECENT = 16
 ALIGN_INFEED = 15
 CMDREAL_AUTOPROGWIDTH = 2
@@ -2618,7 +2615,7 @@ FUN_AXIS_MRFC = 64  # era FUN_AXIS_BENDMFC
 FUN_AXIS_MRRC = 65  # era FUN_AXIS_BENDMRC
 FUN_AXIS_TAL = 66  # Table A Lift
 FUN_AXIS_TBL = 67  # Table B Lift
-FUN_AXIS_FREE_68 = 68
+FUN_AXIS_RTTEMP = 68  # RT Oil Temp
 FUN_AXIS_FREE_69 = 69
 FUN_AXIS_PRELOAD2 = 55
 FUN_AXIS_PRELOAD3 = 56
@@ -2830,11 +2827,10 @@ BOOL_IND_SDOSTART = 129  # era BOOL_IND_EMGCYHWERR
 BOOL_IND_SDOBUSY = 130  # era BOOL_IND_EMGCYLOCKHWMSG
 BOOL_IND_SDOOK = 131
 BOOL_IND_RIGHTSUPPINTERLOCK = 132
-BOOL_IND_FREE_133 = 133
-BOOL_IND_FREE_134 = 134
-BOOL_IND_FREE_135 = 135
-BOOL_FREE_50 = 50  # era BOOL_ARCHIMETER
-BOOL_ARCHIMETER_DEBUG = 51
+BOOL_IND_APPLYROT = 133
+BOOL_IND_REPEATEND = 134
+BOOL_SAFETYBPDISAB = 50  # era BOOL_ARCHIMETER
+BOOL_PROGDESCR = 51  # era BOOL_ARCHIMETER_DEBUG
 BOOL_RCSW = 52
 BOOL_ENERGYMETER = 53
 BOOL_CILDIFF = 54
@@ -2956,7 +2952,7 @@ SER_IFM = 25
 MAX_TOOLSET = 7
 MAX_TOOLSETBOOL = 1
 MAX_TOOLSETINT = 3
-MAX_TOOLSETREAL = 9
+MAX_TOOLSETREAL = 19  # era 9 prima di v.0.25.45.1.6759 - TiltPreload
 TOOLSET_BOOL_FREE_0 = 0
 TOOLSET_BOOL_FREE_1 = 1
 TOOLSET_INT_ID = 0
@@ -3342,8 +3338,80 @@ IO_EXPR_OPMINUS = 3
 IO_EXPR_OPMULT = 4
 IO_EXPR_OPDIV = 5
 BOOL_FBROTLOWER = 62
-FB_ATV340 = 5
+COD_APPLYROT = 3033
+COD_SYNCLOADSEND = 3170
+COD_SYNCLOADRECV = 3171
+COD_SYNCUNLOADSEND = 3172
+COD_SYNCUNLOADRECV = 3173
+COD_SYNCSTARTSEND = 3174
+COD_SYNCSTARTRECV = 3175
+RT_C0 = 0  # 0 centratori - solo RT - 6703
+BOOL_SYNCLOADAFTERPRELOAD = 64  # era BOOL_SYNCLOAD
+BOOL_FREE_65 = 65  # era BOOL_SYNCUNLOAD
+BOOL_FREE_66 = 66  # era BOOL_SYNCLOADDI
+BOOL_FREE_67 = 67  # era BOOL_SYNCUNLOADDI
+BOOL_FREE_68 = 68  # era BOOL_SYNCSTART
+BOOL_FREE_69 = 69  # era BOOL_SYNCSTARTDI
+BOOL_FREE_70 = 70
+BOOL_FREE_71 = 71
+BOOL_SMARTCLIENT = 63
+MAX_PARAMBOOL = 71  # da 63 a 71 in v.0.25.42.1; da 59 a 63 in v.0.25.28
+BOOL_IND_SYNCLOADOUT = 136
+BOOL_IND_SYNCUNLOADIN = 137
+BOOL_IND_SYNCUNLOADOUT = 138
+BOOL_IND_SYNCSTARTIN = 139
+BOOL_IND_SYNCSTARTOUT = 140
+BOOL_IND_SYNCRELOADENAB = 141  # abilitazione stazione alternativa
+BOOL_IND_SYNCRELOADALT = 142  # stazione alternativa selezionata
+BOOL_IND_SYNCLOADPARAM = 143
+BOOL_IND_SYNCLOADIN = 135
+MAX_STATOBOOL = 151  # era 135 in v.0.25.42, era 127 in v.0.18
+IO_SYSTYPE_BOOLSYSTEM = 10
+IO_SYSBOOL_PARAM = 1
+IO_SYSBOOL_STATUS = 0
 ALIGN_CENTTYPE_1A = 3  # centratura unica con pressostato psa - 6761
 ALIGN_CENTPSONLY = 20  # centraggio solo con un ps - 6761
+ALIGN_CENTTYPE_NONE = -1  # nessuna centratura
+JOBS_NONE = 0
+JOBS_CSV = 1
+JOBS_OPCUA1 = 2  # 6703
+JOB_OP_REQ = 10
+HMIPAGE_JOB_REQ = 583
+JOBS_OPCUA2 = 3  # altre implementazioni future
+JOBS_OPCUA3 = 4  # ...
+HMIPAGE_SYNCLOADER_MAIN = 590
+HMIPAGE_CONFIG_PARAMSSYNC = 1139
+HDR_SYNCLDR = 12
+FB_OPT_NONE = -1
+FB_OPT_LEFT = 0
+FB_OPT_RIGHT = 1
+BOOL_IND_SYNCCONFIG1 = 144
+BOOL_IND_SYNCCONFIG1ALT = 145
+BOOL_IND_APPLYRESET = 146
+BOOL_IND_DISTMEM = 147
+BOOL_IND_DISTADJ = 148
+BOOL_IND_FREE_149 = 149
+BOOL_IND_FREE_150 = 150
+BOOL_IND_FREE_151 = 151
+COD_APPLYRESET = 3034
+CMDREAL_APPLYRESETROT = 4
+CMDREAL_FREE_5 = 5
+COD_CHECKDISTMEM = 3157  # reset distanza iniziale
+COD_CHECKDISTADJ = 3158  # setta distanza in funzione della misura
+HMIPAGE_EYEBEND_KEYENCE_DIST = 821
+HMIPAGE_DIST_AUTO = 803
+ALIGN_CENTTYPE_1B = 4  # centratura un passo in posizione e psa - 6760
+TOOLSET_REAL_TILTMAX = 10
+TOOLSET_REAL_TILTHH = 11
+TOOLSET_REAL_TILTH = 12
+TOOLSET_REAL_TILTL = 13
+TOOLSET_REAL_TILTLL = 14
+TOOLSET_REAL_TILTMIN = 15
+TOOLSET_REAL_FREE_16 = 16
+TOOLSET_REAL_FREE_17 = 17
+TOOLSET_REAL_FREE_18 = 18
+TOOLSET_REAL_FREE_19 = 19
+MAX_TOOLSETREAL_OLD = 9
+COD_REALIGN = 3301
 
 

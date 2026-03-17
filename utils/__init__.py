@@ -37,5 +37,9 @@ se presendi indirizzi radiocomando come principale inpunt, dare wwarnign se NEW_
 # TODO: verificare che la numerazione allarmi sia corretta (COD)
 
 # TODO: SE METTO INDICE 0 MI TROVA TROPPA ROBA
-# TODO: controllare
+# TODO AGGIUNGERE PARAMEYTRI JONNY
+# TODO: CONOTROLLARE CHE FINECORSA MAX LEFT E RIGHT SIANO COERENTI
+# TODO: se assi SP attivi controllare che siano in function
+# TODO: spezzare in piu funzioni ad esempio get axis ecc
+# TODO: output valmax1 valmax2 a 100.00 sugli output e gli altri 20 40 60 80
 """

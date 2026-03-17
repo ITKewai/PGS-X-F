@@ -31,7 +31,7 @@ from utils.db.data_config import (
     IO_DO,
     IO_AO,
     IO_RI,
-    decode_sys_addr,
+    decode_sys_addr_name,
     custom_function,
 )
 from utils.yaml.data.core import make_axis_sys_addr, make_alarm_sys_addr
@@ -880,7 +880,7 @@ def create_app() -> Flask:
         except Exception as e:
             return jsonify({"ok": False, "error": f"Errore nel calcolo indirizzo SYSTEM: {e}"}), 400
 
-        human = decode_sys_addr(number) or f"{kind}.{field}[{index}]"
+        human = decode_sys_addr_name(number) or f"{kind}.{field}[{index}]"
         refs = run_io_search(iotype=IO_DI, Ind=number, verbose=False) or []
 
         return jsonify(

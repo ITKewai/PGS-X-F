@@ -1303,7 +1303,7 @@ Type_AlarmParam_Map = {
         "ALARM_INT_INDDISAB": {"display": "DISAB", "origin": "Alarms/Maint\t→\tAlarms\t→\t[{}] {}", "type": [IO_DI]},
         "ALARM_INT_INDREQACK": {"display": "REQ ACK", "origin": "Alarms/Maint\t→\tAlarms\t→\t[{}] {}", "type": [IO_DI]},
         "ALARM_INT_INDACK": {"display": "ACK", "origin": "Alarms/Maint\t→\tAlarms\t→\t[{}] {}", "type": [IO_DI]},
-        "ALARM_INT_TIMEOUT": {"display": "TIMEOUT", "origin": "Alarms/Maint\t→\tAlarms\t→\t[{}] {}", "type": [IO_DI]},
+        "ALARM_INT_TIMEOUT": {"display": "TIMEOUT", "origin": "Alarms/Maint\t→\tAlarms\t→\t[{}] {}", "type": []},
         "ALARM_INT_FREE_9": {"display": "ALARM_INT_FREE_9", "origin": "Alarms/Maint\t→\tAlarms\t→\t[{}] {}", "type": [IO_DI]},
     }
 }
@@ -1577,3 +1577,8 @@ Type_AxisFunInd = [
 ]
 while len(Type_AxisFunInd) < MAX_ASSEFUNIND:
     Type_AxisFunInd.append("??")
+
+Type_SeqLabel = {
+    2: " (Reset rotazione)",
+    3: " (Set Rotazione)",
+}

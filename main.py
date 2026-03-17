@@ -198,7 +198,7 @@ def main():
                 logging.info(f"Errore nel calcolo dell'indirizzo di sistema: {e}")
                 continue
 
-            human = decode_sys_addr(number) or f"{sys_type}.{field}[{index}]"
+            human = decode_sys_addr_name(number) or f"{sys_type}.{field}[{index}]"
             logging.info(f"\nSYSTEM → {human}  => numero: {number}")
             run_io_search(iotype=IO_DI, Ind=number, verbose=True)
             continue

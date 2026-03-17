@@ -18,7 +18,8 @@ from utils.exe.config import load_exe_config
 from utils.exports.tia_constants_map import *
 from utils.version import get_pgsx_version
 from utils.yaml.data.core import make_axis_sys_addr
-from utils.yaml.data.costants import BASE_AXIS, AXIS_GROUP_STEP, ALARM_GROUP_STEP, AXIS_GROUPS_ORDER
+from utils.yaml.data.costants import BASE_AXIS, AXIS_GROUP_STEP, ALARM_GROUP_STEP, AXIS_GROUPS_ORDER, SYSTEM_TYPE, \
+    ALARM_GROUPS_ORDER
 from utils.yaml.load import load_yaml
 from utils.exports.tia_constants import *  # noqa: F401,F403  (porta DATA_CONFIG, MAX_*, costanti simboliche, UDT, ecc.)
 from utils.exports.tia_constants import __version__ as ver
@@ -1059,7 +1060,7 @@ def get_io_name(iotype: int, Ind: int) -> Optional[str]:
     Ritorna il nome (string) dell'IO dato iotype e indice *locale* (Ind).
     Se out of range o non definito, ritorna None.
     """
-    is_system = decode_sys_addr(Ind)
+    is_system = decode_sys_addr_name(Ind)
     if is_system and iotype == IO_DI:
         return is_system
     # calcolo start e count per blocco
@@ -2001,61 +2002,154 @@ def run_maintenance_scan(iotype: int, ind_target: int = None, verbose: bool = Fa
     return _return
 
 
-def decode_sys_addr(ind_target: int):
-    """
-    Decodifica un numero SYSTEM (>=2048) in (systyp, objind, elemind, sysname).
-    Esempio:
-        2113 → (1, 1, 1, "AXIS[1].UP")
-    Ritorna None se il valore non è un indirizzo SYS valido.
-    """
+def decode_sys_addr_name(ind_target: int):
     if not isinstance(ind_target, int) or ind_target < BASE_AXIS:
         return None
 
     systyp = ind_target // BASE_AXIS
     objelemind = ind_target % BASE_AXIS
 
-    if 1 <= systyp <= 7:  # TTTTT NNNNNN (Axis, Input, Output, ecc.)
+    # split oggetto / elemento
+    if 1 <= systyp <= 7:
         objind = objelemind % AXIS_GROUP_STEP
         elemind = objelemind // AXIS_GROUP_STEP
-    elif 8 <= systyp <= 10:  # TTT NNNNNNNN (Alarm, Maint, BoolSystem)
+    elif 8 <= systyp <= 10:
         objind = objelemind % ALARM_GROUP_STEP
         elemind = objelemind // ALARM_GROUP_STEP
     else:
         return None
 
-    # Nome descrittivo opzionale (solo se vuoi stamparlo)
-    systype_names = {
-        1: "AXIS",
-        2: "FEEDBACK",
-        3: "INPUT",
-        4: "OUTPUT",
-        5: "MOTOR",
-        6: "PID",
-        7: "TOOLSET",
-        8: "ALARM",
-        9: "MAINT",
-        10: "BOOLSYSTEM",
-    }
+    # nome tipo invertendo SYSTEM_TYPE
+    systyp_name = next((k for k, v in SYSTEM_TYPE.items() if v == systyp), None)
+    if not systyp_name:
+        return None
 
-    sysaxis_names = {
-        0: "MOVING", 1: "UP", 2: "DOWN", 3: "MAX", 4: "MIN", 5: "SUPLS", 6: "INFLS",
-        7: "HH", 8: "H", 9: "L", 10: "LL", 11: "H0", 12: "L0", 13: "SAF", 14: "ALTFB",
-        15: "BAD", 16: "TILT", 17: "P1UP", 18: "P1DOWN", 19: "P2UP", 20: "P2DOWN",
-        21: "SLOW", 22: "FAST"
-    }
+    # helper: safe index su lista ordine
+    def _name_from_order(order_list, idx, fallback_prefix="ELEM"):
+        if isinstance(order_list, (list, tuple)) and 0 <= idx < len(order_list):
+            return str(order_list[idx]).upper()
+        return f"{fallback_prefix}{idx}"
 
-    systyp_name = systype_names.get(systyp, f"TYPE{str(systyp)}")
+    # ---- AXIS ----
+    if systyp_name == "AXIS":
+        elem_name = _name_from_order(AXIS_GROUPS_ORDER, elemind)
+        return f"{systyp_name}[{get_axis_name(objind)}].{elem_name}"
 
-    if systyp == 1:
-        elem_name = sysaxis_names.get(elemind, f"ELEM{elemind}")
+    # ---- ALARM ----
+    if systyp_name == "ALARM":
+        elem_name = _name_from_order(ALARM_GROUPS_ORDER, elemind)
+        return f"{systyp_name}[{objind}].{elem_name}"
+
+    # ---- MAINT / BOOLSYSTEM (se le hai) ----
+    # Se non esistono nel tuo file costants, questa parte puoi toglierla.
+    if systyp_name == "MAINT":
+        try:
+            elem_name = _name_from_order(MAINT_GROUPS_ORDER, elemind)
+        except NameError:
+            elem_name = f"ELEM{elemind}"
+        return f"{systyp_name}[{objind}].{elem_name}"
+
+    if systyp_name == "BOOLSYSTEM":
+        try:
+            elem_name = _name_from_order(BOOLSYSTEM_GROUPS_ORDER, elemind)
+        except NameError:
+            elem_name = f"ELEM{elemind}"
+        return f"{systyp_name}[{objind}].{elem_name}"
+
+    # fallback altri tipi
+    return f"{systyp_name}[{objind}].ELEM{elemind}"
+
+
+def get_sys_addr(group: str, ind_target: int) -> Optional[int]:
+    """
+    Ritorna l'indirizzo SYSTEM (>=2048) corrispondente a un dato gruppo e indice.
+
+    Esempio:
+        get_sys_addr("ALARM", 97) -> 16481
+        get_sys_addr("AXIS.UP", 1) -> 2113
+
+    Ritorna None se input non valido.
+    """
+
+    if not isinstance(group, str):
+        return None
+
+    group = group.strip().upper()
+    if not group:
+        return None
+
+    parts = group.split(".")
+    sys_type = parts[0]
+
+    # indice valido?
+    try:
+        idx = int(ind_target)
+    except Exception:
+        return None
+
+    if idx < 0:
+        return None
+
+    # tipo valido?
+    type_id = SYSTEM_TYPE.get(sys_type)
+    if type_id is None:
+        return None
+
+    # campo (se presente)
+    field = parts[1] if len(parts) == 2 else None
+
+    # DEFAULT FIELD
+    if field is None:
+        default_field = {
+            "AXIS": "MOVING",
+            "ALARM": "VAL",
+            "MAINT": "VAL",
+        }.get(sys_type)
+
+        if default_field is None:
+            return None
+
+        field = default_field
+
+    # Mappa FIELD → field_id
+    # Per ALARM e MAINT step = 256
+    # Per AXIS step = 64
+
+    if sys_type == "ALARM":
+        field_map = {
+            "VAL": 0,
+            "ACK": 1,
+            "ENA": 2,
+        }
+        step = ALARM_GROUP_STEP
+
+    elif sys_type == "MAINT":
+        field_map = {
+            "VAL": 0,
+            "ACK": 1,
+        }
+        step = ALARM_GROUP_STEP
+
+    elif sys_type == "AXIS":
+        field_map = {
+            "MOVING": 0,
+            "UP": 1,
+            "DOWN": 2,
+            "MAX": 3,
+            "MIN": 4,
+        }
+        step = AXIS_GROUP_STEP
+
     else:
-        elem_name = f"ELEM{elemind}"
+        return None
 
-    sysname = f"{systyp_name}[{get_axis_name(objind)}].{elem_name}"
+    field_id = field_map.get(field)
+    if field_id is None:
+        return None
 
-    # return systyp, objind, elemind, sysname
-    return sysname
+    base = BASE_AXIS * type_id
 
+    return base + step * field_id + idx
 
 def get_expr_from_di(ind: int) -> List[Tuple[int, int, int]]:
     """
@@ -2614,14 +2708,14 @@ def custom_function():
                     if tipo_feedback != MISURA_GRAD:
                         logging.warning(f"⚠️ [{data_config.AxisFunInd[i]}]{axis_name} il feedback non ha il tipo di misura GRAD")
                     if axis_feedback.realval[FB_REAL_SCALEINF] not in (180.0, -180.0) and axis_feedback.realval[FB_REAL_SCALESUP] not in (180.0, -180.0):
-                        logging.warning(f"⚠️ [{data_config.AxisFunInd[i]}]{axis_name} il feedback non ha scala -180°/+180°")
+                        logging.warning(f"⚠️ [{data_config.AxisFunInd[i]}]{axis_name} il feedback non ha scala -180°/+180° ma a {axis_feedback.realval[FB_REAL_SCALEINF]} e {axis_feedback.realval[FB_REAL_SCALESUP]}")
                 if axis.boolval[ASSE_BOOL_MANSPDOWN]:
                     logging.warning(f"⚠️ [{data_config.AxisFunInd[i]}]{axis_name} ha il flag MANSPDOWN attivo!")
                 if maxSupp == 0.0:
                     maxSupp = axis.realval[ASSE_REAL_SMAX]
                 else:
                     if axis.realval[ASSE_REAL_SMAX] != maxSupp:
-                        logging.warning(f"⚠️ [{data_config.AxisFunInd[i]}]{axis_name} ha SMax diverso dagli altri supporti laterali!")
+                        logging.warning(f"⚠️ [{data_config.AxisFunInd[i]}]{axis_name} ha SMax ({maxSupp}) diverso dagli altri supporti laterali!")
                     if axis.realval[ASSE_REAL_SMAX] > maxSupp:
                         maxSupp = axis.realval[ASSE_REAL_SMAX]
         if data_config.ParamReal[REAL_LATSUPQ0] != maxSupp and data_config.ParamReal[REAL_LATSUPQ0] < maxSupp - 5.0:
@@ -2996,55 +3090,145 @@ def custom_function():
         logging.info("🔍 Fine controllo remote control...")
 
     def check_axis_sp() -> None:
-        logging.info("🔍 Inizio controllo rapporti feedback...")
+        logging.info("🔍 Inizio controllo SP...")
         for axisInd in range(0, MAX_ASSE):
             axis = data_config.Axis_Param[axisInd]
             axis_name = data_config.Axis_Name[axisInd] or f"AXIS_{axisInd}"
             for val in [ASSE_INT_P1, ASSE_INT_P2]:
                 if axis.intval[val] != -1:
-                    logging.info(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['intval'][Type_AxisParam_Map['_intval'][val]]['display']} impostato a {axis.intval[val]}")
-        logging.info("🔍 Fine controllo rapporti feedback...")
+                    logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['intval'][Type_AxisParam_Map['_intval'][val]]['display']} impostato a {axis.intval[val]}")
+        logging.info("🔍 Fine controllo SP...")
 
     def check_feedback_ratios() -> None:
-        ...
+        logging.info("🔍 Inizio controllo rapporti feedback...")
+        for axisInd in range(0, MAX_ASSE):
+            axis = data_config.Axis_Param[axisInd]
+            axis_name = data_config.Axis_Name[axisInd] or f"AXIS_{axisInd}"
+            if axis.intval[ASSE_INT_FEEDBACK] != -1:
+                feedback = data_config.Feedback_Param[axis.intval[ASSE_INT_FEEDBACK]]
+                if feedback.realval[FB_REAL_RATIO] != 1:
+                    logging.warning(f"⚠️ [{axisInd}]{axis_name} sta usando il feedback {axis.intval[ASSE_INT_FEEDBACK]} con ratio: {feedback.realval[FB_REAL_RATIO]}")
+
+        logging.info("🔍 Fine controllo rapporti feedback...")
 
     def check_tilt_max_lateral() -> None:
         ...
 
-    def check_alarm_sys_addr():
+    def check_interlock_alarm_sys_addr():
         logging.info("🔍 Inizio controllo allarmi con indirizzi di sistema...")
         pinchingPS = 97
-        pinchingPS_IO = [16481, 16549, 16484, 16485, 16551, 16552]
+        pinchingPS_IO = [get_sys_addr("ALARM.VAL", 97), get_sys_addr("ALARM.VAL", 165),
+                         get_sys_addr("ALARM.VAL", 100), get_sys_addr("ALARM.VAL", 101),
+                         get_sys_addr("ALARM.VAL", 167), get_sys_addr("ALARM.VAL", 168),
+                         get_sys_addr("ALARM.VAL", 98), get_sys_addr("ALARM.VAL", 166)]
         major, minor, patch, build = get_pgsx_version()
-        if patch >= 50:
-            #inchingPS = 113
-            pinchingPS_IO = [16497, 16565, 16500, 16501, 16567, 16568]
+        if patch >= 50:  # passando alla versione 50 si aggiungono 16 allarmi in piu in mezzo e quindi cambiano gli indirizzi di sistema, bisogna tenerne conto per il controllo
+            pinchingPS = 113
+            pinchingPS_IO = [get_sys_addr("ALARM.VAL", 97+16), get_sys_addr("ALARM.VAL", 165+16),
+                             get_sys_addr("ALARM.VAL", 100+16), get_sys_addr("ALARM.VAL", 101+16),
+                             get_sys_addr("ALARM.VAL", 167+16), get_sys_addr("ALARM.VAL", 168+16),
+                             get_sys_addr("ALARM.VAL", 98+16), get_sys_addr("ALARM.VAL", 166+16)]
         alarmPinching_IN = data_config.Alarm_Param[pinchingPS].intval[ALARM_INT_INDIN]
-        if alarmPinching_IN != -1:
-            exprGroup = get_expr_from_di(alarmPinching_IN)
-            if exprGroup:
-                for index, data in enumerate(exprGroup):
-                    if data[1] == -1:
-                        continue
-                    if data[1] not in pinchingPS_IO:
-                        logging.warning(f"⚠️ Alarm Pinching usa un indirizzo IO di sistema {data[1]} errato")
+        # if alarmPinching_IN != -1:
+        #     exprGroup = get_expr_from_di(alarmPinching_IN)
+        #     if exprGroup:
+        #         for index, data in enumerate(exprGroup):
+        #             if data[1] == -1:
+        #                 continue
+        #             if data[1] not in pinchingPS_IO:
+        #                 logging.warning(f"⚠️ Alarm Pinching usa un indirizzo IO di sistema {data[1]} errato")
+        # TODO: verificare se questo allarme è usato in safety interlock o altrove
+        # todo: per ogni asse tipo rotazione o rullo, guardo i safety interlock down e vedo se c è qualche allarme, se c è un tipo calcolato guardo se ha espressioni che usano indirizzi di sistema e se sono quelli giusti, se invece è un allarme normale guardo se è usato in qualche interlock o altrove e se usa indirizzi di sistema guardo se sono quelli giusti
+        axis_to_check = [FUN_AXIS_ROT, FUN_AXIS_PRE, FUN_AXIS_BEND, FUN_AXIS_PINCH]
+        for axisFun in axis_to_check:
+            if data_config.AxisFunInd[axisFun] != -1:
+                axis = data_config.Axis_Param[data_config.AxisFunInd[axisFun]]
+                axis_name = data_config.Axis_Name[data_config.AxisFunInd[axisFun]] or f"AXIS_{data_config.AxisFunInd[axisFun]}"
+                safetyDown = [
+                    ASSE_INT_SAFETYDOWNIND1, ASSE_INT_SAFETYDOWNIND2, ASSE_INT_SAFETYDOWNIND3,
+                    ASSE_INT_SAFETYDOWNIND4, ASSE_INT_SAFETYDOWNIND5, ASSE_INT_SAFETYDOWNIND6
+                ]
+                to_check = {addr: False for addr in pinchingPS_IO}
+
+                def _docheck(DI: int):
+                    safetyDownInput = data_config.IO_DI_List[DI]
+                    if safetyDownInput.intval[IO_INT_ADDRTYPE] == IO_TYPE_CALC:
+                        exprGroup = get_expr_from_di(DI)
+                        if exprGroup:
+                            for index, data in enumerate(exprGroup):
+                                if data[1] == -1:
+                                    continue
+                                if data[1] in to_check:
+                                    to_check[data[1]] = True
+
+                for x in safetyDown:
+                    safetyDownAddress = axis.intval[x]
+                    if safetyDownAddress != -1:
+                        is_system = decode_sys_addr_name(safetyDownAddress)
+                        if is_system:
+                            if safetyDownAddress in to_check:
+                                to_check[safetyDownAddress] = True
+                        else:
+                            _docheck(safetyDownAddress)
+
+                if any(not used for used in to_check.values()):
+                    logging.warning(f"⚠️ [{data_config.AxisFunInd[axisFun]}]{axis_name} ha allarmi di safety down che usano indirizzi di sistema ma non tutti quelli necessari, indirizzi mancanti: {', '.join([decode_sys_addr_name(addr) for addr, used in to_check.items() if not used])}")
+
+        # TODO: forse è meglio print degli allarmi che sono usati in giro;
         logging.info("🔍 Fine controllo allarmi con indirizzi di sistema...")
+
+    def check_all_sys_alarms() -> None:
+        logging.info("🔍 Inizio controllo totale allarmi con indirizzi di sistema...")
+        for alarmInd in range(MAX_ALARM):
+            alarmName = data_config.Alarm_Name[alarmInd] or f"ALARM_{alarmInd}"
+            idx = get_sys_addr("ALARM.VAL", alarmInd)
+            result = run_io_search(IO_DI, idx, verbose=True)
+            if result:
+                logging.warning(f"⚠️ [{alarmInd}]{alarmName} è un allarme con indirizzo di sistema {idx}, usato da: {', '.join(result)}")
+        logging.info("🔍 Fine controllo totale allarmi con indirizzi di sistema...")
 
     def seq_check() -> None:
         logging.info("🔍 Inizio controllo sequenze...")
         for idx, Input in enumerate(data_config.Input_Param):
             seq = Input.intval[INPUT_INT_SEQID]
             if seq != -1:
-                logging.info(f"L'input [{idx}]{Input.name} ha la sequenza impostata su {seq}")
+                logging.info(f"L'input {idx} ha la sequenza impostata su {seq}" + f"{Type_SeqLabel.get(seq, '')}")
         logging.info("🔍 Fine controllo sequenze...")
+
+    def check_automatic_params() -> None:
+        logging.info("🔍 Inizio controllo parametri automatici...")
+        to_check = [FUN_AXIS_PRE, FUN_AXIS_BEND]
+        for funInd in to_check:
+            axisInd = data_config.AxisFunInd[funInd]
+            if axisInd != -1:
+                axis = data_config.Axis_Param[axisInd]
+                axis_name = data_config.Axis_Name[axisInd] or f"AXIS_{axisInd}"
+                if axis.realval[ASSE_REAL_SHH] > axis.realval[ASSE_REAL_SMAX]:
+                    logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SHH]]['display']} ({axis.realval[ASSE_REAL_SHH]}) maggiore di {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SMAX]]['display']} ({axis.realval[ASSE_REAL_SMAX]})")
+                elif axis.realval[ASSE_REAL_SMAX] - 10.0 > axis.realval[ASSE_REAL_SHH]:
+                    logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SHH]]['display']} ({axis.realval[ASSE_REAL_SHH]})troppo lontano da {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SMAX]]['display']} ({ axis.realval[ASSE_REAL_SMAX]}), considerare di aumentare {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SHH]]['display']} o aumentare {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SMAX]]['display']}")
+        logging.info("🔍 Fine controllo parametri automatici...")
+
     foo = [check_axis_flag, check_duplicate_do_ao_usage, check_duplicate_obj_usage, clean_di_axis_check, duplicate_io_address,
            check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release, check_safety, check_rotation,
            geometry_check, check_axis_speed_master_slave, check_forbidden_ao_do_usage, check_de_tilt, check_stop_alarms, check_axis_speed,
-           check_archimeter_params, check_bypass_unused, check_remote_control, check_feedback_ratios, check_axis_sp, check_tilt_max_lateral, check_alarm_sys_addr, seq_check]
+           check_archimeter_params, check_bypass_unused, check_remote_control, check_feedback_ratios, check_axis_sp, check_tilt_max_lateral, check_interlock_alarm_sys_addr, seq_check, check_automatic_params
+           ,check_all_sys_alarms]
     for func in foo:
         logging.info('-' * 60)
         func()
     logger.debug("OUT: custom_function")
+
+    def deadband_feedback_check() -> None:
+        logging.info("🔍 Inizio controllo deadband feedback...")
+        for axisInd in range(0, MAX_ASSE):
+            axis = data_config.Axis_Param[axisInd]
+            axis_name = data_config.Axis_Name[axisInd] or f"AXIS_{axisInd}"
+            if axis.intval[ASSE_INT_FEEDBACK] != -1:
+                feedback = data_config.Feedback_Param[axis.intval[ASSE_INT_FEEDBACK]]
+                if feedback.realval[FB_REAL_DEADBAND] == 0:
+                    logging.warning(f"⚠️ [{axisInd}]{axis_name} sta usando il feedback {axis.intval[ASSE_INT_FEEDBACK]} con deadband: {feedback.realval[FB_REAL_DEADBAND]} diverso da 0")
+        logging.info("🔍 Fine controllo deadband feedback...")
 
 
 if __name__ == "__main__":

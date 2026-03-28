@@ -3172,7 +3172,7 @@ def custom_function():
                             _docheck(safetyDownAddress)
 
                 if any(not used for used in to_check.values()):
-                    logging.warning(f"⚠️ [{data_config.AxisFunInd[axisFun]}]{axis_name} ha allarmi di safety down che usano indirizzi di sistema ma non tutti quelli necessari, indirizzi mancanti: {', '.join([decode_sys_addr_name(addr) for addr, used in to_check.items() if not used])}")
+                    logging.warning(f"⚠️ [{data_config.AxisFunInd[axisFun]}]{axis_name} ha allarmi di safety down che usano indirizzi di sistema ma non tutti quelli necessari, indirizzi mancanti: {', '.join([str(decode_sys_addr_name(addr)) + ' =' + str(addr) for addr, used in to_check.items() if not used])}")
 
         # TODO: forse è meglio print degli allarmi che sono usati in giro;
         logging.info("🔍 Fine controllo allarmi con indirizzi di sistema...")
@@ -3195,6 +3195,17 @@ def custom_function():
                 logging.info(f"L'input {idx} ha la sequenza impostata su {seq}" + f"{Type_SeqLabel.get(seq, '')}")
         logging.info("🔍 Fine controllo sequenze...")
 
+    def deadband_feedback_check() -> None:
+        logging.info("🔍 Inizio controllo deadband feedback...")
+        for axisInd in range(0, MAX_ASSE):
+            axis = data_config.Axis_Param[axisInd]
+            axis_name = data_config.Axis_Name[axisInd] or f"AXIS_{axisInd}"
+            if axis.intval[ASSE_INT_FEEDBACK] != -1:
+                feedback = data_config.Feedback_Param[axis.intval[ASSE_INT_FEEDBACK]]
+                if feedback.realval[FB_REAL_DEADBAND] == 0:
+                    logging.warning(f"⚠️ [{axisInd}]{axis_name} sta usando il feedback {axis.intval[ASSE_INT_FEEDBACK]} con deadband: {feedback.realval[FB_REAL_DEADBAND]} diverso da 0")
+        logging.info("🔍 Fine controllo deadband feedback...")
+
     def check_automatic_params() -> None:
         logging.info("🔍 Inizio controllo parametri automatici...")
         to_check = [FUN_AXIS_PRE, FUN_AXIS_BEND]
@@ -3212,23 +3223,13 @@ def custom_function():
     foo = [check_axis_flag, check_duplicate_do_ao_usage, check_duplicate_obj_usage, clean_di_axis_check, duplicate_io_address,
            check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release, check_safety, check_rotation,
            geometry_check, check_axis_speed_master_slave, check_forbidden_ao_do_usage, check_de_tilt, check_stop_alarms, check_axis_speed,
-           check_archimeter_params, check_bypass_unused, check_remote_control, check_feedback_ratios, check_axis_sp, check_tilt_max_lateral, check_interlock_alarm_sys_addr, seq_check, check_automatic_params
+           check_archimeter_params, check_bypass_unused, check_remote_control, check_feedback_ratios, check_axis_sp, check_tilt_max_lateral,
+           check_interlock_alarm_sys_addr, seq_check, check_automatic_params, deadband_feedback_check
            ,check_all_sys_alarms]
     for func in foo:
         logging.info('-' * 60)
         func()
     logger.debug("OUT: custom_function")
-
-    def deadband_feedback_check() -> None:
-        logging.info("🔍 Inizio controllo deadband feedback...")
-        for axisInd in range(0, MAX_ASSE):
-            axis = data_config.Axis_Param[axisInd]
-            axis_name = data_config.Axis_Name[axisInd] or f"AXIS_{axisInd}"
-            if axis.intval[ASSE_INT_FEEDBACK] != -1:
-                feedback = data_config.Feedback_Param[axis.intval[ASSE_INT_FEEDBACK]]
-                if feedback.realval[FB_REAL_DEADBAND] == 0:
-                    logging.warning(f"⚠️ [{axisInd}]{axis_name} sta usando il feedback {axis.intval[ASSE_INT_FEEDBACK]} con deadband: {feedback.realval[FB_REAL_DEADBAND]} diverso da 0")
-        logging.info("🔍 Fine controllo deadband feedback...")
 
 
 if __name__ == "__main__":

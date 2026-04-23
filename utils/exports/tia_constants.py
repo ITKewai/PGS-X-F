@@ -161,6 +161,30 @@ class DATA_CONFIG:
         self._defaults['UM_FC_Met'] = [0.0] * (MAX_UM + 1)
         self.UM_FC_Imp = [0.0] * (MAX_UM + 1)  # Array[0.."MAX_UM"] of Real
         self._defaults['UM_FC_Imp'] = [0.0] * (MAX_UM + 1)
+        self.UM_Offset = [0.0] * (MAX_UM + 1)  # Array[0.."MAX_UM"] of Real
+        self._defaults['UM_Offset'] = [0.0] * (MAX_UM + 1)
+        self.UM_Offset_Met = [0.0] * (MAX_UM + 1)  # Array[0.."MAX_UM"] of Real
+        self._defaults['UM_Offset_Met'] = [0.0] * (MAX_UM + 1)
+        self.UM_Offset_Imp = [0.0] * (MAX_UM + 1)  # Array[0.."MAX_UM"] of Real
+        self._defaults['UM_Offset_Imp'] = [0.0] * (MAX_UM + 1)
+        self.UM_NDec = [-1] * (MAX_UM + 1)  # Array[0.."MAX_UM"] of Int
+        self._defaults['UM_NDec'] = [-1] * (MAX_UM + 1)
+        self.UM_NDec_Met = [-1] * (MAX_UM + 1)  # Array[0.."MAX_UM"] of Int
+        self._defaults['UM_NDec_Met'] = [-1] * (MAX_UM + 1)
+        self.UM_NDec_Imp = [-1] * (MAX_UM + 1)  # Array[0.."MAX_UM"] of Int
+        self._defaults['UM_NDec_Imp'] = [-1] * (MAX_UM + 1)
+        self.UM_Name = [None] * (MAX_UM + 1)  # Array[0.."MAX_UM"] of String["DIM_STRINGUMNAME"]
+        self._defaults['UM_Name'] = [None] * (MAX_UM + 1)
+        self.UM_Name_Met = [None] * (MAX_UM + 1)  # Array[0.."MAX_UM"] of String["DIM_STRINGUMNAME"]
+        self._defaults['UM_Name_Met'] = [None] * (MAX_UM + 1)
+        self.UM_Name_Imp = [None] * (MAX_UM + 1)  # Array[0.."MAX_UM"] of String["DIM_STRINGUMNAME"]
+        self._defaults['UM_Name_Imp'] = [None] * (MAX_UM + 1)
+        self.Teach = None  # "Type_Teach"
+        self._defaults['Teach'] = None
+        self.Seq = None  # "Type_Seq"
+        self._defaults['Seq'] = None
+        self.HMIAdd0 = -1  # Int
+        self._defaults['HMIAdd0'] = -1
 
 
 class Type_StatParam:

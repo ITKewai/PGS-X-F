@@ -90,6 +90,52 @@ def tia_type_to_python_default(typ: str):
 # ==============================
 # 🔸 UDT (.udt)
 # ==============================
+def tia_udt_class_name(typ: str):
+    m = re.match(r'\s*"?(Type_\w+)"?\s*$', typ, re.IGNORECASE)
+    return sanitize_class_name(m.group(1)) if m else None
+
+
+def tia_value_to_python(value: str) -> str:
+    value = value.strip()
+
+    if re.fullmatch(r"'[^']*'", value):
+        return value
+    if value.upper() == "TRUE":
+        return "True"
+    if value.upper() == "FALSE":
+        return "False"
+    if re.fullmatch(r'[-+]?\d+', value):
+        return value
+    if re.fullmatch(r'[-+]?(?:\d+\.\d*|\d*\.\d+)(?:[eE][-+]?\d+)?', value):
+        return value
+
+    # Literali TIA non validi in Python (es. T#0MS) -> stringa
+    return repr(value)
+
+
+def tia_target_to_python(target: str) -> str:
+    target = target.strip()
+    target = re.sub(
+        r'\b([A-Za-z_]\w*)\b',
+        lambda m: f"{m.group(1)}_" if m.group(1) in RESERVED_NAMES else m.group(1),
+        target
+    )
+    return f"self.{target}"
+
+
+def parse_db_init_assignments(content: str):
+    parts = re.split(r'\bBEGIN\b', content, maxsplit=1, flags=re.IGNORECASE)
+    if len(parts) < 2:
+        return []
+
+    init_section = parts[1]
+    assigns = []
+    assign_pat = re.compile(r'^\s*(.+?)\s*:=\s*(.+?)\s*;\s*$', re.MULTILINE)
+    for m in assign_pat.finditer(init_section):
+        assigns.append((m.group(1).strip(), m.group(2).strip()))
+    return assigns
+
+
 def process_udt_file(filepath: str, out):
     filename = os.path.basename(filepath)
     with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
@@ -151,15 +197,15 @@ def process_udt_file(filepath: str, out):
 # 🔸 DB (.db)
 # ==============================
 def process_db_file(filepath: str, out):
-    """ Versione 0.1 """
+    """Versione 0.2: inizializza anche i valori presenti nel blocco BEGIN del DB."""
     filename = os.path.basename(filepath)
     class_name = sanitize_class_name(os.path.splitext(filename)[0])
 
     with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
-        content = f.read()
+        raw_content = f.read()
 
     # Rimuovi i metadati { ... }
-    content = re.sub(r'\{[^{}]*\}', '', content)
+    content = re.sub(r'\{[^{}]*\}', '', raw_content)
 
     # Considera solo la sezione dichiarativa del DB (prima di BEGIN)
     decl_section = re.split(r'\bBEGIN\b', content, maxsplit=1, flags=re.IGNORECASE)[0]
@@ -174,6 +220,9 @@ def process_db_file(filepath: str, out):
     if not decls:
         print(f"⚠️ Nessuna variabile parsata in {filename}.")
         return
+
+    # Estrai anche le inizializzazioni dal BEGIN
+    init_assignments = parse_db_init_assignments(content)
 
     out.write(f"# --- DB {filename} ---\n")
     out.write(f"class {class_name}:\n")
@@ -190,13 +239,20 @@ def process_db_file(filepath: str, out):
         safe_name = var_name + "_" if var_name in RESERVED_NAMES else var_name
         comment_str = f"  # {var_type}" + (f" // {var_comment}" if var_comment else "")
 
-        # Array di UDT?
+        # Array di UDT
         udt_match = udt_array_re.match(var_type)
         if udt_match:
             min_raw, max_raw, udt_class = udt_match.groups()
             length_expr = f"({max_raw} + 1)" if min_raw == "0" else f"(({max_raw}) - ({min_raw}) + 1)"
             out.write(f"        self.{safe_name} = [{udt_class}() for _ in range{length_expr}]{comment_str}\n")
-            out.write(f"        self._defaults['{safe_name}'] = [{udt_class}() for _ in range{length_expr}]\n")
+            out.write(f"        self._defaults['{safe_name}'] = self.{safe_name}\n")
+            continue
+
+        # UDT semplice
+        udt_class = tia_udt_class_name(var_type)
+        if udt_class:
+            out.write(f"        self.{safe_name} = {udt_class}(){comment_str}\n")
+            out.write(f"        self._defaults['{safe_name}'] = self.{safe_name}\n")
             continue
 
         # Array di tipi base
@@ -210,6 +266,15 @@ def process_db_file(filepath: str, out):
         default_val = tia_type_to_python_default(var_type)
         out.write(f"        self.{safe_name} = {default_val}{comment_str}\n")
         out.write(f"        self._defaults['{safe_name}'] = {default_val}\n")
+
+    # Applica i valori iniziali presenti nel BEGIN
+    if init_assignments:
+        out.write("\n")
+        for target, value in init_assignments:
+            py_target = tia_target_to_python(target)
+            py_value = tia_value_to_python(value)
+            out.write(f"        {py_target} = {py_value}\n")
+
     out.write("\n")
 
 

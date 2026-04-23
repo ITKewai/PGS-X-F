@@ -42,4 +42,9 @@ se presendi indirizzi radiocomando come principale inpunt, dare wwarnign se NEW_
 # TODO: se assi SP attivi controllare che siano in function
 # TODO: spezzare in piu funzioni ad esempio get axis ecc
 # TODO: output valmax1 valmax2 a 100.00 sugli output e gli altri 20 40 60 80
+# TODO: controllare versione plc via http
+# TODO: da fare controllo su control di ogni asse bwslow2
+# TODO: verificare che se motore in seq ce ne siano altri in seq (se sono disattivati fa cose strane tipop va giu e su)
+# TODO: vedere che è configurata la luce waitnig for start
+# TODO: urgente aggiungere controllo calcolo 4hel
 """

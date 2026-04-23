@@ -53,9 +53,19 @@ def parse_decls_from_struct(struct_text: str):
 
 
 def tia_type_to_python_default(typ: str):
-    """Valore di default per i tipi base e array nei TYPE UDT."""
+    """Valore di default per i tipi base e array nei TYPE UDT/DB."""
     original = typ.strip()
     tlower = original.lower()
+
+    # STRING[n] oppure STRING["NOME_COSTANTE"]
+    string_re = re.compile(
+        r'string\s*\[\s*"?([A-Za-z_]\w*|\d+)"?\s*\]',
+        re.IGNORECASE
+    )
+    sm = string_re.fullmatch(original)
+    if sm:
+        strlen_raw = sm.group(1)
+        return f'" " * ({strlen_raw})'
 
     array_re = re.compile(
         r'array\s*\[\s*"?([A-Za-z_]\w*|\d+)"?\s*\.\.\s*"?([A-Za-z_]\w*|\d+)"?\s*\]\s*of\s*(\w+)',
@@ -66,7 +76,16 @@ def tia_type_to_python_default(typ: str):
         min_raw, max_raw, base = am.groups()
         base_type = base.lower()
 
-        if "bool" in base_type:
+        # Array di STRING[n] o STRING["COSTANTE"]
+        string_array_re = re.compile(
+            r'string\s*\[\s*"?([A-Za-z_]\w*|\d+)"?\s*\]',
+            re.IGNORECASE
+        )
+        sam = string_array_re.fullmatch(base.strip())
+        if sam:
+            strlen_raw = sam.group(1)
+            base_default = f'" " * ({strlen_raw})'
+        elif "bool" in base_type:
             base_default = "False"
         elif any(x in base_type for x in ("sint","usint","int","dint","lint","ulint","uint","udint","byte","word","dword")):
             base_default = "-1"
@@ -84,6 +103,7 @@ def tia_type_to_python_default(typ: str):
         return "-1"
     if any(x in tlower for x in ("lreal", "real")):
         return "0.0"
+
     return "None"
 
 

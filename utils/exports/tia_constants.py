@@ -5,8 +5,8 @@ __version__ = '0.25.50.0'
 class DATA_CONFIG:
     def __init__(self):
         self._defaults = {}
-        self.PLCVersion = None  # String["DIM_STRINGNAME"] // scritto su Settings
-        self._defaults['PLCVersion'] = None
+        self.PLCVersion = " " * (DIM_STRINGNAME)  # String["DIM_STRINGNAME"] // scritto su Settings
+        self._defaults['PLCVersion'] = " " * (DIM_STRINGNAME)
         self.PLCVersion1 = -1  # Int
         self._defaults['PLCVersion1'] = -1
         self.PLCVersion2 = -1  # Int

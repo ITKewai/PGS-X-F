@@ -151,6 +151,7 @@ def process_udt_file(filepath: str, out):
 # 🔸 DB (.db)
 # ==============================
 def process_db_file(filepath: str, out):
+    """ Versione 0.1 """
     filename = os.path.basename(filepath)
     class_name = sanitize_class_name(os.path.splitext(filename)[0])
 
@@ -160,13 +161,16 @@ def process_db_file(filepath: str, out):
     # Rimuovi i metadati { ... }
     content = re.sub(r'\{[^{}]*\}', '', content)
 
-    # Estrai blocco VAR...END_VAR
-    var_m = re.search(r'\bVAR\b(.*?)\bEND_VAR\b', content, flags=re.DOTALL | re.IGNORECASE)
-    if not var_m:
-        print(f"⚠️ Nessun blocco VAR trovato in {filename}.")
-        return
+    # Considera solo la sezione dichiarativa del DB (prima di BEGIN)
+    decl_section = re.split(r'\bBEGIN\b', content, maxsplit=1, flags=re.IGNORECASE)[0]
 
-    decls = parse_decls_from_struct(var_m.group(1))
+    # Estrai TUTTI i blocchi VAR ... END_VAR, inclusi VAR RETAIN
+    var_pat = re.compile(r'\bVAR(?:\s+RETAIN)?\b(.*?)\bEND_VAR\b', re.DOTALL | re.IGNORECASE)
+
+    decls = []
+    for var_m in var_pat.finditer(decl_section):
+        decls.extend(parse_decls_from_struct(var_m.group(1)))
+
     if not decls:
         print(f"⚠️ Nessuna variabile parsata in {filename}.")
         return

@@ -68,10 +68,10 @@ def tia_type_to_python_default(typ: str):
         return f'" " * ({strlen_raw})'
 
     array_re = re.compile(
-        r'array\s*\[\s*"?([A-Za-z_]\w*|\d+)"?\s*\.\.\s*"?([A-Za-z_]\w*|\d+)"?\s*\]\s*of\s*(\w+)',
+        r'array\s*\[\s*"?([A-Za-z_]\w*|\d+)"?\s*\.\.\s*"?([A-Za-z_]\w*|\d+)"?\s*\]\s*of\s*(.+)',
         re.IGNORECASE
     )
-    am = array_re.match(original)
+    am = array_re.fullmatch(original)
     if am:
         min_raw, max_raw, base = am.groups()
         base_type = base.lower()
@@ -84,7 +84,7 @@ def tia_type_to_python_default(typ: str):
         sam = string_array_re.fullmatch(base.strip())
         if sam:
             strlen_raw = sam.group(1)
-            base_default = f'" " * ({strlen_raw})'
+            base_default = f'" " * {strlen_raw}'
         elif "bool" in base_type:
             base_default = "False"
         elif any(x in base_type for x in ("sint","usint","int","dint","lint","ulint","uint","udint","byte","word","dword")):

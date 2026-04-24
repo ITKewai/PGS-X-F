@@ -216,6 +216,51 @@ def process_udt_file(filepath: str, out):
 # ==============================
 # 🔸 DB (.db)
 # ==============================
+def is_redundant_init_assignment(target: str, py_value: str, decls):
+    """
+    Ritorna True se un'assegnazione nel BEGIN è già coperta dal default
+    generato dalla dichiarazione VAR.
+
+    Esempio:
+        AxisFunInd[0] := -1
+    viene saltato se:
+        AxisFunInd : Array[0.."MAX_ASSEFUNIND"] of Int
+    genera già:
+        self.AxisFunInd = [-1] * (MAX_ASSEFUNIND + 1)
+    """
+
+    # Caso array semplice: NomeArray[123]
+    m = re.match(r'^([A-Za-z_]\w*)\s*\[.+\]$', target.strip())
+    if not m:
+        return False
+
+    array_name = m.group(1)
+
+    for var_name, var_type, _ in decls:
+        if var_name != array_name:
+            continue
+
+        default_val = tia_type_to_python_default(var_type)
+
+        # Array di Int / DInt / ecc.
+        if default_val.startswith("[-1]") and py_value == "-1":
+            return True
+
+        # Array di Bool
+        if default_val.startswith("[False]") and py_value == "False":
+            return True
+
+        # Array di Real
+        if default_val.startswith("[0.0]") and py_value in ("0.0", "0"):
+            return True
+
+        # Array di stringhe vuote/spazi: non lo salto qui in modo aggressivo,
+        # perché '' e " " * DIM_STRING... non sono semanticamente identici.
+        # Se vuoi saltare anche gli '', si può aggiungere una regola dedicata.
+
+    return False
+
+
 def process_db_file(filepath: str, out):
     """Versione 0.2: inizializza anche i valori presenti nel blocco BEGIN del DB."""
     filename = os.path.basename(filepath)
@@ -288,11 +333,16 @@ def process_db_file(filepath: str, out):
         out.write(f"        self._defaults['{safe_name}'] = {default_val}\n")
 
     # Applica i valori iniziali presenti nel BEGIN
+    # saltando quelli identici al default già generato
     if init_assignments:
         out.write("\n")
         for target, value in init_assignments:
             py_target = tia_target_to_python(target)
             py_value = tia_value_to_python(value)
+
+            if is_redundant_init_assignment(target, py_value, decls):
+                continue
+
             out.write(f"        {py_target} = {py_value}\n")
 
     out.write("\n")

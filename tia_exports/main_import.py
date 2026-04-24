@@ -74,6 +74,7 @@ def tia_type_to_python_default(typ: str):
     am = array_re.fullmatch(original)
     if am:
         min_raw, max_raw, base = am.groups()
+        base = base.strip()
         base_type = base.lower()
 
         # Array di STRING[n] o STRING["COSTANTE"]
@@ -81,25 +82,31 @@ def tia_type_to_python_default(typ: str):
             r'string\s*\[\s*"?([A-Za-z_]\w*|\d+)"?\s*\]',
             re.IGNORECASE
         )
-        sam = string_array_re.fullmatch(base.strip())
+        sam = string_array_re.fullmatch(base)
+
         if sam:
             strlen_raw = sam.group(1)
             base_default = f'" " * {strlen_raw}'
-        elif "bool" in base_type:
-            base_default = "False"
-        elif any(x in base_type for x in ("sint","usint","int","dint","lint","ulint","uint","udint","byte","word","dword")):
-            base_default = "-1"
-        elif "real" in base_type or "lreal" in base_type:
-            base_default = "0.0"
         else:
-            base_default = "None"
+            # Array di UDT: Array[0.."MAX_STAT"] of "Type_Stat"
+            udt_m = re.fullmatch(r'"?(Type_\w+)"?', base, re.IGNORECASE)
+            if udt_m:
+                base_default = udt_m.group(1)
+            elif "bool" in base_type:
+                base_default = "False"
+            elif any(x in base_type for x in ("sint", "usint", "int", "dint", "lint", "ulint", "uint", "udint", "byte", "word", "dword")):
+                base_default = "-1"
+            elif "real" in base_type or "lreal" in base_type:
+                base_default = "0.0"
+            else:
+                base_default = "None"
 
         length_expr = f"({max_raw} + 1)" if min_raw == "0" else f"(({max_raw}) - ({min_raw}) + 1)"
         return f"[{base_default}] * {length_expr}"
 
     if "bool" in tlower:
         return "False"
-    if any(x in tlower for x in ("sint","usint","int","dint","lint","ulint","uint","udint","byte","word","dword")):
+    if any(x in tlower for x in ("sint", "usint", "int", "dint", "lint", "ulint", "uint", "udint", "byte", "word", "dword")):
         return "-1"
     if any(x in tlower for x in ("lreal", "real")):
         return "0.0"

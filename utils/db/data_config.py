@@ -10,6 +10,7 @@ from __future__ import annotations
 import logging
 import sys
 import json
+import math
 
 from pathlib import Path
 from typing import Any, List, Dict, Sequence, Optional, Tuple
@@ -95,6 +96,7 @@ def populate_from_yaml_file(yaml_path: Path | str) -> None:
 def deserialize_config(data: Dict[str, Any]) -> None:
     logger.debug('IN: deserialize_config')
     _clean_data_config()
+    _deserialize_UM(data)  # UM / UMT
     _deserialize_header(data)
     _deserialize_card_exc(data)  # card / exc
     _deserialize_axind_in_out(data)  # axind / in / out (indici mapping rapidi)
@@ -239,6 +241,13 @@ def _clean_data_config() -> None:
     logging.debug('OUT: _clean_data_config')
 
 
+def _deserialize_UM(data: Dict[str, Any]) -> None:
+    for i in range(MAX_UM + 1):
+        data_config.UM_FC[i] = data_config.UM_FC_Met[i]
+        data_config.UM_Offset[i] = data_config.UM_Offset_Met[i]
+        data_config.UM_NDec[i] = data_config.UM_NDec_Met[i]
+        data_config.UM_Name[i] = data_config.UM_Name_Met[i]
+    print(data_config.UM_FC)
 # ------------------------------
 # Header / Card / AxInd
 # ------------------------------
@@ -744,6 +753,7 @@ def _deserialize_obj_pid(data: Dict[str, Any]) -> None:
             val = row[j] if j < len(row) else 0.0
             data_config.PID_Param[ind].realval[j] = _to_float(val)
     logging.debug('OUT: _deserialize_obj_pid')
+
 
 def _deserialize_obj_mot(data: Dict[str, Any]) -> None:
     logging.debug('IN: _deserialize_obj_mot')
@@ -2740,47 +2750,83 @@ def custom_function():
         logging.info("🔍 Inizio controllo olio...")
         # il numero rappresenta il tipo di dato MISURA_*
         _ = {
-            ASSE_REAL_SRTUP: -1,
-            ASSE_REAL_SRTDOWN: -1,
-            ASSE_REAL_COEFFUP: -1,
-            ASSE_REAL_COEFFDOWN: -1,
-            ASSE_REAL_P1UP: 1,
-            ASSE_REAL_P1DOWN: 1,
-            ASSE_REAL_P2UP: 1,
-            ASSE_REAL_P2DOWN: 1,
-            ASSE_REAL_SYSPRESSUP1: 1,
-            ASSE_REAL_SYSPRESSDOWN1: 1,
-            ASSE_REAL_SYSPRESSUP2: 1,
-            ASSE_REAL_SYSPRESSDOWN2: 1,
-            ASSE_REAL_SYSPRESSUP3: 1,
-            ASSE_REAL_SYSPRESSDOWN3: 1,
-            ASSE_REAL_BWVMAX: 10,
+            ASSE_REAL_SRTUP: "",
+            ASSE_REAL_SRTDOWN: "",
+            ASSE_REAL_COEFFUP: "",
+            ASSE_REAL_COEFFDOWN: "",
+            ASSE_REAL_P1UP: "",
+            ASSE_REAL_P1DOWN: "",
+            ASSE_REAL_P2UP: "",
+            ASSE_REAL_P2DOWN: "",
+            ASSE_REAL_SYSPRESSUP1: "",
+            ASSE_REAL_SYSPRESSDOWN1: "",
+            ASSE_REAL_SYSPRESSUP2: "",
+            ASSE_REAL_SYSPRESSDOWN2: "",
+            ASSE_REAL_SYSPRESSUP3: "",
+            ASSE_REAL_SYSPRESSDOWN3: "",
+            ASSE_REAL_BWVMAX: "",
             ASSE_REAL_DSMAXDOWN: -1,
             ASSE_REAL_DSMAXUP: -1,
-            ASSE_REAL_FWVMAX: 10,
-            ASSE_REAL_SMAX: 2,
-            ASSE_REAL_SMIN: 2,
-            ASSE_REAL_SSUP: 2,
-            ASSE_REAL_SINF: 2,
-            ASSE_REAL_VMINSTARTED: 10,
-            ASSE_REAL_SHH: 2,
-            ASSE_REAL_SH: 2,
-            ASSE_REAL_SL: 2,
-            ASSE_REAL_SLL: 2,
+            ASSE_REAL_FWVMAX: "",
+            ASSE_REAL_SMAX: "",
+            ASSE_REAL_SMIN: "",
+            ASSE_REAL_SSUP: "",
+            ASSE_REAL_SINF: "",
+            ASSE_REAL_VMINSTARTED: "",
+            ASSE_REAL_SHH: "",
+            ASSE_REAL_SH: "",
+            ASSE_REAL_SL: "",
+            ASSE_REAL_SLL: "",
             ASSE_REAL_TILTMAX: -1,
+            ASSE_REAL_SLAVEVRESET: "",
+            ASSE_REAL_SLAVEVMIN: "",
+            ASSE_REAL_MASTERMULT: "",
+            ASSE_REAL_MASTERDELTAMIN: "",
+            ASSE_REAL_MASTERKSRS: "",
+            ASSE_REAL_SLAVEDELTATSTART: "",
+            ASSE_REAL_OUTKP: "",
+            ASSE_REAL_OUTDELTAT: "",
+            ASSE_REAL_SH0: 2,
+            ASSE_REAL_SL0: 2,
+            ASSE_REAL_TILTMAXDOWN: "",
+            ASSE_REAL_FREE_39: "",
+            ASSE_REAL_DELTAMOVINGUP: -1,
+            ASSE_REAL_DELTAMOVINGDOWN: -1,
+            ASSE_REAL_DELTADIV: -1,
+            ASSE_REAL_DELTAMOVINGSUPUP: -1,
+            ASSE_REAL_DELTAMOVINGINFUP: -1,
+            ASSE_REAL_DELTAMOVINGSUPDOWN: -1,
+            ASSE_REAL_DELTAMOVINGINFDOWN: -1,
+            ASSE_REAL_DELTAAUTO: -1,
+            ASSE_REAL_BWACCMAX: "",
+            ASSE_REAL_FWACCMAX: "",
+            ASSE_REAL_OPTPARAM1: "",
+            ASSE_REAL_OPTPARAM2: "",
+            ASSE_REAL_OPTPARAM3: "",
+            ASSE_REAL_AXISCOUPMIN: "",
+            ASSE_REAL_FREE_54: ""
         }
+        _to_control_idx = [ASSE_REAL_DSMAXDOWN, ASSE_REAL_DSMAXUP, ASSE_REAL_TILTMAX, ASSE_REAL_SH0, ASSE_REAL_SL0,
+                           ASSE_REAL_DELTAMOVINGUP, ASSE_REAL_DELTAMOVINGDOWN, ASSE_REAL_DELTADIV,
+                           ASSE_REAL_DELTAMOVINGSUPUP, ASSE_REAL_DELTAMOVINGINFUP,
+                           ASSE_REAL_DELTAMOVINGSUPDOWN,ASSE_REAL_DELTAMOVINGINFDOWN,ASSE_REAL_DELTAAUTO]
         diff = False
         if data_config.AxisFunInd[FUN_AXIS_OILTEMP] != -1:
             axisOil = data_config.Axis_Param[data_config.AxisFunInd[FUN_AXIS_OILTEMP]]
             for i, value in _.items():
-                if i == ASSE_REAL_BWVMAX or i == ASSE_REAL_FWVMAX or i == ASSE_REAL_DSMAXUP or i == ASSE_REAL_DSMAXDOWN:
+                #  i == ASSE_REAL_BWVMAX or i == ASSE_REAL_FWVMAX or i == ASSE_REAL_DSMAXUP or i == ASSE_REAL_DSMAXDOWN:
+                if i not in _to_control_idx:
                     continue
                 if axisOil.typval[i] != value:
-                    logging.warning(f'now:{axisOil.typval[i]} shoudbe:{_[i]} id: {i}')
+                    logging.warning(f'attuale: {axisOil.typval[i]}, invece di :{_[i]}, id: {i}')
                     diff = True
             if diff:
-                logging.warning(f"wrong\ttype: {axisOil.typval}")
-                logging.warning("replace:\ttype: [-1,-1,-1,-1,1,1,1,1,1,1,1,1,1,1,10,-1,-1,10,2,2,2,2,10,2,2,2,2,-1,-1,-1,-1,-1,-1,-1,-1,-1,2,2,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]")
+                logging.critical(f"N\ttype: {str(axisOil.typval).replace(' ', '')}")
+                newValue = axisOil.typval.copy()
+                for i in _.keys():
+                    if i in _to_control_idx:
+                        newValue[i] = _[i]
+                logging.warning(f"Y\ttype: {str(newValue.replace(' ', ''))}")
         logging.info("🔍 Fine controllo olio...")
 
     def check_release() -> None:
@@ -2791,7 +2837,7 @@ def custom_function():
         if data_config.AxisFunInd[FUN_AXIS_PINCH] == -1:
             logging.warning("Indice B non configurato in Params > Functions")
             return
-        pinchName = f"[{data_config.AxisFunInd[FUN_AXIS_PINCH]}]{data_config.Axis_Name[data_config.AxisFunInd[FUN_AXIS_PINCH]] or f'AXIS_{data_config.AxisFunInd[FUN_AXIS_DE]}'}"
+        pinchName = f"[{data_config.AxisFunInd[FUN_AXIS_PINCH]}]{data_config.Axis_Name[data_config.AxisFunInd[FUN_AXIS_PINCH]] or f'AXIS_{data_config.AxisFunInd[FUN_AXIS_PINCH]}'}"
         safetyDown = [
             ASSE_INT_SAFETYDOWNIND1, ASSE_INT_SAFETYDOWNIND2, ASSE_INT_SAFETYDOWNIND3,
             ASSE_INT_SAFETYDOWNIND4, ASSE_INT_SAFETYDOWNIND5, ASSE_INT_SAFETYDOWNIND6
@@ -2805,7 +2851,6 @@ def custom_function():
         if any(make_axis_sys_addr(AXIS_GROUPS_ORDER[IO_SYSAXIS_L], data_config.AxisFunInd[FUN_AXIS_PINCH]) == data_config.Axis_Param[FUN_AXIS_DE].intval[x] for x in safetyUp):
             logging.warning(f"⚠️ {pinchName}.L è presente negli interlock up va rimosso!")
         # conrtollo flag
-
         # controllo quota apertura sgancio
         if data_config.Axis_Param[data_config.AxisFunInd[FUN_AXIS_PINCH]].realval[ASSE_REAL_SHH] <= data_config.Axis_Param[data_config.AxisFunInd[FUN_AXIS_PINCH]].realval[ASSE_REAL_SL]:
             logging.warning(f"⚠️ {pinchName}.HH è minore o uguale a {pinchName}.L quota reset automatico")
@@ -2865,6 +2910,15 @@ def custom_function():
             logging.warning(f"⚠️ Modello macchina {model}, diametro rullo superiore maggiore di quello in geo: {data_config.ParamReal[REAL_TROUTERDIAM]}")
         elif top_roll_diameter < data_config.ParamReal[REAL_TROUTERDIAM]:
             logging.warning(f"⚠️ Modello macchina {model}, diametro rullo superiore minore di quello in geo: {data_config.ParamReal[REAL_TROUTERDIAM]}")
+
+        k = data_config.ParamReal[REAL_K]
+        alfa = data_config.ParamReal[REAL_TOPANG] * math.pi / 180.0
+        b = data_config.ParamReal[REAL_B]
+        htot = b / math.tan(alfa)
+        h0 = htot - k
+        h0 = round(h0, data_config.UM_NDec[MISURA_LUNGH])
+        if round(data_config.ParamReal[REAL_H0],data_config.UM_NDec[MISURA_LUNGH]) != h0:
+            logging.critical(f"⚠️ Il parametro calcolato H0 in geometria dovrebbe essere {h0} ma è {data_config.ParamReal[REAL_H0]}")
         logging.info("🔍 Fine controllo geometria...")
 
     def check_axis_speed_master_slave() -> None:

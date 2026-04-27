@@ -36,7 +36,6 @@ se presendi indirizzi radiocomando come principale inpunt, dare wwarnign se NEW_
 # TODO: controllare che se presente feedback encoder su espulsore deve rimanere tipo XXX cosi non perde quota una volta spenta e acceso
 # TODO: verificare che la numerazione allarmi sia corretta (COD)
 
-# TODO: SE METTO INDICE 0 MI TROVA TROPPA ROBA
 # TODO AGGIUNGERE PARAMEYTRI JONNY
 # TODO: CONOTROLLARE CHE FINECORSA MAX LEFT E RIGHT SIANO COERENTI
 # TODO: se assi SP attivi controllare che siano in function
@@ -46,5 +45,6 @@ se presendi indirizzi radiocomando come principale inpunt, dare wwarnign se NEW_
 # TODO: da fare controllo su control di ogni asse bwslow2
 # TODO: verificare che se motore in seq ce ne siano altri in seq (se sono disattivati fa cose strane tipop va giu e su)
 # TODO: vedere che è configurata la luce waitnig for start
-# TODO: urgente aggiungere controllo calcolo 4hel
+# TODO: controllo stessi imput per più input assi (esempio 2 assi con stesso input)
+# todo: paraletri supporto a croce di tipo lung
 """

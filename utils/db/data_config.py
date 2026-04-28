@@ -927,7 +927,7 @@ def _deserialize_obj_toolset(data: Dict[str, Any]) -> None:
             data_config.Toolset_Param[ind].intval[j] = _to_int(val)
         off += (MAX_TOOLSETINT + 1)
 
-        # real (+ tipval,fc,offset tutti MISURA_LUNGH)
+        # real (+ typval,fc,offset tutti MISURA_LUNGH)
         for j in range(MAX_TOOLSETREAL + 1):
             val = row[off + j] if off + j < len(row) else 0.0
             fv = _to_float(val)
@@ -2654,7 +2654,7 @@ def custom_function():
                 alt_fb = data_config.Feedback_Param[alt_fb_ind]
                 tipo_fb_alt = alt_fb.intval[FB_INT_TIPOMISURA]
                 if tipo_asse != tipo_fb_alt:
-                    mismatches.append((axisInd, axis_name, tipo_asse, tipo_fb_alt, fb_ind))
+                    mismatches.append((axisInd, axis_name, tipo_asse, tipo_fb_alt, alt_fb_ind))
 
         if mismatches:
             logging.warning(f"\n⚠️  Assi con tipo misura diverso (ASSE_INT_TIPOMISURA ≠ FB_INT_TIPOMISURA):")
@@ -2712,8 +2712,8 @@ def custom_function():
                 tipo_asse = axis.intval[ASSE_INT_TIPOMISURA]
                 if tipo_asse != MISURA_GRAD:
                     logging.warning(f"⚠️ [{data_config.AxisFunInd[i]}]{axis_name} non ha il tipo di misura GRAD")
-                if data_config.Axis_Param[i].intval[ASSE_INT_FEEDBACK] != -1:
-                    axis_feedback = data_config.Feedback_Param[data_config.Axis_Param[i].intval[ASSE_INT_FEEDBACK]]
+                if data_config.Axis_Param[data_config.AxisFunInd[i]].intval[ASSE_INT_FEEDBACK] != -1:
+                    axis_feedback = data_config.Feedback_Param[data_config.Axis_Param[data_config.AxisFunInd[i]].intval[ASSE_INT_FEEDBACK]]
                     tipo_feedback = axis_feedback.intval[FB_INT_TIPOMISURA]
                     if tipo_feedback != MISURA_GRAD:
                         logging.warning(f"⚠️ [{data_config.AxisFunInd[i]}]{axis_name} il feedback non ha il tipo di misura GRAD")
@@ -2842,15 +2842,15 @@ def custom_function():
             ASSE_INT_SAFETYDOWNIND1, ASSE_INT_SAFETYDOWNIND2, ASSE_INT_SAFETYDOWNIND3,
             ASSE_INT_SAFETYDOWNIND4, ASSE_INT_SAFETYDOWNIND5, ASSE_INT_SAFETYDOWNIND6
         ]
-        if not any(make_axis_sys_addr(AXIS_GROUPS_ORDER[IO_SYSAXIS_L], data_config.AxisFunInd[FUN_AXIS_PINCH]) == data_config.Axis_Param[FUN_AXIS_DE].intval[x] for x in safetyDown):
+        if not any(make_axis_sys_addr(AXIS_GROUPS_ORDER[IO_SYSAXIS_L], data_config.AxisFunInd[FUN_AXIS_PINCH]) == data_config.Axis_Param[data_config.AxisFunInd[FUN_AXIS_DE]].intval[x] for x in safetyDown):
             logging.warning(f"⚠️ {pinchName}.L non è presente negli interlock down direttamente va aggiunto!")
         safetyUp = [
             ASSE_INT_SAFETYUPIND1, ASSE_INT_SAFETYUPIND1, ASSE_INT_SAFETYUPIND1,
             ASSE_INT_SAFETYUPIND1, ASSE_INT_SAFETYUPIND1, ASSE_INT_SAFETYUPIND1
         ]
-        if any(make_axis_sys_addr(AXIS_GROUPS_ORDER[IO_SYSAXIS_L], data_config.AxisFunInd[FUN_AXIS_PINCH]) == data_config.Axis_Param[FUN_AXIS_DE].intval[x] for x in safetyUp):
+        if any(make_axis_sys_addr(AXIS_GROUPS_ORDER[IO_SYSAXIS_L], data_config.AxisFunInd[FUN_AXIS_PINCH]) == data_config.Axis_Param[data_config.AxisFunInd[FUN_AXIS_DE]].intval[x] for x in safetyUp):
             logging.warning(f"⚠️ {pinchName}.L è presente negli interlock up va rimosso!")
-        # conrtollo flag
+        # controllo flag
         # controllo quota apertura sgancio
         if data_config.Axis_Param[data_config.AxisFunInd[FUN_AXIS_PINCH]].realval[ASSE_REAL_SHH] <= data_config.Axis_Param[data_config.AxisFunInd[FUN_AXIS_PINCH]].realval[ASSE_REAL_SL]:
             logging.warning(f"⚠️ {pinchName}.HH è minore o uguale a {pinchName}.L quota reset automatico")
@@ -2909,7 +2909,7 @@ def custom_function():
         if top_roll_diameter > data_config.ParamReal[REAL_TROUTERDIAM]:
             logging.warning(f"⚠️ Modello macchina {model}, diametro rullo superiore maggiore di quello in geo: {data_config.ParamReal[REAL_TROUTERDIAM]}")
         elif top_roll_diameter < data_config.ParamReal[REAL_TROUTERDIAM]:
-            logging.warning(f"⚠️ Modello macchina {model}, diametro rullo superiore minore di quello in geo: {data_config.ParamReal[REAL_TROUTERDIAM]}")
+            logging.warning(f"⚠️ Modello macchina {model}, diametro rullo superiore minore 1di quello in geo: {data_config.ParamReal[REAL_TROUTERDIAM]}")
 
         k = data_config.ParamReal[REAL_K]
         alfa = data_config.ParamReal[REAL_TOPANG] * math.pi / 180.0
@@ -3257,7 +3257,7 @@ def custom_function():
             if axis.intval[ASSE_INT_FEEDBACK] != -1:
                 feedback = data_config.Feedback_Param[axis.intval[ASSE_INT_FEEDBACK]]
                 if feedback.realval[FB_REAL_DEADBAND] == 0:
-                    logging.warning(f"⚠️ [{axisInd}]{axis_name} sta usando il feedback {axis.intval[ASSE_INT_FEEDBACK]} con deadband: {feedback.realval[FB_REAL_DEADBAND]} diverso da 0")
+                    logging.warning(f"⚠️ [{axisInd}]{axis_name} sta usando il feedback {axis.intval[ASSE_INT_FEEDBACK]} con deadband: {feedback.realval[FB_REAL_DEADBAND]} uguale a 0")
         logging.info("🔍 Fine controllo deadband feedback...")
 
     def check_automatic_params() -> None:

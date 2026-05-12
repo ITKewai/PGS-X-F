@@ -247,7 +247,8 @@ def _deserialize_UM(data: Dict[str, Any]) -> None:
         data_config.UM_Offset[i] = data_config.UM_Offset_Met[i]
         data_config.UM_NDec[i] = data_config.UM_NDec_Met[i]
         data_config.UM_Name[i] = data_config.UM_Name_Met[i]
-    print(data_config.UM_FC)
+
+
 # ------------------------------
 # Header / Card / AxInd
 # ------------------------------
@@ -1865,7 +1866,10 @@ def run_io_scan(iotype: int, ind_target: int = None, verbose: bool = False) -> L
                         _return.append(txt)
                         if verbose:
                             logging.info(txt)
-        run_io_expr_scan(iotype=IO_RI, ind_target=ind_target)
+
+        found = run_io_expr_scan(iotype=IO_RI, ind_target=ind_target, verbose=verbose)
+        if found:
+            _return.extend(found)
     logging.debug('OUT: run_io_scan')
     return _return
 
@@ -2178,7 +2182,18 @@ def get_expr_from_di(ind: int) -> List[Tuple[int, int, int]]:
                         opnd_val = exprintval[i + 1]
                         oper_val = exprintval[i + 2]
                         expr_list.append((not_val, opnd_val, oper_val))
+        else:
+            exprintval = di_param.exprintval
+            if len(exprintval) > 1:
+                for i in range(1, len(exprintval), 3):
+                    if i + 2 < len(exprintval):
+                        not_val = exprintval[i]
+                        opnd_val = exprintval[i + 1]
+                        oper_val = exprintval[i + 2]
+                        expr_list.append((not_val, opnd_val, oper_val))
+
     return expr_list
+
 
 def run_free_scan(iotype: int):
     """
@@ -2216,7 +2231,50 @@ def run_free_scan(iotype: int):
 def run_io_search(iotype: int, Ind: Optional[int] = None, verbose: bool = False) -> List[str]:
     logging.debug('IN: run_io_search')
     _return = []
-    if iotype == IO_DI:
+    if Ind == -1:
+        if iotype == IO_DI:
+            for _Ind in range(0, len(data_config.IO_DI_List)):
+                data = run_io_search(iotype=IO_DI, Ind=_Ind, verbose=False)
+                if data:
+                    _return.append(f"--- [{_Ind}] {get_io_name(iotype=iotype, Ind=_Ind)}")  # senza parentesi per differenziare da RI
+                    _return.extend(data)
+                else:
+                    _return.append(f"--- [{_Ind}] {get_io_name(iotype=iotype, Ind=_Ind)} unused")  # senza parentesi per differenziare da RI
+        elif iotype == IO_DO:
+            for _Ind in range(0, len(data_config.IO_DO_List)):
+                data = run_io_search(iotype=IO_DO, Ind=_Ind, verbose=False)
+                if data:
+                    _return.append(f"--- [{_Ind}] {get_io_name(iotype=iotype, Ind=_Ind)}")  # senza parentesi per differenziare da RI
+                    _return.extend(data)
+                else:
+                    _return.append(f"--- [{_Ind}] {get_io_name(iotype=iotype, Ind=_Ind)} unused")  # senza parentesi per differenziare da RI
+        elif iotype == IO_AI:
+            for _Ind in range(0, len(data_config.IO_AI_List)):
+                data = run_io_search(iotype=IO_AI, Ind=_Ind, verbose=False)
+                if data:
+                    _return.append(f"--- [{_Ind}] {get_io_name(iotype=iotype, Ind=_Ind)}")  # senza parentesi per differenziare da RI
+                    _return.extend(data)
+                else:
+                    _return.append(f"--- [{_Ind}] {get_io_name(iotype=iotype, Ind=_Ind)} unused")  # senza parentesi per differenziare da RI
+        elif iotype == IO_AO:
+            for _Ind in range(0, len(data_config.IO_AO_List)):
+                data = run_io_search(iotype=IO_AO, Ind=_Ind, verbose=False)
+                if data:
+                    _return.append(f"--- [{_Ind}] {get_io_name(iotype=iotype, Ind=_Ind)}")  # senza parentesi per differenziare da RI
+                    _return.extend(data)
+                else:
+                    _return.append(f"--- [{_Ind}] {get_io_name(iotype=iotype, Ind=_Ind)} unused")  # senza parentesi per differenziare da RI
+        elif iotype == IO_RI:
+            for _Ind in range(0, len(data_config.IO_RI_List)):
+                data = run_io_search(iotype=IO_RI, Ind=_Ind, verbose=verbose)
+                if data:
+                    _return.append(f"--- [{_Ind}] {get_io_name(iotype=iotype, Ind=_Ind)}")  # senza parentesi per differenziare da RI
+                    _return.extend(data)
+                else:
+                    _return.append(f"--- [{_Ind}] {get_io_name(iotype=iotype, Ind=_Ind)} unused")  # senza parentesi per differenziare da RI
+        for item in _return:
+            logging.info(item)
+    elif iotype == IO_DI:
         _return.extend(run_io_scan(iotype=IO_DI, ind_target=Ind, verbose=verbose))
         _return.extend(run_params_scan(iotype=IO_DI, ind_target=Ind, verbose=verbose))
         _return.extend(run_motor_scan(iotype=IO_DI, ind_target=Ind, verbose=verbose))
@@ -2826,7 +2884,7 @@ def custom_function():
                 for i in _.keys():
                     if i in _to_control_idx:
                         newValue[i] = _[i]
-                logging.warning(f"Y\ttype: {str(newValue.replace(' ', ''))}")
+                logging.warning(f"Y\ttype: {str(newValue).replace(' ', '')}")
         logging.info("🔍 Fine controllo olio...")
 
     def check_release() -> None:
@@ -2966,7 +3024,8 @@ def custom_function():
         safetyStop = [110, 111, 115, 116, 118, 120, 121, 124, 128, 129, 130, 131, 132, 133, 134, 135, 136, 149, 150,
                       151, 152, 153, 154, 155, 156, 157, 158, 159, 184, 186, 187]
         if get_pgsx_version()[1] >= 25:
-            safetyStop = [126, 127, 131,133,134,136,137,140,141,142,144,145,146,147,148,149,150,151,152,165,166,167,168,169,170,171,172,172,174,175]
+            safetyStop = [126, 127, 131, 133, 134, 136, 137, 140, 141, 142, 144, 145, 146, 147, 148, 149, 150, 151,
+                          152, 165, 166, 167, 168, 169, 170, 171, 172, 174, 175]
         for i in normalstop:
             alarm = data_config.Alarm_Param[i]
             alarmName = data_config.Alarm_Name[i] or f"ALARM_{i}"
@@ -3246,7 +3305,7 @@ def custom_function():
         for idx, Input in enumerate(data_config.Input_Param):
             seq = Input.intval[INPUT_INT_SEQID]
             if seq != -1:
-                logging.info(f"L'input {idx} ha la sequenza impostata su {seq}" + f"{Type_SeqLabel.get(seq, '')}")
+                logging.warning(f"⚠️ L'input {idx} ha la sequenza impostata su {seq}" + f"{Type_SeqLabel.get(seq, '')}")
         logging.info("🔍 Fine controllo sequenze...")
 
     def deadband_feedback_check() -> None:
@@ -3257,7 +3316,7 @@ def custom_function():
             if axis.intval[ASSE_INT_FEEDBACK] != -1:
                 feedback = data_config.Feedback_Param[axis.intval[ASSE_INT_FEEDBACK]]
                 if feedback.realval[FB_REAL_DEADBAND] == 0:
-                    logging.warning(f"⚠️ [{axisInd}]{axis_name} sta usando il feedback {axis.intval[ASSE_INT_FEEDBACK]} con deadband: {feedback.realval[FB_REAL_DEADBAND]} uguale a 0")
+                    logging.warning(f"⚠️ [{axisInd}]{axis_name} sta usando il feedback {axis.intval[ASSE_INT_FEEDBACK]} con deadband: uguale a 0.0")
         logging.info("🔍 Fine controllo deadband feedback...")
 
     def check_automatic_params() -> None:
@@ -3274,12 +3333,110 @@ def custom_function():
                     logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SHH]]['display']} ({axis.realval[ASSE_REAL_SHH]})troppo lontano da {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SMAX]]['display']} ({ axis.realval[ASSE_REAL_SMAX]}), considerare di aumentare {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SHH]]['display']} o aumentare {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SMAX]]['display']}")
         logging.info("🔍 Fine controllo parametri automatici...")
 
+    def check_params_um() -> None:
+        logging.info("🔍 Inizio controllo unità di misura parametri...")
+        _ = {
+            MISURA_LUNGH: [],
+            MISURA_GRAD: [],
+            MISURA_AREA: [],
+            -1: []  # per parametri che non dovrebbero avere unità di misura o non è possibile stabilirla a priori
+        }
+        _[-1].extend([REAL_TOPANG])  # parametro che potrebbe essere in gradi o in radianti a seconda della configurazione, va controllato a parte
+        _[MISURA_LUNGH].extend([REAL_WIDTH, REAL_B, REAL_K, REAL_H0, REAL_TRDIAM, REAL_LRDIAM, REAL_SRDIAM,
+                                REAL_STARTSENSX, REAL_STARTSENSZ, REAL_STARTSENSORDIST, REAL_EXTDIST, REAL_LREFFCYLAREA,
+                                REAL_D, REAL_E, REAL_F, REAL_G, REAL_S, REAL_TROUTERDIAM, REAL_LROUTERDIAM,
+                                REAL_SROUTERDIAM, REAL_DAES, REAL_B2ANG])  # Pagina Geo
+        _[MISURA_GRAD].extend([
+            REAL_LATSUPR0, REAL_LATSUPR1, REAL_LATSUPR2, REAL_LATSUPR3, REAL_LATSUPR4,
+            REAL_LATSUPQ0, REAL_LATSUPQ1, REAL_LATSUPQ2, REAL_LATSUPQ3, REAL_LATSUPQ4
+        ])  # Pagina supporto laterale
+        _[MISURA_LUNGH].extend([
+            REAL_ALIGN_CENTDIST1, REAL_ALIGN_CENTDIST2, REAL_ALIGN_CENTDIST3, REAL_ALIGN_DELTACENTPOS,
+        ])  # Pagina RT
+        _[MISURA_LUNGH].extend([REAL_LSX, REAL_LSY, REAL_LSL, REAL_LST, REAL_TSTX]) # parametri per supporto orizzontale
+        _[MISURA_AREA].extend([REAL_LREFFCYLAREA])
+
+        for _misura, _groups in _.items():
+            for paramId in _groups:
+                if data_config.ParamRealType[paramId] != _misura:
+                    txt = (f"⚠️ {Config_Map['_ParamRealType'][paramId]} "
+                           f"ha unità di misura {Unita_Misura[data_config.ParamRealType[paramId]]} "
+                           f"invece di {Unita_Misura[_misura]}")
+                    logging.warning(txt)
+
+        logging.info("🔍 Fine controllo unità di misura parametri...")
+
+    def motor_checks() -> None:
+        logging.info("🔍 Inizio controllo motori...")
+        # TODO: notificare se le termiche sono state inserite nei motori (no resistanza)
+        # TODO: verificare che se motore in seq ce ne siano altri in seq (se sono disattivati fa cose strane tipop va giu e su)
+
+        for i in range(0, MAX_MOTORE):
+            motorEnabled = data_config.Motor_Config[i]
+            if motorEnabled:
+                # controllo termiche
+                if data_config.Motor_TRInd[i] == -1:
+                    logging.warning(f"⚠️ Motore [{i}]: termica non presente")
+
+        # verifica sequenza motori
+        seqEnabled = any(data_config.Motor[i].seq and data_config.Motor_Config[i] for i in range(MAX_MOTORE))
+
+        if seqEnabled:
+            for i in range(MAX_MOTORE):
+                if data_config.Motor[i].seq and not data_config.Motor_Config[i]:
+                    logging.warning(f"⚠️ Motore [{i}] è in sequenza ma non è abilitato")
+
+            # controllo che non ci sia un seq abilitato senza primario abilitato
+            if not data_config.Motor[0].seq:
+                logging.warning("⚠️ Sequenza motori abilitata ma motore primario [0] non abilitato")
+
+            # todo: gathering del motore principale in automatico
+            # controllo che timeoutbtn sia > 0 se è in sequenza e che copri tutta la sequenza
+            if data_config.Motor[0].seq:
+                maxTimer = 0
+                for i in range(MAX_MOTORE):
+                    if data_config.Motor[i].seq:
+                        maxTimer += data_config.Motor[i].timeout
+                diff = maxTimer - data_config.Motor[0].timeoutbtn
+                if data_config.Motor[0].timeoutbtn < maxTimer:
+                    logging.warning(f"⚠️ Motore [0] ha timeoutbtn troppo basso per la sequenza configurata, considerare di aumentarlo a almeno {diff * 100} ms")
+
+        for i in range(MAX_MOTORE):
+            if data_config.Motor_Config[i] and data_config.Motor[i].timeout != 0 and not data_config.Motor[i].seq:
+                logging.warning(f"⚠️ Motore [{i}] ha un ritardo allo spegnimento di {data_config.Motor[i].timeout} s")
+
+        logging.info("🔍 Fine controllo motori...")
+
+    def check_ri_bug() -> None:
+        # TODO: cerifica bug RI vedere se tutti i campi o la maggiorpare di Enabled è diverso da -1
+        logging.info("🔍 Inizio controllo bug RI...")
+        for i in range(0, MAX_RI):
+            if data_config.IO_RI_List[i].intval[IO_INT_NBYTES] == 0 and data_config.IO_RI_List[i].intval[IO_INT_TIMEOUT] == 0 and data_config.IO_RI_List[i].intval[IO_INT_ININD] == 0:
+                logging.warning(f"⚠️ RI [{i}] potenzialmente non configurato, ha indirizzo di input 0, timeout 0 e nbytes 0, verificare che non sia un RI inutilizzato o configurato erroneamente")
+        logging.info("🔍 Fine controllo bug RI...")
+
+    def check_io_calc() -> None:
+        for idx, IO in enumerate(data_config.IO_DI_List):
+            if IO.intval[IO_INT_ADDRTYPE] != IO_TYPE_CALC:
+                exprGroup = get_expr_from_di(idx)
+                if exprGroup:
+                    for index, data in enumerate(exprGroup):
+                        if data[1] == -1:
+                            continue
+                        else:
+                            logging.warning(f"⚠️ DI {idx} ha espressioni calcolate ma non è un tipo CALC")
+
+    def check_axis_min_max() -> None:
+        for i in range(0, MAX_ASSE):
+            ...
+
     foo = [check_axis_flag, check_duplicate_do_ao_usage, check_duplicate_obj_usage, clean_di_axis_check, duplicate_io_address,
            check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release, check_safety, check_rotation,
            geometry_check, check_axis_speed_master_slave, check_forbidden_ao_do_usage, check_de_tilt, check_stop_alarms, check_axis_speed,
            check_archimeter_params, check_bypass_unused, check_remote_control, check_feedback_ratios, check_axis_sp, check_tilt_max_lateral,
-           check_interlock_alarm_sys_addr, seq_check, check_automatic_params, deadband_feedback_check
-           ,check_all_sys_alarms]
+           check_interlock_alarm_sys_addr, seq_check, check_automatic_params, deadband_feedback_check,
+           check_all_sys_alarms, check_params_um, motor_checks, check_ri_bug, check_io_calc]
+
     for func in foo:
         logging.info('-' * 60)
         func()

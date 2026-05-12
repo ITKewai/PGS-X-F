@@ -4,47 +4,28 @@ DA VERIFICARE:
 
 
 POSSIBILI
-# TODO: notificare se le termiche sono state inserite nei motori (no resistanza)
-
-# TODO: cerifica bug RI vedere se tutti i campi o la maggiorpare di Enabled è diverso da -1
-
-# TODO: warning se expr calc e tipo non calc
-# TODO: verificare che input non ha seq imposto
 # TODO: rendere questo programma un server web anche cosi si integra nell'hmi ,fare vedere allarmi a lato cliccabili per errori console
 
 A TEMPO PERSO:
 # TODO: in base a indirizzo ip scheda rete imposta ip plc e scarica config
 # TODO: verifiche (verificare che per i reset pressostati si scende solo con il joystick, se ci sono digitali nel fb_err)
-# TODO: creazione file json con flag per attivare o disattivare parti dei controlli
-
 # TODO: controllo pompe, master con slave e left con right
 # TODO: feedback dei rulli ratio deve essere 1
-# TODO: sistemar ricerca duplicati perchp non va
-# TODO: ricerca free mi trova qualcosa in ANA1 - output: [1,2,-1,57,56,-1,-1,-1,-1,-1,-1,-1,-1,-1,300,900,300,900,0,0,0,0,0,100,0,100,0,0,20,20,40,40,60,60,80,80,100,100,0,0,20,20,40,40,60,60,80,80,100,100]
 # TODO: verificare DEFAULT SPEED e mMAXVELPERC nin control negli assi se è diverso da 100 e 100
-
-ASTER MULT impostato a 1.7 diverso da 5.0
-⚠️ [4]AXIS_4 ha il parametro MASTER DELTAMIN impostato a 2.0 inveriore a 2.0
-⚠️ [5]VS ha il parametro MAX SPEED (BW) impostato a 108.33299 maggiore di
 # TODO: se sshock abscorver è attivo devo avere anche disable nei param con di che è SW
 # TODO: check se file capacita su pulpito ha commessa giusta, se indice azzeramento corrisponde al digitale di azzeramento
-# TODO: chech valori nell asse oil
-#TODO: debug mode on senza passare da config.json
-se presendi indirizzi radiocomando come principale inpunt, dare wwarnign se NEW_CONSOLE è disabilitato
-# TODO: controllo che feedback val max e min siano coerenti 40TODO: aggiungere last ip in config.json
-# todo: aggiungere fix cosi si collega sempre al last ip
+# TODO: controllo che feedback val max e min siano coerenti 40T
 # TODO: controllare che se presente feedback encoder su espulsore deve rimanere tipo XXX cosi non perde quota una volta spenta e acceso
 # TODO: verificare che la numerazione allarmi sia corretta (COD)
 
-# TODO AGGIUNGERE PARAMEYTRI JONNY
 # TODO: CONOTROLLARE CHE FINECORSA MAX LEFT E RIGHT SIANO COERENTI
 # TODO: se assi SP attivi controllare che siano in function
 # TODO: spezzare in piu funzioni ad esempio get axis ecc
 # TODO: output valmax1 valmax2 a 100.00 sugli output e gli altri 20 40 60 80
-# TODO: controllare versione plc via http
+# TODO: controllare versione plc via http (/Portal/Portal.mwsl?PriNav=Online&SecNav=Ident)
 # TODO: da fare controllo su control di ogni asse bwslow2
-# TODO: verificare che se motore in seq ce ne siano altri in seq (se sono disattivati fa cose strane tipop va giu e su)
 # TODO: vedere che è configurata la luce waitnig for start
 # TODO: controllo stessi imput per più input assi (esempio 2 assi con stesso input)
 # todo: paraletri supporto a croce di tipo lung
+# TODO: se asse 42 attivo allora reset tipo const
 """

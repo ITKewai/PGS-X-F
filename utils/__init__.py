@@ -17,7 +17,6 @@ A TEMPO PERSO:
 # TODO: controllo che feedback val max e min siano coerenti 40T
 # TODO: controllare che se presente feedback encoder su espulsore deve rimanere tipo XXX cosi non perde quota una volta spenta e acceso
 # TODO: verificare che la numerazione allarmi sia corretta (COD)
-
 # TODO: CONOTROLLARE CHE FINECORSA MAX LEFT E RIGHT SIANO COERENTI
 # TODO: se assi SP attivi controllare che siano in function
 # TODO: spezzare in piu funzioni ad esempio get axis ecc

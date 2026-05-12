@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import datetime
 import logging
+import random
 from pathlib import Path
 import requests
 import warnings as _warnings
@@ -244,16 +245,13 @@ def choose_and_prepare_config(sn: str = None, firstRun: bool = False) -> Path:
                 if not cfg_path.exists():
                     logging.info(f"❌ File locale non trovato: {cfg_path}")
                     continue
+                pin = ''.join(str(random.randint(0, 9)) for _ in range(4))
 
-                # ----------------------------
-                # Ricavo base URL
-                # es:
-                # https://192.168.1.250/UserFiles?Name=config.yaml&Action=DOWNLOAD
-                # ->
-                # https://192.168.1.250
-                # ----------------------------
+                if input(f'Sicuro? [{pin}]') != pin:
+                    continue
+
                 base_url = lastUrl.split("/UserFiles")[0]
-
+                referer_url = base_url + "/Portal/Portal.mwsl?PriNav=UserFiles"
                 delete_url = (
                     f"{base_url}/UserFiles?Action=DELETE&Name=config.yaml"
                 )
@@ -266,49 +264,78 @@ def choose_and_prepare_config(sn: str = None, firstRun: bool = False) -> Path:
 
                 session = requests.Session()
 
-                headers = {
-                    "User-Agent": "Mozilla/5.0",
-                    "Referer": base_url,
-                    "Origin": base_url,
-                }
+                def get_plc_error(_session):
+                    plc_upload_codes = {
+                        "1": "Errore nel download del file",
+                        "2": "Operazione su file non consentita",
+                        "3": "Operazione file non consentita - nessun referente",
+                        "4": "Eliminazione fallita - memoria protetta da scrittura",
+                        "5": "Errore durante eliminazione file",
+                        "6": "Errore upload file (generico)",
+                        "7": "File già esistente",
+                        "8": "Memoria protetta da scrittura",
+                        "9": "Memoria piena",
+                        "10": "Caratteri non validi nel nome file",
+                        "11": "File troppo grande",
+                        "12": "Errore upload generico"
+                    }
+                    err = _session.cookies.get("siemens_automation_user_files_error")
+                    if not err or err == 0:
+                        return None
+                    return plc_upload_codes.get(err, f"Unknown error code: {err}"), err
 
                 # -------------------------------------------------
                 # STEP 1 - DELETE vecchio file
                 # -------------------------------------------------
                 logging.info("🗑️ Eliminazione vecchio config.yaml...")
+                r = session.get(referer_url, verify=False, timeout=60)
+                if r.status_code != 200:
+                    logging.info(f"❌ Errore FORCE-UPLOAD: Impossible raggiungere il plc {r.status_code}")
+                    continue
 
-                r = session.get(
-                    delete_url,
-                    headers=headers,
-                    verify=False,
-                    timeout=60
-                )
+                headers = {
+                    "Referer": referer_url,
+                    "Origin": base_url
+                }
 
-                r.raise_for_status()
+                r = session.post(delete_url, headers=headers, verify=False, timeout=60)
 
-                logging.info("✅ Vecchio config eliminato")
+                if r.status_code != 200:
+                    logging.info(f"❌ Errore FORCE-UPLOAD: Impossibile cancellare il config {r.status_code}")
+                    continue
+
+                msg, code = get_plc_error(session)
+                if msg and code != "0":
+                    logging.warning(f"❌ PLC ERROR: {msg}")
+                else:
+                    logging.info("✅ Vecchio config eliminato")
 
                 # -------------------------------------------------
                 # STEP 2 - UPLOAD nuovo file
                 # -------------------------------------------------
                 logging.info("⬆️ Upload nuovo config.yaml...")
 
-                with open(cfg_path, "rb") as f:
-                    files = {
-                        "file": ("config.yaml", f, "application/octet-stream")
-                    }
+                files = {
+                    'File': ('config.yaml', open(cfg_path, 'rb'),
+                             'application/octet-stream')
+                }
 
-                    r = session.post(
-                        upload_url,
-                        headers=headers,
-                        files=files,
-                        verify=False,
-                        timeout=60
-                    )
+                r = session.post(
+                    upload_url,
+                    headers=headers,
+                    files=files,
+                    verify=False,
+                    timeout=60
+                )
 
                 r.raise_for_status()
 
-                logging.info("✅ Upload completato")
+                msg, code = get_plc_error(session)
+
+                if msg and code != "0":
+                    logging.warning(f"❌ PLC ERROR: {msg}")
+                else:
+                    logging.info("✅ Upload completato")
 
                 return cfg_path
 

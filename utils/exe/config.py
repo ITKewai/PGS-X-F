@@ -7,6 +7,7 @@ DEFAULT_CONFIG: Dict[str, bool] = {
     "webServer": False,  # <-- FLAG WEBSERVER
     "autoPlcIp": False,
     "logToFile": False,
+    "downloadOnStart": True,
     "lastUrl": ""
 }
 

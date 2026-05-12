@@ -20,7 +20,6 @@ from utils.paths import get_config_path
 _warnings.simplefilter("ignore", InsecureRequestWarning)
 
 
-
 def _build_download_url(addr: str) -> str:
     """
     Costruisce l'URL finale per scaricare il config.
@@ -68,32 +67,117 @@ def download_file(url: str, dest_path: Path) -> None:
     logging.info(f"✅ File salvato in: {dest_path}")
 
 
+def _get_next_config_backup_path(cfg_path: Path) -> Path:
+    """
+    Ritorna il prossimo path di backup disponibile:
+
+        config_old_1.yaml
+        config_old_2.yaml
+        config_old_3.yaml
+        ...
+
+    Il numero viene calcolato leggendo i backup già presenti nella stessa
+    cartella di config.yaml.
+    """
+    backup_dir = cfg_path.parent
+    prefix = "config_old_"
+    max_num = 0
+
+    for path in backup_dir.glob(f"{prefix}*.yaml"):
+        suffix = path.stem[len(prefix):]
+
+        if suffix.isdigit():
+            max_num = max(max_num, int(suffix))
+
+    next_num = max_num + 1
+    backup_path = backup_dir / f"{prefix}{next_num}.yaml"
+
+    # Sicurezza extra: evita sovrascritture se per qualche motivo il file esiste già
+    while backup_path.exists():
+        next_num += 1
+        backup_path = backup_dir / f"{prefix}{next_num}.yaml"
+
+    return backup_path
+
+
 def _download_to_config(url: str) -> Path:
     """
-    Scarica su <cwd>/config.yaml, facendo prima un backup in config_old.yaml.
-    Se config_old.yaml esiste già, viene sovrascritto con l'attuale config.yaml.
+    Scarica il file come config_temp.yaml.
+
+    Se config.yaml esiste già, viene confrontato con config_temp.yaml.
+    Il backup viene creato solo se i due file sono diversi.
+
+    Backup:
+        config_old_1.yaml
+        config_old_2.yaml
+        config_old_3.yaml
+        ...
+
+    Se il file scaricato è identico al config attuale, config.yaml non viene
+    modificato e config_temp.yaml viene eliminato.
     """
     cfg_path = get_config_path("config.yaml", prefer_cwd=True)
-    backup_path = cfg_path.with_name("config_old.yaml")
+    temp_path = cfg_path.with_name("config_temp.yaml")
 
-    # --- Backup automatico ---
-    if cfg_path.exists():
+    # --- Download nuovo file su config_temp.yaml ---
+    download_file(url, temp_path)
+
+    config_exists = cfg_path.exists()
+    config_changed = True
+
+    # --- Confronto con il config attuale ---
+    if config_exists:
         try:
-            # se esiste config_old.yaml, sovrascrivi
+            config_changed = cfg_path.read_bytes() != temp_path.read_bytes()
+        except Exception as e:
+            logging.info(f"⚠️ Errore durante il confronto dei file: {e}")
+            raise
+
+    # --- Se non ci sono differenze, non fare backup e non sostituire ---
+    if config_exists and not config_changed:
+        logging.info(
+            "✅ Il config scaricato è identico a quello attuale. "
+            "Nessun backup necessario."
+        )
+
+        try:
+            temp_path.unlink()
+        except Exception as e:
+            logging.info(f"⚠️ Impossibile eliminare config_temp.yaml: {e}")
+
+        lastUrl = get_param("lastUrl")
+        if lastUrl != url:
+            update_param("lastUrl", url)
+
+        return cfg_path
+
+    # --- Backup del config attuale solo se diverso ---
+    if config_exists and config_changed:
+        backup_path = _get_next_config_backup_path(cfg_path)
+
+        try:
             backup_path.write_bytes(cfg_path.read_bytes())
-            logging.info(f"📦 Backup aggiornato: {backup_path}")
+            logging.info(f"📦 Backup effettuato: {backup_path}")
         except Exception as e:
             logging.info(f"⚠️ Errore durante il backup: {e}")
+            raise
 
-    # --- Download nuovo file ---
-    download_file(url, cfg_path)
-    lastUrl = get_param('lastUrl')
+    # --- Sostituzione config.yaml con config_temp.yaml ---
+    try:
+        temp_path.replace(cfg_path)
+        logging.info(f"✅ Config aggiornato: {cfg_path}")
+    except Exception as e:
+        logging.info(f"⚠️ Errore durante la sostituzione del config: {e}")
+        raise
+
+    lastUrl = get_param("lastUrl")
     if lastUrl != url:
-        update_param('lastUrl', url)
+        update_param("lastUrl", url)
+
     return cfg_path
 
 
-def choose_and_prepare_config(sn: str = None) -> Path:
+def choose_and_prepare_config(sn: str = None, firstRun: bool = False) -> Path:
     """
     Chiede all'utente se usare il config locale o scaricarlo.
     Ritorna il percorso finale del file pronto.
@@ -109,7 +193,14 @@ def choose_and_prepare_config(sn: str = None) -> Path:
             logging.info("  [3] Aggiorna file da rete (ultimo URL)")
         if sn:
             logging.info("  [4] Save")
-        choice = input("Scelta: ").strip()
+        if lastUrl:
+            logging.info("  [5] FORCE-UPLOAD [RISK]")
+        if firstRun and lastUrl and get_param("downloadOnStart"):
+            logging.info("\n⚠️ Download automatico al primo avvio da config.json")
+            choice = "3"
+            firstRun = False
+        else:
+            choice = input("Scelta: ").strip()
 
         if choice == "2":
             base = input("Inserisci indirizzo/IP (es: 10.3.73.177): ").strip()
@@ -139,6 +230,91 @@ def choose_and_prepare_config(sn: str = None) -> Path:
             ver = input("Versione progetto: ")
             save_version(sn=sn, ver=ver, date=str(datetime.datetime.now().strftime("%Y%m%d")))
             return cfg_path
+        elif choice == "5" and lastUrl:
+            """
+            TODO:
+            prima cancello il file con (devo mandare anche gli header della pagina da cui arrivos e no non va)
+            https://192.168.1.250/UserFiles?Action=DELETE&Name=config.yaml
+            poi carico il nuovo file config.yaml con (devo mandare anche gli header della pagina da cui arrivos e no non va)
+            https://192.168.1.250/UserFiles?Action=UPLOAD
+            """
+            try:
+                cfg_path = get_config_path("config.yaml", prefer_cwd=True)
+
+                if not cfg_path.exists():
+                    logging.info(f"❌ File locale non trovato: {cfg_path}")
+                    continue
+
+                # ----------------------------
+                # Ricavo base URL
+                # es:
+                # https://192.168.1.250/UserFiles?Name=config.yaml&Action=DOWNLOAD
+                # ->
+                # https://192.168.1.250
+                # ----------------------------
+                base_url = lastUrl.split("/UserFiles")[0]
+
+                delete_url = (
+                    f"{base_url}/UserFiles?Action=DELETE&Name=config.yaml"
+                )
+
+                upload_url = (
+                    f"{base_url}/UserFiles?Action=UPLOAD"
+                )
+
+                logging.info("🌐 Apertura sessione...")
+
+                session = requests.Session()
+
+                headers = {
+                    "User-Agent": "Mozilla/5.0",
+                    "Referer": base_url,
+                    "Origin": base_url,
+                }
+
+                # -------------------------------------------------
+                # STEP 1 - DELETE vecchio file
+                # -------------------------------------------------
+                logging.info("🗑️ Eliminazione vecchio config.yaml...")
+
+                r = session.get(
+                    delete_url,
+                    headers=headers,
+                    verify=False,
+                    timeout=60
+                )
+
+                r.raise_for_status()
+
+                logging.info("✅ Vecchio config eliminato")
+
+                # -------------------------------------------------
+                # STEP 2 - UPLOAD nuovo file
+                # -------------------------------------------------
+                logging.info("⬆️ Upload nuovo config.yaml...")
+
+                with open(cfg_path, "rb") as f:
+                    files = {
+                        "file": ("config.yaml", f, "application/octet-stream")
+                    }
+
+                    r = session.post(
+                        upload_url,
+                        headers=headers,
+                        files=files,
+                        verify=False,
+                        timeout=60
+                    )
+
+                r.raise_for_status()
+
+                logging.info("✅ Upload completato")
+
+                return cfg_path
+
+            except Exception as e:
+                logging.info(f"❌ Errore FORCE-UPLOAD: {e}")
+                continue
         else:
             logging.info("Opzione non valida\n")
 

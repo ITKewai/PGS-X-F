@@ -14,7 +14,6 @@ from utils.db.data_config import *
 
 sn = ''
 
-
 def _pause_if_frozen():
     """Se eseguibile PyInstaller, pausa prima di chiudere."""
     if getattr(sys, "frozen", False):
@@ -43,7 +42,7 @@ def main():
 
     logging.info(get_version_info())
 
-    cfg_path = choose_and_prepare_config(sn)
+    cfg_path = choose_and_prepare_config(sn, True)
 
     try:
         populate_from_yaml_file(cfg_path)
@@ -58,8 +57,8 @@ def main():
     # 2) Loop interattivo: ripeti la domanda dopo ogni ricerca
     while True:
         logging.info("\n" + "-" * 60)
-        tipo_opt = (1, 2, 3, 4, 5, 6, 7)
-        tipo_raw = input("Che tipo stai cercando? (1=DI, 2=AI, 3=DO, 4=AO, 5=SYSTEM, 6=CHECK, 7=FREE, Invio per uscire): ").strip().lower()
+        tipo_opt = (1, 2, 3, 4, 5, 6, 7, 8)  # 1=DI, 2=AI, 3=DO, 4=AO, 5=SYSTEM, 6=CHECK, 7=FREE, 8=RI
+        tipo_raw = input("Che tipo stai cercando? (1=DI, 2=AI, 3=DO, 4=AO, 5=SYSTEM, 6=CHECK, 7=FREE, 8=RI, Invio per uscire): ").strip().lower()
         # Invio -> torna al menu precedente (scelta config) e ricarica il YAML
         if tipo_raw == "":
             logging.info("-" * 60)
@@ -223,8 +222,8 @@ def main():
             continue
         # ==================== /FREE ======================
 
-        # Per DI/AI/DO/AO (1..4) chiedo il numero da cercare
-        if tipo in (1, 2, 3, 4):
+        # Per DI/AI/DO/AO/RI (1..4, 8) chiedo il numero da cercare
+        if tipo in (1, 2, 3, 4, 8):
             while True:
                 target_str = input("Inserisci il numero da cercare (Invio per tornare al menu): ").strip()
                 if target_str == "":
@@ -245,6 +244,8 @@ def main():
                     run_io_search(iotype=IO_DO, Ind=target_number, verbose=True)
                 elif tipo == 4:
                     run_io_search(iotype=IO_AO, Ind=target_number, verbose=True)
+                elif tipo == 8:
+                    run_io_search(iotype=IO_RI, Ind=target_number, verbose=True)
             continue
 
 

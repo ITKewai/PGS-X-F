@@ -27,4 +27,5 @@ A TEMPO PERSO:
 # TODO: controllo stessi imput per più input assi (esempio 2 assi con stesso input)
 # todo: paraletri supporto a croce di tipo lung
 # TODO: se asse 42 attivo allora reset tipo const
+# TODO: printare tutti i DI delayed con nome e quanto tempo sono impostati per sapere se i PS laterali hanno un ritardo attivo o no
 """

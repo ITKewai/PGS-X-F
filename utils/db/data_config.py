@@ -2390,6 +2390,8 @@ def custom_function():
                 continue
 
             axis_name = get_axis_name(Ind=axisInd)
+            MinLS = data_config.Axis_Param[axisInd].realval[ASSE_REAL_SMIN]
+            MaxLS = data_config.Axis_Param[axisInd].realval[ASSE_REAL_SMAX]
             local_buf: list[str] = []
 
             for int_idx, bool_idx, real_idx in axis_pairs:
@@ -2448,9 +2450,9 @@ def custom_function():
                         local_buf.append(f"        ↳ {ref}")
 
             if local_buf:
-                logging.warning(f"\n[ASSE {axisInd:02d}] {axis_name}")
+                logging.warning(f"\n[ASSE {axisInd:02d}] {axis_name}\t({MinLS} , {MaxLS})")
                 logging.warning("\n".join(local_buf))
-                out_lines.append(f"[ASSE {axisInd:02d}] {axis_name}")
+                out_lines.append(f"[ASSE {axisInd:02d}] {axis_name}\t({MinLS} , {MaxLS})")
                 out_lines.extend(local_buf)
 
         logging.info("🔍 Fine controllo flag assi.")

@@ -99,3 +99,13 @@ Write-Host ">>> Ripristino test.spec originale da test.spec.bak"
 Copy-Item "test.spec.bak" "test.spec" -Force
 
 Write-Host ">>> Tutte le build completate. Controlla la cartella 'dist'."
+
+# Apre la cartella dist a fine build
+$distPath = Join-Path $root "dist"
+
+if (Test-Path $distPath) {
+    Write-Host ">>> Apro la cartella dist..."
+    Invoke-Item $distPath
+} else {
+    Write-Warning "Cartella 'dist' non trovata: $distPath"
+}

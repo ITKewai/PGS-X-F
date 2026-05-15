@@ -8,7 +8,11 @@ POSSIBILI
 
 A TEMPO PERSO:
 # TODO: in base a indirizzo ip scheda rete imposta ip plc e scarica config
+
+DIFFICILE:
 # TODO: verifiche (verificare che per i reset pressostati si scende solo con il joystick, se ci sono digitali nel fb_err)
+
+
 # TODO: controllo pompe, master con slave e left con right
 # TODO: feedback dei rulli ratio deve essere 1
 # TODO: verificare DEFAULT SPEED e mMAXVELPERC nin control negli assi se è diverso da 100 e 100

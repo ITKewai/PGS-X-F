@@ -3432,6 +3432,33 @@ def custom_function():
         for i in range(0, MAX_ASSE):
             ...
 
+    def check_axis_bypass() -> None:
+        logging.info("🔍 Inizio controllo bypass...")
+        txt = {}
+        for i in range(0, MAX_BYPASS):
+            bypassName = get_io_name(iotype=IO_DO, Ind=data_config.ParamInt[globals()[f"BOOL_IND_BP{i}"]]) or f"BYPASS_{i}"
+
+
+        for i in range(0, MAX_ASSE):
+            axis = data_config.Axis_Param[i]
+            axisName = data_config.Axis_Name[i] or f"AXIS_{i}"
+            if axis.boolval[ASSE_BOOL_BP1] and data_config.OutInd[BOOL_IND_BP1] == -1:
+                logging.warning(f"⚠️ [{i}]{axisName} ha il bypass BP1 attivo ma non è stato mappato")
+            if axis.boolval[ASSE_BOOL_BP2] and data_config.OutInd[BOOL_IND_BP2] == -1:
+                logging.warning(f"⚠️ [{i}]{axisName} ha il bypass BP2 attivo ma non è stato mappato")
+            if axis.boolval[ASSE_BOOL_BP3] and data_config.OutInd[BOOL_IND_BP3] == -1:
+                logging.warning(f"⚠️ [{i}]{axisName} ha il bypass BP3 attivo ma non è stato mappato")
+            if axis.boolval[ASSE_BOOL_BP4] and data_config.OutInd[BOOL_IND_BP4] == -1:
+                logging.warning(f"⚠️ [{i}]{axisName} ha il bypass BP4 attivo ma non è stato mappato")
+            if axis.boolval[ASSE_BOOL_BP5] and data_config.OutInd[BOOL_IND_BP5] == -1:
+                logging.warning(f"⚠️ [{i}]{axisName} ha il bypass BP5 attivo ma non è stato mappato")
+            if axis.boolval[ASSE_BOOL_BP6] and data_config.OutInd[BOOL_IND_BP6] == -1:
+                logging.warning(f"⚠️ [{i}]{axisName} ha il bypass BP6 attivo ma non è stato mappato")
+            if axis.boolval[ASSE_BOOL_BP7] and data_config.OutInd[BOOL_IND_BP7] == -1:
+                logging.warning(f"⚠️ [{i}]{axisName} ha il bypass BP7 attivo ma non è stato mappato")
+            if axis.boolval[ASSE_BOOL_BP8] and data_config.OutInd[BOOL_IND_BP8] == -1:
+                logging.warning(f"⚠️ [{i}]{axisName} ha il bypass BP8 attivo ma non è stato mappato")
+
     foo = [check_axis_flag, check_duplicate_do_ao_usage, check_duplicate_obj_usage, clean_di_axis_check, duplicate_io_address,
            check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release, check_safety, check_rotation,
            geometry_check, check_axis_speed_master_slave, check_forbidden_ao_do_usage, check_de_tilt, check_stop_alarms, check_axis_speed,

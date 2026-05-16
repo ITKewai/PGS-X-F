@@ -1115,6 +1115,8 @@ def get_io_name(iotype: int, Ind: int) -> Optional[str]:
     except Exception:
         return None
 
+def get_io_fullname(iotype: int, Ind: int):
+    return f'[{Ind}] {get_io_name(iotype, Ind)}'
 
 def get_axis_name(Ind: int):
     return data_config.Axis_Name[Ind]
@@ -1207,12 +1209,9 @@ def run_params_scan(iotype: int, ind_target: int, verbose: bool = False) -> List
     if iotype == IO_DI:
         for pid, val in enumerate(data_config.InInd):
             if val == ind_target:
-                if pid < len(IN_IND_MAP):
-                    entry = IN_IND_MAP[pid]
-                    label = entry.get("label")
-                    display = entry.get("display", label)
-                    origin = entry.get("origin", "??")
-                    txt = f'{origin}\t→\t{display}'
+                if pid < len(Config_Map["InInd"]):
+                    entry = Config_Map["_InInd"][pid]
+                    txt = f'{Config_Map["InInd"][entry]["origin"]}\t→\t{Config_Map["InInd"][entry]["display"]}'
                     _return.append(txt)
                     if verbose:
                         logging.info(txt)
@@ -1236,12 +1235,9 @@ def run_params_scan(iotype: int, ind_target: int, verbose: bool = False) -> List
     elif iotype == IO_DO:
         for pid, val in enumerate(data_config.OutInd):
             if val == ind_target:
-                if pid < len(OUT_IND_MAP):
-                    entry = OUT_IND_MAP[pid]
-                    label = entry.get("label")
-                    display = entry.get("display", label)
-                    origin = entry.get("origin", "??")
-                    txt = f'{origin}\t→\t{display}'
+                if pid < len(Config_Map["OutInd"]):
+                    entry = Config_Map["_OutInd"][pid]
+                    txt = f'{Config_Map["OutInd"][entry]["origin"]}\t→\t{Config_Map["OutInd"][entry]["display"]}'
                     _return.append(txt)
                     if verbose:
                         logging.info(txt)
@@ -3327,6 +3323,11 @@ def custom_function():
         logging.info("🔍 Fine controllo deadband feedback...")
 
     def check_automatic_params() -> None:
+        """
+        Controlla che il parametro HH non sia troppo lontano dal MAX
+        todo: se resettype  = 3 quota reset H solo per laterale
+        Returns:
+        """
         logging.info("🔍 Inizio controllo parametri automatici...")
         to_check = [FUN_AXIS_PRE, FUN_AXIS_BEND]
         for funInd in to_check:
@@ -3510,7 +3511,7 @@ def custom_function():
             header = "+".join(bp_labels)
 
             if bp_names:
-                header += f" ({'+ '.join(bp_names)})"
+                header += f" ({' + '.join(bp_names)})"
 
             logging.warning(f"\n{header}:")
             for axis_name in groups[key]:
@@ -3520,17 +3521,152 @@ def custom_function():
 
     def check_axis_slaves() -> None:
         logging.info("🔍 Inizio controllo assi master/slave...")
-        # deve dire se le velocità ASSE_REAL_BWVMAX, ASSE_REAL_FWVMAX
-        # devo dire se usano pompe diverse
+
+        real_params_to_check = [
+            ASSE_REAL_FWVMAX,
+            ASSE_REAL_BWVMAX,
+        ]
+
+        bypass_params_to_check = [
+            ASSE_BOOL_BP1,
+            ASSE_BOOL_BP2,
+            ASSE_BOOL_BP3,
+            ASSE_BOOL_BP4,
+            ASSE_BOOL_BP5,
+            ASSE_BOOL_BP6,
+            ASSE_BOOL_BP7,
+            ASSE_BOOL_BP8,
+            ASSE_BOOL_BP9,
+            ASSE_BOOL_BP10,
+            ASSE_BOOL_BP11,
+            ASSE_BOOL_BP12,
+        ]
+
+        def get_axis_chain(axis_ind: int) -> tuple[list[int], bool]:
+            """
+            Ritorna la catena slave -> master -> master del master...
+            Esempio: 43 -> 42 -> 2
+
+            Il bool indica se la catena è valida.
+            """
+            chain = []
+            visited_axes = set()
+
+            current_axis_ind = axis_ind
+
+            while True:
+                if current_axis_ind in visited_axes:
+                    chain.append(current_axis_ind)
+                    return chain, False
+
+                if current_axis_ind < 0 or current_axis_ind >= MAX_ASSE:
+                    chain.append(current_axis_ind)
+                    return chain, False
+
+                visited_axes.add(current_axis_ind)
+                chain.append(current_axis_ind)
+
+                current_axis = data_config.Axis_Param[current_axis_ind]
+                master_axis_ind = current_axis.intval[ASSE_INT_MASTER]
+
+                if master_axis_ind == -1:
+                    return chain, True
+
+                current_axis_ind = master_axis_ind
+
+        for slave_axis_ind in range(0, MAX_ASSE):
+            slave_axis = data_config.Axis_Param[slave_axis_ind]
+
+            # Controlla solo assi configurati
+            if not slave_axis.boolval[ASSE_BOOL_CONFIG]:
+                continue
+
+            # Se non ha master, non è uno slave
+            if slave_axis.intval[ASSE_INT_MASTER] == -1:
+                continue
+
+            axis_chain, valid_chain = get_axis_chain(slave_axis_ind)
+            axis_chain_str = " -> ".join(str(axis_ind) for axis_ind in axis_chain)
+
+            if not valid_chain:
+                logging.warning(
+                    f"⚠️ {axis_chain_str}   (catena master/slave non valida)"
+                )
+                continue
+
+            master_axis_ind = axis_chain[-1]
+            master_axis = data_config.Axis_Param[master_axis_ind]
+
+            if not master_axis.boolval[ASSE_BOOL_CONFIG]:
+                logging.warning(
+                    f"⚠️ {axis_chain_str}   (master non configurato)"
+                )
+                continue
+
+            # Controllo velocità massime slave/root-master
+            for real_idx in real_params_to_check:
+                real_label = Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][real_idx]]['display']
+
+                slave_value = slave_axis.realval[real_idx]
+                master_value = master_axis.realval[real_idx]
+
+                if not math.isclose(slave_value, master_value, rel_tol=0.0, abs_tol=1e-9):
+                    logging.warning(
+                        f"⚠️ {axis_chain_str}   ({real_label}  {slave_value} != {master_value})"
+                    )
+
+            # Controllo bypass attivi slave/root-master
+            for bool_idx in bypass_params_to_check:
+                bool_label = Type_AxisParam_Map['boolval'][Type_AxisParam_Map['_boolval'][bool_idx]]['display']
+
+                slave_bypass_active = slave_axis.boolval[bool_idx]
+                master_bypass_active = master_axis.boolval[bool_idx]
+
+                if slave_bypass_active != master_bypass_active:
+                    logging.warning(
+                        f"⚠️ {axis_chain_str}   ({bool_label}  {slave_bypass_active} != {master_bypass_active})"
+                    )
 
         logging.info("🔍 Fine controllo assi master/slave...")
+
+    def check_default_axis_speed() -> None:
+        logging.info("🔍 Inizio controllo velocità di default...")
+        for i in range(0, MAX_ASSE):
+            defaultSpeed = data_config.Axis_Param[i].intval[ASSE_INT_DEFSPEED]
+            maxVelPerc = data_config.Axis_Param[i].intval[ASSE_INT_MAXVELPERC]
+            delayUp = data_config.Axis_Param[i].intval[ASSE_INT_DELAYUP]
+            delayDown = data_config.Axis_Param[i].intval[ASSE_INT_DELAYDOWN]
+            if defaultSpeed not in [100]:
+                logging.warning(f"⚠️ {get_axis_fullname(i)} ha il parametro {Type_AxisParam_Map['intval'][Type_AxisParam_Map['_intval'][ASSE_INT_DEFSPEED]]['display']} impostato a {defaultSpeed} invece di 100")
+            if maxVelPerc not in [100]:
+                logging.warning(f"⚠️ {get_axis_fullname(i)} ha il parametro {Type_AxisParam_Map['intval'][Type_AxisParam_Map['_intval'][ASSE_INT_MAXVELPERC]]['display']} impostato a {maxVelPerc} invece di 100")
+            if delayUp != 0:
+                logging.warning(f"⚠️ {get_axis_fullname(i)} ha il parametro {Type_AxisParam_Map['intval'][Type_AxisParam_Map['_intval'][ASSE_INT_DELAYUP]]['display']} impostato a {delayUp} invece di 100")
+            if delayDown != 0:
+                logging.warning(f"⚠️ {get_axis_fullname(i)} ha il parametro {Type_AxisParam_Map['intval'][Type_AxisParam_Map['_intval'][ASSE_INT_DELAYDOWN]]['display']} impostato a {delayDown} invece di 100")
+
+    def check_shock_absorber() -> None:
+        logging.info("🔍 Inizio controllo shock absorber (BP12)...")
+        used = any(data_config.Axis_Param[i].boolval[ASSE_BOOL_BP12] for i in range(0, MAX_ASSE))
+        if used:
+            disableOnRotation = data_config.InInd[BOOL_IND_DISABLEBP12]
+            if disableOnRotation == -1:
+                logging.warning(f"⚠️ Il bypass shock absorber (BP12) è usato da almeno un asse ma non è definito in: '{Config_Map['OutInd']['BOOL_IND_DISABLEBP12']['origin']}'")
+            else:
+                isSW = data_config.IO_DI_List[data_config.InInd[BOOL_IND_DISABLEBP12]].intval[IO_INT_ADDRTYPE] == IO_TYPE_SW
+                ioAddress = data_config.IO_DI_List[data_config.InInd[BOOL_IND_DISABLEBP12]].intval[IO_INT_ADDR1]
+                if not isSW and ioAddress != 12:
+                    logging.warning(f"⚠️ Il bypass shock absorber (BP12) è non viene disabilitato da SW con indirizzo 12, attualmente è usato {get_io_fullname(iotype=IO_DI, Ind=data_config.InInd[BOOL_IND_DISABLEBP12])}")
+        logging.info("🔍 Fine controllo shock absorber (BP12)...")
+
 
     foo = [check_axis_flag, check_duplicate_do_ao_usage, check_duplicate_obj_usage, clean_di_axis_check, duplicate_io_address,
            check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release, check_safety, check_rotation,
            geometry_check, check_axis_speed_master_slave, check_forbidden_ao_do_usage, check_de_tilt, check_stop_alarms, check_axis_speed,
            check_archimeter_params, check_bypass_unused, check_remote_control, check_feedback_ratios, check_axis_sp, check_tilt_max_lateral,
            check_interlock_alarm_sys_addr, seq_check, check_automatic_params, deadband_feedback_check,
-           check_all_sys_alarms, check_params_um, motor_checks, check_ri_bug, check_io_calc, check_axis_bypass, check_axis_slaves]
+           check_all_sys_alarms, check_params_um, motor_checks, check_ri_bug, check_io_calc, check_axis_bypass, check_axis_slaves, check_default_axis_speed,
+           check_shock_absorber]
 
     for func in foo:
         logging.info('-' * 60)
@@ -3541,16 +3677,3 @@ def custom_function():
 if __name__ == "__main__":
     populate_from_yaml_file("../../config.yaml")
     custom_function()
-    #run_io_search(IO_DI, 2506, verbose=True)
-    # while True:
-    #     logging.info(", ".join([f"{name.replace('IO_', '')}={globals()[name]}" for name in ["IO_DI", "IO_AI", "IO_DO", "IO_AO", "IO_RI"]]))
-    #     _type = input()
-    #     _target = input('Target:')
-    #
-    #     try:
-    #         _type = int(_type)
-    #         _target = int(_target)
-    #     except:
-    #         continue
-    #
-    #     run_io_search(_type, _target, verbose=True)

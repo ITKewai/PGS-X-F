@@ -1120,6 +1120,11 @@ def get_axis_name(Ind: int):
     return data_config.Axis_Name[Ind]
 
 
+def get_axis_fullname(Ind: int):
+    name = get_axis_name(Ind)
+    return f'[{Ind}] {name}'
+
+
 def _debug_intval(iotype: int = None):
     AxisParamIntVals = data_config.Axis_Param[0].intval
     for idx, val in enumerate(AxisParamIntVals):
@@ -3428,43 +3433,104 @@ def custom_function():
                         else:
                             logging.warning(f"⚠️ DI {idx} ha espressioni calcolate ma non è un tipo CALC")
 
-    def check_axis_min_max() -> None:
-        for i in range(0, MAX_ASSE):
-            ...
-
     def check_axis_bypass() -> None:
-        logging.info("🔍 Inizio controllo bypass...")
-        txt = {}
-        for i in range(0, MAX_BYPASS):
-            bypassName = get_io_name(iotype=IO_DO, Ind=data_config.ParamInt[globals()[f"BOOL_IND_BP{i}"]]) or f"BYPASS_{i}"
+        logging.info("🔍 Inizio controllo bypass assi...")
 
+        # Costruzione dinamica BP1..BP12 usando le costanti esistenti
+        bypass_map: list[tuple[int, int, int]] = []
 
-        for i in range(0, MAX_ASSE):
-            axis = data_config.Axis_Param[i]
-            axisName = data_config.Axis_Name[i] or f"AXIS_{i}"
-            if axis.boolval[ASSE_BOOL_BP1] and data_config.OutInd[BOOL_IND_BP1] == -1:
-                logging.warning(f"⚠️ [{i}]{axisName} ha il bypass BP1 attivo ma non è stato mappato")
-            if axis.boolval[ASSE_BOOL_BP2] and data_config.OutInd[BOOL_IND_BP2] == -1:
-                logging.warning(f"⚠️ [{i}]{axisName} ha il bypass BP2 attivo ma non è stato mappato")
-            if axis.boolval[ASSE_BOOL_BP3] and data_config.OutInd[BOOL_IND_BP3] == -1:
-                logging.warning(f"⚠️ [{i}]{axisName} ha il bypass BP3 attivo ma non è stato mappato")
-            if axis.boolval[ASSE_BOOL_BP4] and data_config.OutInd[BOOL_IND_BP4] == -1:
-                logging.warning(f"⚠️ [{i}]{axisName} ha il bypass BP4 attivo ma non è stato mappato")
-            if axis.boolval[ASSE_BOOL_BP5] and data_config.OutInd[BOOL_IND_BP5] == -1:
-                logging.warning(f"⚠️ [{i}]{axisName} ha il bypass BP5 attivo ma non è stato mappato")
-            if axis.boolval[ASSE_BOOL_BP6] and data_config.OutInd[BOOL_IND_BP6] == -1:
-                logging.warning(f"⚠️ [{i}]{axisName} ha il bypass BP6 attivo ma non è stato mappato")
-            if axis.boolval[ASSE_BOOL_BP7] and data_config.OutInd[BOOL_IND_BP7] == -1:
-                logging.warning(f"⚠️ [{i}]{axisName} ha il bypass BP7 attivo ma non è stato mappato")
-            if axis.boolval[ASSE_BOOL_BP8] and data_config.OutInd[BOOL_IND_BP8] == -1:
-                logging.warning(f"⚠️ [{i}]{axisName} ha il bypass BP8 attivo ma non è stato mappato")
+        for bp_num in range(1, MAX_BYPASS + 1):
+            axis_bool_name = f"ASSE_BOOL_BP{bp_num}"
+            out_ind_name = f"BOOL_IND_BP{bp_num}"
+
+            if axis_bool_name not in globals() or out_ind_name not in globals():
+                continue
+
+            bypass_map.append((
+                bp_num,
+                globals()[axis_bool_name],  # es. ASSE_BOOL_BP1
+                globals()[out_ind_name],  # es. BOOL_IND_BP1
+            ))
+
+        groups: dict[tuple[int, ...], list[str]] = {}
+
+        for axisInd in range(0, MAX_ASSE):
+            axis = data_config.Axis_Param[axisInd]
+
+            axis_name = get_axis_name(axisInd)
+
+            active_bp: list[int] = []
+
+            for bp_num, axis_bool_idx, out_ind_idx in bypass_map:
+                if axis_bool_idx >= len(axis.boolval):
+                    continue
+
+                if axis.boolval[axis_bool_idx]:
+                    active_bp.append(bp_num)
+
+                    # controllo bypass attivo ma non mappato
+                    try:
+                        if data_config.OutInd[out_ind_idx] == -1:
+                            logging.warning(f"⚠️ [{axisInd}]{axis_name} ha BP{bp_num} attivo ma non è stato mappato")
+                    except Exception:
+                        logging.warning(f"⚠️ [{axisInd}]{axis_name} ha BP{bp_num} attivo ma controllo mappatura non riuscito")
+
+            if active_bp:
+                key = tuple(active_bp)
+                groups.setdefault(key, []).append(f"[{axisInd}]{axis_name}")
+
+        # Print finale tipo:
+        # BP1 (name):
+        # asse1
+        #
+        # BP1+BP2 (name+name):
+        # asse2
+        for key in sorted(groups.keys()):
+            bp_labels: list[str] = []
+            bp_names: list[str] = []
+
+            for bp_num in key:
+                out_ind_name = f"BOOL_IND_BP{bp_num}"
+                out_ind_idx = globals().get(out_ind_name)
+
+                bp_labels.append(f"BP{bp_num}")
+
+                bp_name = None
+                if out_ind_idx is not None:
+                    try:
+                        do_ind = data_config.OutInd[out_ind_idx]
+                        if do_ind != -1:
+                            bp_name = get_io_name(iotype=IO_DO, Ind=do_ind)
+                    except Exception:
+                        bp_name = None
+
+                if bp_name:
+                    bp_names.append(bp_name)
+
+            header = "+".join(bp_labels)
+
+            if bp_names:
+                header += f" ({'+ '.join(bp_names)})"
+
+            logging.warning(f"\n{header}:")
+            for axis_name in groups[key]:
+                logging.warning(axis_name)
+
+        logging.info("🔍 Fine controllo bypass assi.")
+
+    def check_axis_slaves() -> None:
+        logging.info("🔍 Inizio controllo assi master/slave...")
+        # deve dire se le velocità ASSE_REAL_BWVMAX, ASSE_REAL_FWVMAX
+        # devo dire se usano pompe diverse
+
+        logging.info("🔍 Fine controllo assi master/slave...")
 
     foo = [check_axis_flag, check_duplicate_do_ao_usage, check_duplicate_obj_usage, clean_di_axis_check, duplicate_io_address,
            check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release, check_safety, check_rotation,
            geometry_check, check_axis_speed_master_slave, check_forbidden_ao_do_usage, check_de_tilt, check_stop_alarms, check_axis_speed,
            check_archimeter_params, check_bypass_unused, check_remote_control, check_feedback_ratios, check_axis_sp, check_tilt_max_lateral,
            check_interlock_alarm_sys_addr, seq_check, check_automatic_params, deadband_feedback_check,
-           check_all_sys_alarms, check_params_um, motor_checks, check_ri_bug, check_io_calc]
+           check_all_sys_alarms, check_params_um, motor_checks, check_ri_bug, check_io_calc, check_axis_bypass, check_axis_slaves]
 
     for func in foo:
         logging.info('-' * 60)

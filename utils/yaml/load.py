@@ -367,8 +367,29 @@ def load_yaml(path: str) -> Any:
     """
     logging.debug("📂 IN: load_yaml")
 
-    text = Path(path).read_text(encoding='utf-8')
+    # text = Path(path).read_text(encoding='utf-8')
 
+    def _read_text_fallback(path: str) -> str:
+        raw = Path(path).read_bytes()
+
+        for enc in ("utf-8", "utf-8-sig", "cp1252", "latin-1"):
+            try:
+                text = raw.decode(enc)
+                if enc not in ("utf-8", "utf-8-sig"):
+                    logging.warning(f"⚠️ File YAML non UTF-8: letto con encoding {enc}")
+                return text
+            except UnicodeDecodeError:
+                continue
+
+        raise UnicodeDecodeError(
+            "utf-8",
+            raw,
+            0,
+            1,
+            "Impossibile decodificare il file YAML con gli encoding supportati"
+        )
+
+    text = _read_text_fallback(path)
     try:
         data = yaml.safe_load(text)
         logging.debug(f"✅ YAML caricato correttamente al primo tentativo: {path}")

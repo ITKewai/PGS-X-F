@@ -10,6 +10,7 @@ from __future__ import annotations
 import datetime
 import logging
 import random
+from getpass import getpass
 from pathlib import Path
 import requests
 import warnings as _warnings
@@ -38,6 +39,129 @@ def _build_download_url(addr: str) -> str:
             return addr
         return addr.rstrip("/") + path
     return f"https://{addr}{path}"
+
+
+def _build_base_url(addr: str) -> str:
+    """
+    Ritorna la base URL del PLC, senza path applicativi.
+    Accetta indirizzi semplici, URL di download, URL Portal o URL FormLogin.
+    """
+    addr = addr.strip()
+    if not addr:
+        raise ValueError("Indirizzo PLC non valido")
+
+    if "://" not in addr:
+        addr = f"https://{addr}"
+
+    addr = addr.rstrip("/")
+    for marker in ("/UserFiles", "/Portal", "/FormLogin"):
+        if marker in addr:
+            addr = addr.split(marker, 1)[0]
+            break
+
+    return addr.rstrip("/")
+
+
+def _get_plc_user_files_referer(base_url: str) -> str:
+    """Referer usato dalla pagina UserFiles del PLC."""
+    return f"{base_url}/Portal/Portal.mwsl?PriNav=UserFiles"
+
+
+def _get_plc_headers(base_url: str) -> dict[str, str]:
+    """Header minimi richiesti dalle azioni UserFiles/FormLogin."""
+    return {
+        "Origin": base_url,
+        "Referer": _get_plc_user_files_referer(base_url),
+    }
+
+
+def _get_plc_error(session: requests.Session) -> tuple[str | None, str]:
+    """
+    Traduce l'eventuale cookie di errore UserFiles Siemens.
+    Ritorna sempre una tupla per evitare errori in unpack.
+    """
+    plc_upload_codes = {
+        "1": "Errore nel download del file",
+        "2": "Operazione su file non consentita",
+        "3": "Operazione file non consentita - nessun referente",
+        "4": "Eliminazione fallita - memoria protetta da scrittura",
+        "5": "Errore durante eliminazione file",
+        "6": "Errore upload file (generico)",
+        "7": "File già esistente",
+        "8": "Memoria protetta da scrittura",
+        "9": "Memoria piena",
+        "10": "Caratteri non validi nel nome file",
+        "11": "File troppo grande",
+        "12": "Errore upload generico",
+    }
+    err = session.cookies.get("siemens_automation_user_files_error")
+    if not err or err == "0":
+        return None, "0"
+    return plc_upload_codes.get(err, f"Unknown error code: {err}"), err
+
+
+def login_plc(
+    session: requests.Session,
+    base_url: str,
+    login: str = "config",
+    password: str = "84210",
+) -> bool:
+    """
+    Effettua il login sul PLC usando lo stesso flusso visto dal browser:
+
+        POST {base_url}/FormLogin
+        Payload: Redirection=&Login=config&Password=84210
+        Referer: {base_url}/Portal/Portal.mwsl?PriNav=UserFiles
+        Origin:  {base_url}
+
+    Il PLC risponde normalmente con 302 Object Moved: viene considerato login OK.
+    """
+    base_url = _build_base_url(base_url)
+    referer_url = _get_plc_user_files_referer(base_url)
+    login_url = f"{base_url}/FormLogin"
+
+    headers = _get_plc_headers(base_url)
+    headers["Content-Type"] = "application/x-www-form-urlencoded"
+
+    payload = {
+        "Redirection": "",
+        "Login": login,
+        "Password": password,
+    }
+
+    logging.info(f"🔐 Login PLC: {login_url}")
+
+    # Prima apre la pagina UserFiles per inizializzare eventuali cookie di sessione.
+    r = session.get(referer_url, verify=False, timeout=20)
+    if r.status_code >= 400:
+        raise RuntimeError(f"Impossibile raggiungere il PLC: HTTP {r.status_code}")
+
+    r = session.post(
+        login_url,
+        headers=headers,
+        data=payload,
+        verify=False,
+        timeout=60,
+        allow_redirects=False,
+    )
+
+    # Il browser mostra 302 Object Moved dopo il login: è il caso atteso.
+    if r.status_code in (301, 302, 303, 307, 308):
+        logging.info("✅ Login PLC effettuato")
+        return True
+
+    if 200 <= r.status_code < 300:
+        logging.info("✅ Login PLC effettuato")
+        return True
+
+    raise RuntimeError(f"Login PLC fallito: HTTP {r.status_code}")
+
+
+def _prompt_plc_login(session: requests.Session, base_url: str) -> bool:
+    """Chiede le credenziali e chiama login_plc()."""
+    login = input("Login PLC [config]: ").strip() or "config"
+    password = getpass("Password PLC [84210]: ").strip() or "84210"
+    return login_plc(session, base_url, login=login, password=password)
 
 
 def download_file(url: str, dest_path: Path) -> None:
@@ -185,6 +309,9 @@ def choose_and_prepare_config(sn: str = None, firstRun: bool = False) -> Path:
     """
     lastUrl = get_param('lastUrl')
     cfg_path = get_config_path("config.yaml", prefer_cwd=True)
+    plc_session: requests.Session | None = None
+    plc_session_base_url: str | None = None
+
     while True:
         logging.info('')
         logging.info("Selezione sorgente file 'config.yaml'")
@@ -196,6 +323,7 @@ def choose_and_prepare_config(sn: str = None, firstRun: bool = False) -> Path:
             logging.info("  [4] Save")
         if lastUrl:
             logging.info("  [5] FORCE-UPLOAD [RISK]")
+        logging.info("  [6] Login PLC")
         if firstRun and lastUrl and get_param("downloadOnStart"):
             logging.info("\n⚠️ Download automatico al primo avvio da config.json")
             choice = "3"
@@ -250,39 +378,19 @@ def choose_and_prepare_config(sn: str = None, firstRun: bool = False) -> Path:
                 if input(f'Sicuro? [{pin}]') != pin:
                     continue
 
-                base_url = lastUrl.split("/UserFiles")[0]
-                referer_url = base_url + "/Portal/Portal.mwsl?PriNav=UserFiles"
-                delete_url = (
-                    f"{base_url}/UserFiles?Action=DELETE&Name=config.yaml"
-                )
+                base_url = _build_base_url(lastUrl)
+                referer_url = _get_plc_user_files_referer(base_url)
+                delete_url = f"{base_url}/UserFiles?Action=DELETE&Name=config.yaml"
+                upload_url = f"{base_url}/UserFiles?Action=UPLOAD"
 
-                upload_url = (
-                    f"{base_url}/UserFiles?Action=UPLOAD"
-                )
+                if plc_session is None or plc_session_base_url != base_url:
+                    logging.info("🌐 Apertura sessione...")
+                    plc_session = requests.Session()
+                    plc_session_base_url = base_url
+                    _prompt_plc_login(plc_session, base_url)
 
-                logging.info("🌐 Apertura sessione...")
-
-                session = requests.Session()
-
-                def get_plc_error(_session):
-                    plc_upload_codes = {
-                        "1": "Errore nel download del file",
-                        "2": "Operazione su file non consentita",
-                        "3": "Operazione file non consentita - nessun referente",
-                        "4": "Eliminazione fallita - memoria protetta da scrittura",
-                        "5": "Errore durante eliminazione file",
-                        "6": "Errore upload file (generico)",
-                        "7": "File già esistente",
-                        "8": "Memoria protetta da scrittura",
-                        "9": "Memoria piena",
-                        "10": "Caratteri non validi nel nome file",
-                        "11": "File troppo grande",
-                        "12": "Errore upload generico"
-                    }
-                    err = _session.cookies.get("siemens_automation_user_files_error")
-                    if not err or err == 0:
-                        return None
-                    return plc_upload_codes.get(err, f"Unknown error code: {err}"), err
+                session = plc_session
+                headers = _get_plc_headers(base_url)
 
                 # -------------------------------------------------
                 # STEP 1 - DELETE vecchio file
@@ -290,13 +398,8 @@ def choose_and_prepare_config(sn: str = None, firstRun: bool = False) -> Path:
                 logging.info("🗑️ Eliminazione vecchio config.yaml...")
                 r = session.get(referer_url, verify=False, timeout=60)
                 if r.status_code != 200:
-                    logging.info(f"❌ Errore FORCE-UPLOAD: Impossible raggiungere il plc {r.status_code}")
+                    logging.info(f"❌ Errore FORCE-UPLOAD: Impossibile raggiungere il PLC {r.status_code}")
                     continue
-
-                headers = {
-                    "Referer": referer_url,
-                    "Origin": base_url
-                }
 
                 r = session.post(delete_url, headers=headers, verify=False, timeout=60)
 
@@ -304,7 +407,7 @@ def choose_and_prepare_config(sn: str = None, firstRun: bool = False) -> Path:
                     logging.info(f"❌ Errore FORCE-UPLOAD: Impossibile cancellare il config {r.status_code}")
                     continue
 
-                msg, code = get_plc_error(session)
+                msg, code = _get_plc_error(session)
                 if msg and code != "0":
                     logging.warning(f"❌ PLC ERROR: {msg}")
                 else:
@@ -315,22 +418,22 @@ def choose_and_prepare_config(sn: str = None, firstRun: bool = False) -> Path:
                 # -------------------------------------------------
                 logging.info("⬆️ Upload nuovo config.yaml...")
 
-                files = {
-                    'File': ('config.yaml', open(cfg_path, 'rb'),
-                             'application/octet-stream')
-                }
+                with open(cfg_path, 'rb') as fh:
+                    files = {
+                        'File': ('config.yaml', fh, 'application/octet-stream')
+                    }
 
-                r = session.post(
-                    upload_url,
-                    headers=headers,
-                    files=files,
-                    verify=False,
-                    timeout=60
-                )
+                    r = session.post(
+                        upload_url,
+                        headers=headers,
+                        files=files,
+                        verify=False,
+                        timeout=60
+                    )
 
                 r.raise_for_status()
 
-                msg, code = get_plc_error(session)
+                msg, code = _get_plc_error(session)
 
                 if msg and code != "0":
                     logging.warning(f"❌ PLC ERROR: {msg}")
@@ -341,6 +444,29 @@ def choose_and_prepare_config(sn: str = None, firstRun: bool = False) -> Path:
 
             except Exception as e:
                 logging.info(f"❌ Errore FORCE-UPLOAD: {e}")
+                continue
+        elif choice == "6":
+            try:
+                if lastUrl:
+                    default_base_url = _build_base_url(lastUrl)
+                    base = input(f"Indirizzo/IP PLC [{default_base_url}]: ").strip() or default_base_url
+                else:
+                    base = input("Indirizzo/IP PLC (es: 10.3.253.1): ").strip()
+
+                if not base:
+                    logging.info("Indirizzo non valido.\n")
+                    continue
+
+                base_url = _build_base_url(base)
+                plc_session = requests.Session()
+                plc_session_base_url = base_url
+                result = _prompt_plc_login(plc_session, base_url)
+
+                print('OK' + str(result))
+            except Exception as e:
+                plc_session = None
+                plc_session_base_url = None
+                logging.info(f"❌ Errore login PLC: {e}")
                 continue
         else:
             logging.info("Opzione non valida\n")
@@ -378,3 +504,7 @@ def save_version(sn: str, ver:str, date: str) -> bool:
         except Exception as e:
             logging.info(f"⚠️ Errore durante il salvataggio: {e}")
             return False
+
+
+if __name__ == "__main__":
+    choose_and_prepare_config()

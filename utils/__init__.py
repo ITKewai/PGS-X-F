@@ -22,7 +22,7 @@ DIFFICILE:
 # TODO: controllare che se presente feedback encoder su espulsore deve rimanere tipo XXX cosi non perde quota una volta spenta e acceso
 # TODO: verificare che la numerazione allarmi sia corretta (COD)
 # TODO: CONOTROLLARE CHE FINECORSA MAX LEFT E RIGHT SIANO COERENTI
-# TODO: se assi SP attivi controllare che siano in function
+# TODO: se assi SP attivi controllare che siano in function nel pinzaggio
 # TODO: spezzare in piu funzioni ad esempio get axis ecc
 # TODO: output valmax1 valmax2 a 100.00 sugli output e gli altri 20 40 60 80
 # TODO: controllare versione plc via http (/Portal/Portal.mwsl?PriNav=Online&SecNav=Ident)

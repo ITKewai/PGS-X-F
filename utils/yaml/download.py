@@ -103,8 +103,6 @@ def _get_plc_error(session: requests.Session) -> tuple[str | None, str]:
 def login_plc(
     session: requests.Session,
     base_url: str,
-    login: str = "config",
-    password: str = "84210",
 ) -> bool:
     """
     Effettua il login sul PLC usando lo stesso flusso visto dal browser:
@@ -125,11 +123,11 @@ def login_plc(
 
     payload = {
         "Redirection": "",
-        "Login": login,
-        "Password": password,
+        "Login": "config",
+        "Password": "84210",
     }
 
-    logging.info(f"🔐 Login PLC: {login_url}")
+    logging.info(f"🔐 Login PLC default: {login_url}")
 
     # Prima apre la pagina UserFiles per inizializzare eventuali cookie di sessione.
     r = session.get(referer_url, verify=False, timeout=20)
@@ -460,7 +458,7 @@ def choose_and_prepare_config(sn: str = None, firstRun: bool = False) -> Path:
                 base_url = _build_base_url(base)
                 plc_session = requests.Session()
                 plc_session_base_url = base_url
-                result = _prompt_plc_login(plc_session, base_url)
+                result = login_plc(plc_session, base_url)
 
                 print('OK' + str(result))
             except Exception as e:

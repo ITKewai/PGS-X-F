@@ -12,9 +12,7 @@ import html
 import logging
 import random
 import re
-from getpass import getpass
 from pathlib import Path
-from time import sleep
 
 import requests
 import warnings as _warnings
@@ -440,13 +438,6 @@ def login_plc(
     )
 
 
-def _prompt_plc_login(session: requests.Session, base_url: str) -> bool:
-    """Chiede le credenziali e chiama login_plc()."""
-    login = input("Login PLC [config]: ").strip() or "config"
-    password = getpass("Password PLC [84210]: ").strip() or "84210"
-    return login_plc(session, base_url, login=login, password=password)
-
-
 def download_file(plc_session: requests.Session, url: str, dest_path: Path) -> None:
     """
     Scarica il file da un URL e lo salva in dest_path.
@@ -464,7 +455,7 @@ def download_file(plc_session: requests.Session, url: str, dest_path: Path) -> N
         try:
             if url.startswith("https://"):
                 url_http = "http://" + url[len("https://"):]
-                r = requests.get(url_http, timeout=60)
+                r = plc_session.get(url_http, timeout=60)
                 r.raise_for_status()
                 dest_path.write_bytes(r.content)
             else:
@@ -476,8 +467,27 @@ def download_file(plc_session: requests.Session, url: str, dest_path: Path) -> N
 
 
 def is_valid_download(path: Path) -> bool:
+    if not path.exists() or path.stat().st_size == 0:
+        return False
+
+    text = path.read_text(encoding="utf-8", errors="ignore").strip()
+
+    if not text:
+        return False
+
+    bad_markers = (
+        "<html",
+        "<!doctype html",
+        "formlogin",
+        "login",
+        "password",
+    )
+
+    text_lower = text.lower()
+    if any(marker in text_lower for marker in bad_markers):
+        return False
+
     return True
-    # TODO: apre il file e controlla che sia un config.yaml valido, altrimenti ritorna False
 
 
 def _get_next_config_backup_path(cfg_path: Path) -> Path:
@@ -625,7 +635,6 @@ def choose_and_prepare_config(sn: str = None, firstRun: bool = False) -> Path:
             logging.info("  [4] Save")
         if lastUrl:
             logging.info("  [5] FORCE-UPLOAD [RISK]")
-        logging.info("  [6] Login PLC")
         if firstRun and lastUrl and get_param("downloadOnStart"):
             logging.info("\n⚠️ Download automatico al primo avvio da config.json")
             choice = "3"
@@ -659,6 +668,7 @@ def choose_and_prepare_config(sn: str = None, firstRun: bool = False) -> Path:
         elif choice == "4" and sn:
             if not cfg_path.exists():
                 logging.info(f"❌ File locale non trovato o corrotto: {cfg_path}\n")
+                continue
             ver = input("Versione progetto: ")
             save_version(sn=sn, ver=ver, date=str(datetime.datetime.now().strftime("%Y%m%d")))
             return cfg_path
@@ -740,6 +750,7 @@ def choose_and_prepare_config(sn: str = None, firstRun: bool = False) -> Path:
 
                 if msg and code != "0":
                     logging.warning(f"❌ PLC ERROR: {msg}")
+                    continue
                 else:
                     logging.info("✅ Upload completato")
 
@@ -752,8 +763,7 @@ def choose_and_prepare_config(sn: str = None, firstRun: bool = False) -> Path:
                 if _start_cpu(plc_session=plc_session, base_url=base_url):
                     logging.info("✅ CPU avviata")
                 else:
-                    logging.info("❌ Errore nel avvio CPU")
-
+                    logging.info("❌ Errore durante l'avvio CPU")
                 return cfg_path
 
             except Exception as e:
@@ -766,7 +776,7 @@ def choose_and_prepare_config(sn: str = None, firstRun: bool = False) -> Path:
 def login_to_plc(plc_session: requests.Session, host: str = None, lastUrl: str = None):
     try:
         if lastUrl:
-            host = _build_base_url(lastUrl)
+            host = _build_base_url(lastUrl)f
 
         if not host:
             logging.info("Indirizzo non valido.\n")

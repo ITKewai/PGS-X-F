@@ -776,7 +776,7 @@ def choose_and_prepare_config(sn: str = None, firstRun: bool = False) -> Path:
 def login_to_plc(plc_session: requests.Session, host: str = None, lastUrl: str = None):
     try:
         if lastUrl:
-            host = _build_base_url(lastUrl)f
+            host = _build_base_url(lastUrl)
 
         if not host:
             logging.info("Indirizzo non valido.\n")

@@ -182,11 +182,14 @@ def _extract_commessa_from_project_name(project_name: str) -> str:
         PGSX - 0.25.50.6.6820_1510SNew -> 6820
         PGSX - 0.25.50.6.6820_1510New  -> 6820
         PGSX - 0.25.50.6.6820_1520     -> 6820
+        PGSX - 0.25.50.6.0561Custom_1510SNew_V20 -> 0561
+        PGSX - 0.25.50.6.0561 Custom_1510SNew_V20 -> 0561
 
     Regola:
-        prende il numero completo subito prima di _15xx...
+        prende il numero della commessa dopo l'ultimo punto,
+        prima di eventuale testo/spazi e prima di _15xx...
     """
-    match = re.search(r"\.(\d+)_15\d+", project_name)
+    match = re.search(r"\.(\d+)[^._]*_15\d+", project_name)
 
     if not match:
         raise RuntimeError(
@@ -399,7 +402,7 @@ def login_plc(
     base_url = _build_base_url(base_url)
     login_url = f"{base_url}/FormLogin"
 
-    logging.info(f"🔐 Login PLC: {login_url}")
+    logging.info(f"🔐 Login PLC 1: {login_url} , username: {login}, password: {password}")
 
     r = _login_plc_with_credentials(
         session=plc_session,
@@ -419,8 +422,7 @@ def login_plc(
     )
     dynamic_password = _build_password_from_commessa(commessa)
 
-    logging.info("🔐 Ritento login PLC con password dinamica da commessa")
-    logging.info(f"📌 Commessa ribaltata: {_ribalta_commessa(commessa)}")
+    logging.info(f"🔐 Login PLC 2: {login_url} , username: {login}, password: {dynamic_password}")
 
     r = _login_plc_with_credentials(
         session=plc_session,
@@ -450,6 +452,8 @@ def download_file(plc_session: requests.Session, url: str, dest_path: Path) -> N
         r = plc_session.get(url, timeout=60, verify=False)
         r.raise_for_status()
         dest_path.write_bytes(r.content)
+        logging.info(f"✅ File salvato in: {dest_path}")
+
     except Exception as e_https:
         # Fallback HTTP
         try:
@@ -458,12 +462,13 @@ def download_file(plc_session: requests.Session, url: str, dest_path: Path) -> N
                 r = plc_session.get(url_http, timeout=60)
                 r.raise_for_status()
                 dest_path.write_bytes(r.content)
+                logging.info(f"✅ File salvato in: {dest_path}")
+
             else:
                 raise
         except Exception as e_http:
             raise RuntimeError(f"Errore nel download:\nHTTPS: {e_https}\nHTTP: {e_http}") from e_http
 
-    logging.info(f"✅ File salvato in: {dest_path}")
 
 
 def is_valid_download(path: Path) -> bool:

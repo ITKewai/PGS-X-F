@@ -12,8 +12,9 @@ A TEMPO PERSO:
 DIFFICILE:
 # TODO: verifiche (verificare che per i reset pressostati si scende solo con il joystick, se ci sono digitali nel fb_err)
 
-
+# TODO: ⚠️ Axes	→	[0]L	→	Control	→	FWVSLOW2	[1] Left Roll Down FWSLOW2 deve essere definito solo se PS2 attivo, su version 0.25.50+
 # TODO: controllo pompe, master con slave e left con right
+# TODO: print delle pompe utilizzate per aasse con disable
 # TODO: feedback dei rulli ratio deve essere 1
 # TODO: verificare DEFAULT SPEED e mMAXVELPERC nin control negli assi se è diverso da 100 e 100
 # TODO: se sshock abscorver è attivo devo avere anche disable nei param con di che è SW
@@ -32,4 +33,5 @@ DIFFICILE:
 # todo: paraletri supporto a croce di tipo lung
 # TODO: se asse 42 attivo allora reset tipo const
 # TODO: printare tutti i DI delayed con nome e quanto tempo sono impostati per sapere se i PS laterali hanno un ritardo attivo o no
+# TODO: vedere se il bit "STEP" è attivo in params
 """

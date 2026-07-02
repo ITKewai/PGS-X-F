@@ -3419,11 +3419,12 @@ def custom_function():
         # TODO: cerifica bug RI vedere se tutti i campi o la maggiorpare di Enabled è diverso da -1
         logging.info("🔍 Inizio controllo bug RI...")
         for i in range(0, MAX_RI):
-            if data_config.IO_RI_List[i].intval[IO_INT_NBYTES] == 0 and data_config.IO_RI_List[i].intval[IO_INT_TIMEOUT] == 0 and data_config.IO_RI_List[i].intval[IO_INT_ININD] == 0:
+            if data_config.IO_RI_List[i].intval[IO_INT_NBYTES] == 0 or data_config.IO_RI_List[i].intval[IO_INT_TIMEOUT] == 0 or data_config.IO_RI_List[i].intval[IO_INT_ININD] == 0:
                 logging.warning(f"⚠️ RI [{i}] potenzialmente non configurato, ha indirizzo di input 0, timeout 0 e nbytes 0, verificare che non sia un RI inutilizzato o configurato erroneamente")
         logging.info("🔍 Fine controllo bug RI...")
 
     def check_io_calc() -> None:
+        logging.info("🔍 Inizio controllo IO Calc...")
         for idx, IO in enumerate(data_config.IO_DI_List):
             if IO.intval[IO_INT_ADDRTYPE] != IO_TYPE_CALC:
                 exprGroup = get_expr_from_di(idx)
@@ -3432,7 +3433,9 @@ def custom_function():
                         if data[1] == -1:
                             continue
                         else:
+                            logging.debug(f"get_expr_from_di({idx}) = {exprGroup} + data[1] = {data[1]}")
                             logging.warning(f"⚠️ DI {idx} ha espressioni calcolate ma non è un tipo CALC")
+        logging.info("🔍 Fine controllo bug IO Calc...")
 
     def check_axis_bypass() -> None:
         logging.info("🔍 Inizio controllo bypass assi...")
@@ -3659,6 +3662,10 @@ def custom_function():
                     logging.warning(f"⚠️ Il bypass shock absorber (BP12) è non viene disabilitato da SW con indirizzo 12, attualmente è usato {get_io_fullname(iotype=IO_DI, Ind=data_config.InInd[BOOL_IND_DISABLEBP12])}")
         logging.info("🔍 Fine controllo shock absorber (BP12)...")
 
+    def check_hdmc() -> None:
+        logging.info("🔍 Inizio controllo HDMC...")
+        # todo: controllo rima se ci sono DI che contengono il nome "HDMC" o "XY"
+        logging.info("🔍 Fine controllo HDMC...")
 
     foo = [check_axis_flag, check_duplicate_do_ao_usage, check_duplicate_obj_usage, clean_di_axis_check, duplicate_io_address,
            check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release, check_safety, check_rotation,

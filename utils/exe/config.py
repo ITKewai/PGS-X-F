@@ -8,7 +8,11 @@ DEFAULT_CONFIG: Dict[str, bool] = {
     "autoPlcIp": False,
     "logToFile": False,
     "downloadOnStart": True,
-    "lastUrl": ""
+    "lastUrl": "",
+    "defaultWorkingFolder": "_PGSXF",
+    "defaultSaveFolder": "saved_configs",
+    "defaultDownloadFolder": "downloaded_configs",
+    "loginEnabled": True,
 }
 
 

@@ -18,7 +18,7 @@ import requests
 import warnings as _warnings
 from urllib3.exceptions import InsecureRequestWarning
 
-from utils.exe.config import get_param, update_param
+from utils.exe.config import get_param, update_param, get_save_folder
 from utils.paths import get_config_path
 
 _warnings.simplefilter("ignore", InsecureRequestWarning)
@@ -632,7 +632,7 @@ def choose_and_prepare_config(sn: str = None, firstRun: bool = False) -> Path:
     while True:
         logging.info('')
         logging.info("Selezione sorgente file 'config.yaml'")
-        logging.info("  [1] Usa file locale (cartella corrente)")
+        logging.info("  [1] Usa file locale (cartella defaultDownloadFolder)")
         logging.info("  [2] Scarica file da rete")
         if lastUrl:
             logging.info("  [3] Aggiorna file da rete (ultimo URL)")
@@ -817,11 +817,7 @@ def fetch_again(plc_session: requests.Session) -> Path | None:
 def save_version(sn: str, ver: str, date: str) -> bool:
     cfg_path = get_config_path("config.yaml", prefer_cwd=True)
 
-    save_folder = get_param("defaultSaveFolder")
-
-    backup_dir = cfg_path.parent / save_folder
-
-    backup_dir.mkdir(parents=True, exist_ok=True)
+    backup_dir = get_save_folder(create=True)
 
     backup_path = backup_dir / f"config {sn} {ver} {date}.yaml"
 

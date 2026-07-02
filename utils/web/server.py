@@ -15,12 +15,13 @@ from __future__ import annotations
 import logging
 import os
 import datetime
+import requests
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 from flask import Flask, jsonify, request
 
-from utils.exe.config import load_exe_config
+from utils.exe.config import load_exe_config, get_param
 from utils.version import get_version_info
 from utils.db import data_config  # <- oggetto DATA_CONFIG
 from utils.db.data_config import (
@@ -36,6 +37,7 @@ from utils.db.data_config import (
 )
 from utils.yaml.data.core import make_axis_sys_addr, make_alarm_sys_addr
 from utils.exports.tia_constants import HEADER_SN
+from utils.paths import get_config_path
 import utils.yaml.download as yaml_download
 from utils.yaml.download import (
     _build_download_url,
@@ -553,7 +555,7 @@ def _load_yaml_config(path: Optional[str] = None) -> Dict[str, str]:
 
     - se path è None, usa:
         1) variabile env PGS_CONFIG_PATH
-        2) altrimenti ./config.yaml nella cwd
+        2) altrimenti config.yaml in defaultWorkingFolder/defaultDownloadFolder
     """
     global _CONFIG_LOADED, _CONFIG_PATH
 
@@ -564,7 +566,7 @@ def _load_yaml_config(path: Optional[str] = None) -> Dict[str, str]:
         if env_path:
             cfg_path = Path(env_path)
         else:
-            cfg_path = Path.cwd() / "config.yaml"
+            cfg_path = get_config_path("config.yaml")
 
     if not cfg_path.exists():
         raise FileNotFoundError(f"config.yaml non trovato in {cfg_path}")
@@ -694,7 +696,7 @@ def create_app() -> Flask:
         except Exception:
             sn_value = None
 
-        has_last_url = bool(getattr(yaml_download, "last_url", ""))
+        has_last_url = bool(get_param("lastUrl"))
 
         return jsonify(
             {
@@ -756,13 +758,16 @@ def create_app() -> Flask:
                     url = _build_download_url(ip)
 
                 # usa la stessa funzione del CLI: scarica su config.yaml e aggiorna last_url
-                cfg_path = _download_to_config(url)
+                plc_session = requests.Session()
+                if get_param("loginEnabled"):
+                    yaml_download.login_to_plc(plc_session=plc_session, host=(ip or url))
+                cfg_path = _download_to_config(plc_session=plc_session, url=url)
                 info = _load_yaml_config(str(cfg_path))
                 return jsonify({"ok": True, "mode": "remote", "source": url, **info})
 
             elif mode == "refresh":
                 # equivalente a fetch_again() del CLI
-                cfg_path = fetch_again()
+                cfg_path = fetch_again(plc_session=requests.Session())
                 if cfg_path is None:
                     return jsonify(
                         {
@@ -776,7 +781,7 @@ def create_app() -> Flask:
                     {
                         "ok": True,
                         "mode": "refresh",
-                        "source": getattr(yaml_download, "last_url", None),
+                        "source": get_param("lastUrl"),
                         **info,
                     }
                 )

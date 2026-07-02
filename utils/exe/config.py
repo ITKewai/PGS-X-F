@@ -17,6 +17,7 @@ DEFAULT_CONFIG: Dict[str, ConfigValue] = {
     "defaultSaveFolder": "saved_configs",
     "defaultDownloadFolder": "downloaded_configs",
     "loginEnabled": True,
+    "sessionCookies": "",
 }
 
 

@@ -243,8 +243,14 @@ def _clean_data_config() -> None:
 
 def _deserialize_UM(data: Dict[str, Any]) -> None:
     for i in range(MAX_UM + 1):
-        data_config.UM_FC[i] = data_config.UM_FC_Met[i]
-        data_config.UM_Offset[i] = data_config.UM_Offset_Met[i]
+        try:
+            data_config.UM_FC[i] = data_config.UM_FC_Met[i]
+        except Exception:
+            logging.critical(f"UM_FC_Met[{i}] non disponibile, controllare il file YAML.")
+        try:
+            data_config.UM_Offset[i] = data_config.UM_Offset_Met[i]
+        except Exception:
+            logging.critical(f"UM_FC_Met[{i}] non disponibile, controllare il file YAML.")
         data_config.UM_NDec[i] = data_config.UM_NDec_Met[i]
         data_config.UM_Name[i] = data_config.UM_Name_Met[i]
 
@@ -522,7 +528,10 @@ def _deserialize_io_row(field: str, ind: int, row: Sequence[Any]) -> None:
     for j in range(MAX_IOREAL + 1):
         val = row[first + j] if first + j < len(row) else 0.0
         fv = _to_float(val)
-        data_config.IO_Param[k].realvalcfg[j] = fv
+        try:
+            data_config.IO_Param[k].realvalcfg[j] = fv
+        except Exception:
+            logging.critical("data_config.IO_Param[k].realvalcfg[j] = fv")
         data_config.IO_Param[k].realval[j] = fv
 
     # EXPRINT / EXPRREAL opzionali (TYPEVERSION >= 25)
@@ -639,7 +648,10 @@ def _deserialize_obj_axis(data: Dict[str, Any]) -> None:
         real_list = _as_list(block.get("real"))
         for j in range(min(len(real_list), MAX_ASSEREAL + 1)):  # TODO: leggere dal file
             fv = _to_float(real_list[j], 0.0)
-            data_config.Axis_Param[ind].realvalcfg[j] = fv
+            try:
+                data_config.Axis_Param[ind].realvalcfg[j] = fv
+            except Exception:
+                logging.critical(f"data_config.Axis_Param[{ind}].realvalcfg[{j}] = {fv}")
             data_config.Axis_Param[ind].realval[j] = fv
 
         type_list = _as_list(block.get("type"))
@@ -677,7 +689,10 @@ def _deserialize_obj_input(data: Dict[str, Any]) -> None:
         for j in range(MAX_INPUTDINT + 1):
             val = row[off + j] if off + j < len(row) else 0
             iv = _to_int(val)
-            data_config.Input_Param[ind].dintvalcfg[j] = iv
+            try: # TODO: v0.27
+                data_config.Input_Param[ind].dintvalcfg[j] = iv
+            except Exception:
+                logging.critical(f"data_config.Input_Param[{ind}].dintvalcfg[{j}] = {iv}")
             data_config.Input_Param[ind].dintval[j] = iv
     logging.debug('OUT: _deserialize_obj_input')
 
@@ -739,7 +754,10 @@ def _deserialize_obj_fb(data: Dict[str, Any]) -> None:
             idx = (MAX_FEEDBACKINT + 1) + fboffset + j
             val = row[idx] if idx < len(row) else 0.0
             fv = _to_float(val)
-            data_config.Feedback_Param[ind].realvalcfg[j] = fv
+            try:
+                data_config.Feedback_Param[ind].realvalcfg[j] = fv
+            except Exception:
+                logging.critical(f"data_config.Feedback_Param[{ind}].realvalcfg[{j}] = {fv}")
             data_config.Feedback_Param[ind].realval[j] = fv
     logging.debug('OUT: _deserialize_obj_fb')
 
@@ -3420,7 +3438,10 @@ def custom_function():
         logging.info("🔍 Inizio controllo bug RI...")
         for i in range(0, MAX_RI):
             if data_config.IO_RI_List[i].intval[IO_INT_NBYTES] == 0 or data_config.IO_RI_List[i].intval[IO_INT_TIMEOUT] == 0 or data_config.IO_RI_List[i].intval[IO_INT_ININD] == 0:
-                logging.warning(f"⚠️ RI [{i}] potenzialmente non configurato, ha indirizzo di input 0, timeout 0 e nbytes 0, verificare che non sia un RI inutilizzato o configurato erroneamente")
+                logging.warning(f"⚠️ RI [{i}] potenzialmente non configurato, ha indirizzo di input {data_config.IO_RI_List[i].intval[IO_INT_NBYTES]},"
+                                f" timeout {data_config.IO_RI_List[i].intval[IO_INT_TIMEOUT]}"
+                                f" e nbytes {data_config.IO_RI_List[i].intval[IO_INT_ININD]}"
+                                f" verificare che non sia un RI inutilizzato o configurato erroneamente")
         logging.info("🔍 Fine controllo bug RI...")
 
     def check_io_calc() -> None:
@@ -3667,20 +3688,114 @@ def custom_function():
         # todo: controllo rima se ci sono DI che contengono il nome "HDMC" o "XY"
         logging.info("🔍 Fine controllo HDMC...")
 
+    def check_bend_prebend_roll() -> None:
+        """ Controllo max, tiltmax bendig prebendig"""
+        logging.info("🔍 Inizio controllo Bending - Prebendi Roll..")
+
+        axisBendInd = data_config.AxisFunInd[FUN_AXIS_BEND]
+        axisPreInd = data_config.AxisFunInd[FUN_AXIS_PRE]
+        to_check_params = [ASSE_REAL_SMAX, ASSE_REAL_SMIN, ASSE_REAL_TILTMAX, ASSE_REAL_TILTMAXDOWN]
+
+        for param in to_check_params:
+            if axisBendInd != -1 and axisPreInd != -1:
+                bend_value = data_config.Axis_Param[axisBendInd].realval[param]
+                pre_value = data_config.Axis_Param[axisPreInd].realval[param]
+                if bend_value != pre_value:
+                    logging.warning(f"⚠️ Parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][param]]['display']} differente tra Bending ({bend_value}) e Prebending ({pre_value})")
+            else:
+                logging.warning("⚠️ Asse Bending o Prebending non configurato, impossibile confrontare i parametri.")
+
+        logging.info("🔍 Fine controllo Bending - Prebendi Roll..")
+
+    def check_axis_feedback_coerence() -> None:
+        logging.info("🔍 Inizio controllo coerenza feedback assi...")
+        for axisInd in range(0, MAX_ASSE):
+            axis = data_config.Axis_Param[axisInd]
+            axis_name = data_config.Axis_Name[axisInd] or f"AXIS_{axisInd}"
+            feedback_index = axis.intval[ASSE_INT_FEEDBACK]
+
+            if feedback_index != -1:
+                if feedback_index < 0 or feedback_index >= MAX_FEEDBACK:
+                    logging.warning(f"⚠️ [{axisInd}]{axis_name} ha un indice di feedback non valido: {feedback_index}")
+                else:
+                    feedback = data_config.Feedback_Param[feedback_index]
+                    if feedback is None:
+                        logging.warning(f"⚠️ [{axisInd}]{axis_name} fa riferimento a un feedback inesistente: {feedback_index}")
+                    else:
+                        fb_scale_max = abs(feedback.realval[FB_REAL_SCALEINF]) + abs(feedback.realval[FB_REAL_SCALESUP])
+                        axis_scale_max = abs(axis.realval[ASSE_REAL_SSUP]) + abs(axis.realval[ASSE_REAL_SINF])
+                        if fb_scale_max != axis_scale_max:
+                            logging.warning(f"⚠️ [{axisInd}]{axis_name} ha una scala di feedback ({fb_scale_max}) non coerente con la scala dell'asse ({axis_scale_max})")
+        logging.info("🔍 Fine controllo coerenza feedback assi...")
+
+    def check_output_scale_values() -> None:
+        logging.info("🔍 Inizio controllo valori scalatura output...")
+        to_check = {
+            OUTPUT_REAL_VALMIN1: 0.0,
+            OUTPUT_REAL_VALMAX1: 100.0,
+            OUTPUT_REAL_VIN0: 0.0,
+            OUTPUT_REAL_VIN1: 20.0,
+            OUTPUT_REAL_VIN2: 40.0,
+            OUTPUT_REAL_VIN3: 60.0,
+            OUTPUT_REAL_VIN4: 80.0,
+            OUTPUT_REAL_VIN5: 100.0,
+            OUTPUT_REAL_VOUT0: 0.0,
+            OUTPUT_REAL_VOUT1: 20.0,
+            OUTPUT_REAL_VOUT2: 40.0,
+            OUTPUT_REAL_VOUT3: 60.0,
+            OUTPUT_REAL_VOUT4: 80.0,
+            OUTPUT_REAL_VOUT5: 100.0,
+            OUTPUT_REAL_VALMIN2: 0.0,
+            OUTPUT_REAL_VALMAX2: 100.0,
+            OUTPUT_REAL_V2IN0: 0.0,
+            OUTPUT_REAL_V2IN1: 20.0,
+            OUTPUT_REAL_V2IN2: 40.0,
+            OUTPUT_REAL_V2IN3: 60.0,
+            OUTPUT_REAL_V2IN4: 80.0,
+            OUTPUT_REAL_V2IN5: 100.0,
+            OUTPUT_REAL_V2OUT0: 0.0,
+            OUTPUT_REAL_V2OUT1: 20.0,
+            OUTPUT_REAL_V2OUT2: 40.0,
+            OUTPUT_REAL_V2OUT3: 60.0,
+            OUTPUT_REAL_V2OUT4: 80.0,
+            OUTPUT_REAL_V2OUT5: 100.0,
+        }
+        for i in range(0, MAX_OUTPUT):
+            output = data_config.Output_Param[i]
+            for param, expected_value in to_check.items():
+                current_value = output.realval[param]
+                if current_value != expected_value:
+                    logging.warning(f"⚠️ OUTPUT [{i}] ha il parametro {Type_OutputParam_Map['realval'][Type_OutputParam_Map['_realval'][param]]['display']} impostato a {current_value} invece di {expected_value}")
+
+        logging.info("🔍 Fine controllo valori di output...")
+
+    # def check_slow2_speed():
+    #     logging.info("🔍 Inizio controllo velocità Slow2...")
+    #     bwslow2_ps2 = FUN_AXIS_FREE_70
+    #     fwslow2_pse = FUN_AXIS_FREE_71
+    #     for axisInd in range(0, MAX_ASSE):
+    #         axis = data_config.Axis_Param[axisInd]
+    #         axis_name = data_config.Axis_Name[axisInd] or f"AXIS_{axisInd}"
+    #         if axis.intval[ASSE_INT_PS2] != -1:
+    #             logging.info('TODO: ')
+    #     logging.info("🔍 Fine controllo velocità Slow2...")
+
+
     foo = [check_axis_flag, check_duplicate_do_ao_usage, check_duplicate_obj_usage, clean_di_axis_check, duplicate_io_address,
            check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release, check_safety, check_rotation,
            geometry_check, check_axis_speed_master_slave, check_forbidden_ao_do_usage, check_de_tilt, check_stop_alarms, check_axis_speed,
            check_archimeter_params, check_bypass_unused, check_remote_control, check_feedback_ratios, check_axis_sp, check_tilt_max_lateral,
            check_interlock_alarm_sys_addr, seq_check, check_automatic_params, deadband_feedback_check,
            check_all_sys_alarms, check_params_um, motor_checks, check_ri_bug, check_io_calc, check_axis_bypass, check_axis_slaves, check_default_axis_speed,
-           check_shock_absorber]
+           check_shock_absorber, check_hdmc, check_bend_prebend_roll, check_axis_feedback_coerence,check_output_scale_values]
 
     for func in foo:
         logging.info('-' * 60)
         func()
+
     logger.debug("OUT: custom_function")
 
 
 if __name__ == "__main__":
-    populate_from_yaml_file("../../config.yaml")
+    populate_from_yaml_file("../../_PGSXF\downloaded_configs\config.yaml")
     custom_function()

@@ -8,30 +8,28 @@ POSSIBILI
 
 A TEMPO PERSO:
 # TODO: in base a indirizzo ip scheda rete imposta ip plc e scarica config
+# TODO: spezzare in piu funzioni ad esempio get axis ecc
+# TODO: check se file capacita su pulpito ha commessa giusta, se indice azzeramento corrisponde al digitale di azzeramento
 
 DIFFICILE:
 # TODO: verifiche (verificare che per i reset pressostati si scende solo con il joystick, se ci sono digitali nel fb_err)
+# TODO: printare i safety interlock down up
 
-# TODO: ⚠️ Axes	→	[0]L	→	Control	→	FWVSLOW2	[1] Left Roll Down FWSLOW2 deve essere definito solo se PS2 attivo, su version 0.25.50+
-# TODO: controllo pompe, master con slave e left con right
-# TODO: print delle pompe utilizzate per aasse con disable
-# TODO: feedback dei rulli ratio deve essere 1
-# TODO: verificare DEFAULT SPEED e mMAXVELPERC nin control negli assi se è diverso da 100 e 100
-# TODO: se sshock abscorver è attivo devo avere anche disable nei param con di che è SW
-# TODO: check se file capacita su pulpito ha commessa giusta, se indice azzeramento corrisponde al digitale di azzeramento
-# TODO: controllo che feedback val max e min siano coerenti 40T
 # TODO: controllare che se presente feedback encoder su espulsore deve rimanere tipo XXX cosi non perde quota una volta spenta e acceso
-# TODO: verificare che la numerazione allarmi sia corretta (COD)
-# TODO: CONOTROLLARE CHE FINECORSA MAX LEFT E RIGHT SIANO COERENTI
 # TODO: se assi SP attivi controllare che siano in function nel pinzaggio
-# TODO: spezzare in piu funzioni ad esempio get axis ecc
-# TODO: output valmax1 valmax2 a 100.00 sugli output e gli altri 20 40 60 80
+
 # TODO: controllare versione plc via http (/Portal/Portal.mwsl?PriNav=Online&SecNav=Ident)
-# TODO: da fare controllo su control di ogni asse bwslow2
-# TODO: vedere che è configurata la luce waitnig for start
-# TODO: controllo stessi imput per più input assi (esempio 2 assi con stesso input)
 # todo: paraletri supporto a croce di tipo lung
 # TODO: se asse 42 attivo allora reset tipo const
 # TODO: printare tutti i DI delayed con nome e quanto tempo sono impostati per sapere se i PS laterali hanno un ritardo attivo o no
 # TODO: vedere se il bit "STEP" è attivo in params
+# TODO: VEDERE TIPO DI RESET se diverso da calc
+# todo: IN CONTROLLO INPUT SE VALORE NEGATIVO allora è un JS il vmin non deve essere 0 ma qualcos altro sotto i 500/1000
+
+# TODO: se una delle fotocellule o laser scanner allore parametro FULL AUTO si
+
+# TODO: salvare invece di config old config_cXXXX_vPLC_SAVEMAP
+
+# TODO: v27,28 ECCEZZZIONI
+
 """

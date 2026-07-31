@@ -648,7 +648,7 @@ def _deserialize_obj_axis(data: Dict[str, Any]) -> None:
         real_list = _as_list(block.get("real"))
         for j in range(min(len(real_list), MAX_ASSEREAL + 1)):  # TODO: leggere dal file
             fv = _to_float(real_list[j], 0.0)
-            try:
+            try: # TODO: v0.27
                 data_config.Axis_Param[ind].realvalcfg[j] = fv
             except Exception:
                 logging.critical(f"data_config.Axis_Param[{ind}].realvalcfg[{j}] = {fv}")
@@ -754,7 +754,7 @@ def _deserialize_obj_fb(data: Dict[str, Any]) -> None:
             idx = (MAX_FEEDBACKINT + 1) + fboffset + j
             val = row[idx] if idx < len(row) else 0.0
             fv = _to_float(val)
-            try:
+            try: # TODO: v0.27
                 data_config.Feedback_Param[ind].realvalcfg[j] = fv
             except Exception:
                 logging.critical(f"data_config.Feedback_Param[{ind}].realvalcfg[{j}] = {fv}")
@@ -921,6 +921,7 @@ def _deserialize_obj_maint(data: Dict[str, Any]) -> None:
         except Exception:
             pass
     logger.debug('OUT: _deserialize_obj_maint')
+
 
 def _deserialize_obj_toolset(data: Dict[str, Any]) -> None:
     logger.debug('IN: _deserialize_obj_toolset')
@@ -1133,15 +1134,17 @@ def get_io_name(iotype: int, Ind: int) -> Optional[str]:
     except Exception:
         return None
 
+
 def get_io_fullname(iotype: int, Ind: int):
     return f'[{Ind}] {get_io_name(iotype, Ind)}'
+
 
 def get_axis_name(Ind: int):
     return data_config.Axis_Name[Ind]
 
 
 def get_axis_fullname(Ind: int):
-    name = get_axis_name(Ind)
+    name = get_axis_name(Ind=Ind)
     return f'[{Ind}] {name}'
 
 
@@ -2563,6 +2566,7 @@ def custom_function():
 
     def clean_di_axis_check() -> None:
         logging.info("🔍 Avvio controllo axis_flag_checks...")
+        # TODO: se versione >= 53 diventano INTERI e non DI quindi printare se valore diverso da -1
         major, minor, patch, build = get_pgsx_version()
         for axisInd in range(0, MAX_ASSE):
             AxisParamIntVals = data_config.Axis_Param[axisInd].intval
@@ -2716,7 +2720,7 @@ def custom_function():
 
         for axisInd in range(0, MAX_ASSE):
             axis = data_config.Axis_Param[axisInd]
-            axis_name = data_config.Axis_Name[axisInd] or f"AXIS_{axisInd}"
+            axis_name = get_axis_name(Ind=axisInd)
             tipo_asse = axis.intval[ASSE_INT_TIPOMISURA]
 
             # --- Feedback principale ---
@@ -2951,7 +2955,7 @@ def custom_function():
         axisInd = data_config.AxisFunInd[FUN_AXIS_ROT]
         if axisInd != -1:
             axis = data_config.Axis_Param[axisInd]
-            axis_name = data_config.Axis_Name[axisInd] or f"AXIS_{axisInd}"
+            axis_name = get_axis_name(Ind=axisInd)
             if axis.realval[ASSE_REAL_SMAX] != 999999:
                 logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SMAX]]['display']} non impostato a +999999.0 ma a {axis.realval[ASSE_REAL_SMAX]}")
             if axis.realval[ASSE_REAL_SHH] > 10000:
@@ -2967,6 +2971,7 @@ def custom_function():
 
     def geometry_check() -> None:
         logging.info("🔍 Inizio controllo geometria...")
+        # TODO: fare controllo se 4HEP con valori fissi da prendere
         model = data_config.ParamString[0][-4:]
         model_width = model[:2] + '00'
         top_roll_diameter = model[2:] + '0'
@@ -3004,12 +3009,12 @@ def custom_function():
         logging.info("🔍 Inizio controllo velocità master/slave..")
         for i in range(0, MAX_ASSE):
             slaveAxis = data_config.Axis_Param[i]
-            slaveAxisName = get_axis_name(i)
+            slaveAxisName = get_axis_name(Ind=i)
             if slaveAxis.boolval[ASSE_BOOL_CONFIG]:
                 if slaveAxis.intval[ASSE_INT_MASTER] != -1:
                     masterAxisInd = slaveAxis.intval[ASSE_INT_MASTER]
                     masterAxis = data_config.Axis_Param[masterAxisInd]
-                    masterAxisName = get_axis_name(slaveAxis.intval[ASSE_INT_MASTER])
+                    masterAxisName = get_axis_name(Ind=slaveAxis.intval[ASSE_INT_MASTER])
                     _ = [ASSE_REAL_FWVMAX, ASSE_REAL_BWVMAX]
                     for x in _:
                         if int(masterAxis.realval[x]) != int(slaveAxis.realval[x]):
@@ -3063,7 +3068,7 @@ def custom_function():
         logging.info("🔍 Inizio controllo coerenza velocità asse...")
         for axisInd in range(0, MAX_ASSE):
             axis = data_config.Axis_Param[axisInd]
-            axis_name = data_config.Axis_Name[axisInd] or f"AXIS_{axisInd}"
+            axis_name = get_axis_name(Ind=axisInd)
             bwSlow = axis.intval[ASSE_INT_BWVSLOW]
             fwSlow = axis.intval[ASSE_INT_FWVSLOW]
             maxSpeedFw = axis.realval[ASSE_REAL_FWVMAX]
@@ -3207,7 +3212,7 @@ def custom_function():
                     continue
 
                 axis = data_config.Axis_Param[axisInd]
-                axis_name = data_config.Axis_Name[axisInd] or f"AXIS_{axisInd}"
+                axis_name = get_axis_name(Ind=axisInd)
 
                 for label_idx, expected_value in zip(label_indices, expected_tuple):
                     display = Type_AxisParam_Map["intval"][Type_AxisParam_Map["_intval"][label_idx]]["display"]
@@ -3227,7 +3232,7 @@ def custom_function():
         logging.info("🔍 Inizio controllo SP...")
         for axisInd in range(0, MAX_ASSE):
             axis = data_config.Axis_Param[axisInd]
-            axis_name = data_config.Axis_Name[axisInd] or f"AXIS_{axisInd}"
+            axis_name = get_axis_name(Ind=axisInd)
             for val in [ASSE_INT_P1, ASSE_INT_P2]:
                 if axis.intval[val] != -1:
                     logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['intval'][Type_AxisParam_Map['_intval'][val]]['display']} impostato a {axis.intval[val]}")
@@ -3237,7 +3242,7 @@ def custom_function():
         logging.info("🔍 Inizio controllo rapporti feedback...")
         for axisInd in range(0, MAX_ASSE):
             axis = data_config.Axis_Param[axisInd]
-            axis_name = data_config.Axis_Name[axisInd] or f"AXIS_{axisInd}"
+            axis_name = get_axis_name(Ind=axisInd)
             if axis.intval[ASSE_INT_FEEDBACK] != -1:
                 feedback = data_config.Feedback_Param[axis.intval[ASSE_INT_FEEDBACK]]
                 if feedback.realval[FB_REAL_RATIO] != 1:
@@ -3250,6 +3255,7 @@ def custom_function():
 
     def check_interlock_alarm_sys_addr():
         logging.info("🔍 Inizio controllo allarmi con indirizzi di sistema...")
+        # TODO: printaer anche nome allarme
         pinchingPS = 97
         pinchingPS_IO = [get_sys_addr("ALARM.VAL", 97), get_sys_addr("ALARM.VAL", 165),
                          get_sys_addr("ALARM.VAL", 100), get_sys_addr("ALARM.VAL", 101),
@@ -3333,7 +3339,7 @@ def custom_function():
         logging.info("🔍 Inizio controllo deadband feedback...")
         for axisInd in range(0, MAX_ASSE):
             axis = data_config.Axis_Param[axisInd]
-            axis_name = data_config.Axis_Name[axisInd] or f"AXIS_{axisInd}"
+            axis_name = get_axis_name(Ind=axisInd)
             if axis.intval[ASSE_INT_FEEDBACK] != -1:
                 feedback = data_config.Feedback_Param[axis.intval[ASSE_INT_FEEDBACK]]
                 if feedback.realval[FB_REAL_DEADBAND] == 0:
@@ -3352,7 +3358,7 @@ def custom_function():
             axisInd = data_config.AxisFunInd[funInd]
             if axisInd != -1:
                 axis = data_config.Axis_Param[axisInd]
-                axis_name = data_config.Axis_Name[axisInd] or f"AXIS_{axisInd}"
+                axis_name = get_axis_name(Ind=axisInd)
                 if axis.realval[ASSE_REAL_SHH] > axis.realval[ASSE_REAL_SMAX]:
                     logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SHH]]['display']} ({axis.realval[ASSE_REAL_SHH]}) maggiore di {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SMAX]]['display']} ({axis.realval[ASSE_REAL_SMAX]})")
                 elif axis.realval[ASSE_REAL_SMAX] - 10.0 > axis.realval[ASSE_REAL_SHH]:
@@ -3361,6 +3367,7 @@ def custom_function():
 
     def check_params_um() -> None:
         logging.info("🔍 Inizio controllo unità di misura parametri...")
+        # TODO: mettere posizione pagine
         _ = {
             MISURA_LUNGH: [],
             MISURA_GRAD: [],
@@ -3482,7 +3489,7 @@ def custom_function():
         for axisInd in range(0, MAX_ASSE):
             axis = data_config.Axis_Param[axisInd]
 
-            axis_name = get_axis_name(axisInd)
+            axis_name = get_axis_name(Ind=axisInd)
 
             active_bp: list[int] = []
 
@@ -3674,8 +3681,11 @@ def custom_function():
         used = any(data_config.Axis_Param[i].boolval[ASSE_BOOL_BP12] for i in range(0, MAX_ASSE))
         if used:
             disableOnRotation = data_config.InInd[BOOL_IND_DISABLEBP12]
+            disableOnAxisRotation = data_config.Axis_Param[data_config.AxisFunInd[FUN_AXIS_ROT]].intval[ASSE_INT_DISABLEBP12]
+            if disableOnAxisRotation != -1:
+                logging.warning(f"⚠️ Il bypass shock absorber (BP12) è impostato sull'asse invece che in {Config_Map['OutInd']['BOOL_IND_DISABLEBP12']['origin']}")
             if disableOnRotation == -1:
-                logging.warning(f"⚠️ Il bypass shock absorber (BP12) è usato da almeno un asse ma non è definito in: '{Config_Map['OutInd']['BOOL_IND_DISABLEBP12']['origin']}'")
+                logging.warning(f"⚠️ Il bypass shock absorber (BP12) è usato da almeno un asse ma non è definito il disable in: '{Config_Map['OutInd']['BOOL_IND_DISABLEBP12']['origin']}'")
             else:
                 isSW = data_config.IO_DI_List[data_config.InInd[BOOL_IND_DISABLEBP12]].intval[IO_INT_ADDRTYPE] == IO_TYPE_SW
                 ioAddress = data_config.IO_DI_List[data_config.InInd[BOOL_IND_DISABLEBP12]].intval[IO_INT_ADDR1]
@@ -3711,7 +3721,7 @@ def custom_function():
         logging.info("🔍 Inizio controllo coerenza feedback assi...")
         for axisInd in range(0, MAX_ASSE):
             axis = data_config.Axis_Param[axisInd]
-            axis_name = data_config.Axis_Name[axisInd] or f"AXIS_{axisInd}"
+            axis_name = get_axis_name(Ind=axisInd)
             feedback_index = axis.intval[ASSE_INT_FEEDBACK]
 
             if feedback_index != -1:
@@ -3769,17 +3779,52 @@ def custom_function():
 
         logging.info("🔍 Fine controllo valori di output...")
 
-    # def check_slow2_speed():
-    #     logging.info("🔍 Inizio controllo velocità Slow2...")
-    #     bwslow2_ps2 = FUN_AXIS_FREE_70
-    #     fwslow2_pse = FUN_AXIS_FREE_71
-    #     for axisInd in range(0, MAX_ASSE):
-    #         axis = data_config.Axis_Param[axisInd]
-    #         axis_name = data_config.Axis_Name[axisInd] or f"AXIS_{axisInd}"
-    #         if axis.intval[ASSE_INT_PS2] != -1:
-    #             logging.info('TODO: ')
-    #     logging.info("🔍 Fine controllo velocità Slow2...")
+    def check_slow2_speed():
+        logging.info("🔍 Inizio controllo velocità Slow2 PS2...")
+        bwslow2_ps2 = ASSE_INT_BWVSLOW2
+        fwslow2_ps2 = ASSE_INT_FWVSLOW2
+        for axisInd in range(0, MAX_ASSE):
+            if axisInd == 2:
+                _ = 0
+            axis = data_config.Axis_Param[axisInd]
+            axis_name = get_axis_name(Ind=axisInd)
+            bwslow2_value = axis.intval[bwslow2_ps2]
+            fwslow2_value = axis.intval[fwslow2_ps2]
+            if axis.intval[ASSE_INT_PS2] != -1:
+                logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['intval'][Type_AxisParam_Map['_intval'][ASSE_INT_PS2]]['display']} impostato a {axis.intval[ASSE_INT_PS2]}")
+            if bwslow2_value != -1:
+                logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['intval'][Type_AxisParam_Map['_intval'][ASSE_INT_PS2]]['display']} impostato a {bwslow2_value}")
+            if fwslow2_value != -1:
+                logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['intval'][Type_AxisParam_Map['_intval'][ASSE_INT_PS2]]['display']} impostato a {fwslow2_value}")
 
+        logging.info("🔍 Fine controllo velocità Slow2 PS2...")
+
+    def check_lights() -> None:
+        logging.info("🔍 Inizio controllo luci...")
+        machine_start = data_config.OutInd[BOOL_IND_MACHINESTARTED]
+        if machine_start == -1:
+            logging.warning(f"⚠️ {Config_Map['InInd']['BOOL_IND_MACHINESTARTED']['display']} non è configurato in {Config_Map['InInd']['BOOL_IND_MACHINESTARTED']['origin']}")
+        waiting_for_start = data_config.OutInd[BOOL_IND_WAITINGFORSTART]
+        if waiting_for_start == -1:
+            logging.warning(f"⚠️ {Config_Map['InInd']['BOOL_IND_WAITINGFORSTART']['display']} non è configurato in {Config_Map['InInd']['BOOL_IND_WAITINGFORSTART']['origin']}")
+        logging.info("🔍 Fine controllo luci...")
+
+    def check_ao_dint_default_value() -> None:
+        # TODO: verificare che funziono
+        logging.info("🔍 Inizio controllo valori di default AO e DINT...")
+        for i in range(0, MAX_AO):
+            ao = data_config.IO_AO_List[i]
+            if ao.dintval[IO_DINT_DDEFVAL] != 0:
+                logging.warning(f"⚠️ AO [{i}] ha il valore di default impostato a {ao.dintval[IO_DINT_DDEFVAL]} invece di 0")
+        logging.info("🔍 Fine controllo valori di default AO e DINT...")
+
+    # def check_fb_type() -> None:
+    #     logging.info("🔍 Inizio controllo feedback...")
+    #     for i in range(0, MAX_FEEDBACK):
+    #         feedback = data_config.Feedback_Param[i]
+    #         if feedback.intval[FB_INT_TIPO] != -1:
+    #             logging.warning(f"⚠️ Feedback [{i}] ha il parametro {Type_FeedbackParam_Map['intval'][Type_FeedbackParam_Map['_intval'][FB_INT_TIPO]]['display']} impostato a {feedback.intval[FB_INT_TIPO]}")
+    #     logging.info("🔍 Fine controllo feedback...")
 
     foo = [check_axis_flag, check_duplicate_do_ao_usage, check_duplicate_obj_usage, clean_di_axis_check, duplicate_io_address,
            check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release, check_safety, check_rotation,
@@ -3787,7 +3832,9 @@ def custom_function():
            check_archimeter_params, check_bypass_unused, check_remote_control, check_feedback_ratios, check_axis_sp, check_tilt_max_lateral,
            check_interlock_alarm_sys_addr, seq_check, check_automatic_params, deadband_feedback_check,
            check_all_sys_alarms, check_params_um, motor_checks, check_ri_bug, check_io_calc, check_axis_bypass, check_axis_slaves, check_default_axis_speed,
-           check_shock_absorber, check_hdmc, check_bend_prebend_roll, check_axis_feedback_coerence,check_output_scale_values]
+           check_shock_absorber, check_hdmc, check_bend_prebend_roll, check_axis_feedback_coerence, check_output_scale_values, check_slow2_speed, check_lights, check_ao_dint_default_value,
+           # check_fb_type
+           ]
 
     for func in foo:
         logging.info('-' * 60)

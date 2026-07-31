@@ -21,6 +21,7 @@ from urllib3.exceptions import InsecureRequestWarning
 
 from utils.exe.config import get_param, update_param, get_save_folder
 from utils.paths import get_config_path
+from utils.network import AutoIpAddresses, get_auto_ip_addresses
 
 _warnings.simplefilter("ignore", InsecureRequestWarning)
 
@@ -42,6 +43,29 @@ def _build_download_url(addr: str) -> str:
             return addr
         return addr.rstrip("/") + path
     return f"https://{addr}{path}"
+
+
+def download_from_auto_ip(
+    plc_session: requests.Session | None = None,
+) -> tuple[Path, AutoIpAddresses]:
+    """
+    Rileva la porta Ethernet attiva, ricava HMI e PLC e scarica config.yaml.
+
+    Convenzione:
+        IP PC  - 10 = IP HMI
+        IP HMI -  2 = IP PLC
+    """
+    addresses = get_auto_ip_addresses()
+    logging.info(f"🔌 autoIP - Ethernet attiva: {addresses.pc_ip}")
+    logging.info(f"🖥️ autoIP - HMI (PC - 10): {addresses.hmi_ip}")
+    logging.info(f"⚙️ autoIP - PLC (HMI - 2): {addresses.plc_ip}")
+
+    url = _build_download_url(addresses.plc_ip)
+    logging.info(f"⬇️ Connessione automatica al PLC: {addresses.plc_ip}")
+
+    session = plc_session or requests.Session()
+    cfg_path = _download_to_config(plc_session=session, url=url)
+    return cfg_path, addresses
 
 
 def _build_base_url(addr: str) -> str:
@@ -718,6 +742,15 @@ def choose_and_prepare_config(sn: str = None, firstRun: bool = False) -> Path:
     cfg_path = get_config_path("config.yaml", prefer_cwd=True)
     plc_session = requests.Session()
     plc_session_base_url: str | None = None
+
+    if firstRun and get_param("autoIP"):
+        logging.info("\n⚡ autoIP attivo da config.json")
+        try:
+            auto_cfg_path, _ = download_from_auto_ip(plc_session=plc_session)
+            return auto_cfg_path
+        except Exception as e:
+            logging.warning(f"⚠️ autoIP non riuscito: {e}")
+            logging.info("Proseguo con la selezione sorgente standard.")
 
     while True:
         logging.info('')

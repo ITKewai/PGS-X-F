@@ -9,7 +9,7 @@ ConfigValue = Union[str, bool]
 DEFAULT_CONFIG: Dict[str, ConfigValue] = {
     "debug": False,
     "webServer": False,  # <-- FLAG WEBSERVER
-    "autoPlcIp": False,
+    "autoIP": False,
     "logToFile": False,
     "downloadOnStart": True,
     "lastUrl": "",
@@ -49,6 +49,12 @@ def _coerce_config(raw_cfg: Any) -> Dict[str, ConfigValue]:
     """Unisce il config letto da disco con i default, mantenendo solo le chiavi note."""
     if not isinstance(raw_cfg, dict):
         raw_cfg = {}
+    else:
+        raw_cfg = dict(raw_cfg)
+
+    # Migrazione trasparente del vecchio nome, mai utilizzato dalla logica.
+    if "autoIP" not in raw_cfg and "autoPlcIp" in raw_cfg:
+        raw_cfg["autoIP"] = raw_cfg.get("autoPlcIp")
 
     cfg: Dict[str, ConfigValue] = DEFAULT_CONFIG.copy()
     for key, default_value in DEFAULT_CONFIG.items():

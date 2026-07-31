@@ -44,6 +44,7 @@ from utils.yaml.download import (
     _download_to_config,
     fetch_again,
     save_version,
+    download_from_auto_ip,
 )
 
 INDEX_HTML = """<!DOCTYPE html>
@@ -672,12 +673,26 @@ def create_app() -> Flask:
     exe_cfg = load_exe_config()
     debug = bool(exe_cfg.get("debug", False))
 
-    # Tentativo best-effort di caricare il config all'avvio
-    try:
-        _load_yaml_config()
-        logging.info("config.yaml caricato all'avvio del server Flask.")
-    except Exception as e:
-        logging.warning("Impossibile caricare il config all'avvio: %s", e)
+    # Tentativo best-effort di preparare/caricare il config all'avvio.
+    config_loaded_at_start = False
+    if bool(exe_cfg.get("autoIP", False)):
+        try:
+            cfg_path, addresses = download_from_auto_ip(plc_session=requests.Session())
+            _load_yaml_config(str(cfg_path))
+            config_loaded_at_start = True
+            logging.info(
+                "config.yaml scaricato con autoIP dal PLC %s e caricato all'avvio.",
+                addresses.plc_ip,
+            )
+        except Exception as e:
+            logging.warning("autoIP non riuscito all'avvio del server Flask: %s", e)
+
+    if not config_loaded_at_start:
+        try:
+            _load_yaml_config()
+            logging.info("config.yaml caricato all'avvio del server Flask.")
+        except Exception as e:
+            logging.warning("Impossibile caricare il config all'avvio: %s", e)
 
     @app.get("/api/status")
     def api_status():
@@ -733,6 +748,7 @@ def create_app() -> Flask:
         - mode="local"   -> usa _load_yaml_config() sul file locale
         - mode="remote"  -> scarica config.yaml da IP/URL usando _build_download_url + _download_to_config
         - mode="refresh" -> rifà il download da last_url (fetch_again)
+        - mode="auto"    -> ricava il PLC dalla porta Ethernet attiva e scarica
         - mode="save"    -> salva "config {sn} {ver} {date}.yaml" come nel CLI
         """
         payload = request.get_json(silent=True) or {}
@@ -764,6 +780,23 @@ def create_app() -> Flask:
                 cfg_path = _download_to_config(plc_session=plc_session, url=url)
                 info = _load_yaml_config(str(cfg_path))
                 return jsonify({"ok": True, "mode": "remote", "source": url, **info})
+
+            elif mode == "auto":
+                cfg_path, addresses = download_from_auto_ip(
+                    plc_session=requests.Session()
+                )
+                info = _load_yaml_config(str(cfg_path))
+                return jsonify(
+                    {
+                        "ok": True,
+                        "mode": "auto",
+                        "source": addresses.plc_ip,
+                        "pc_ip": addresses.pc_ip,
+                        "hmi_ip": addresses.hmi_ip,
+                        "plc_ip": addresses.plc_ip,
+                        **info,
+                    }
+                )
 
             elif mode == "refresh":
                 # equivalente a fetch_again() del CLI

@@ -410,6 +410,11 @@ def main():
             print(f"⚠️  Ignorata: {folder} (nessun file udt/db/xlsx)")
             continue
 
+        # Se il file è gia presente ignora la cartella
+        output_file_path = os.path.join(exports_dir, f"tia_constants_{folder}.py")
+        if os.path.exists(output_file_path):
+            print(f"⚠️  Ignorata: {folder} (file {output_file_path} già esistente)")
+            continue
         # Nome file output con versione
         output_file = os.path.join(
             exports_dir,

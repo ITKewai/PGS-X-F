@@ -2,12 +2,7 @@
 DA VERIFICARE:
 # TODO: non usare i max_ ma leggere dal file
 
-
-POSSIBILI
-# TODO: rendere questo programma un server web anche cosi si integra nell'hmi ,fare vedere allarmi a lato cliccabili per errori console
-
 A TEMPO PERSO:
-# TODO: in base a indirizzo ip scheda rete imposta ip plc e scarica config
 # TODO: spezzare in piu funzioni ad esempio get axis ecc
 # TODO: check se file capacita su pulpito ha commessa giusta, se indice azzeramento corrisponde al digitale di azzeramento
 

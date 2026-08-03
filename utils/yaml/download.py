@@ -747,6 +747,7 @@ def choose_and_prepare_config(sn: str = None, firstRun: bool = False) -> Path:
         logging.info("\n⚡ autoIP attivo da config.json")
         try:
             auto_cfg_path, _ = download_from_auto_ip(plc_session=plc_session)
+            update_param("autoIP", False)
             return auto_cfg_path
         except Exception as e:
             logging.warning(f"⚠️ autoIP non riuscito: {e}")

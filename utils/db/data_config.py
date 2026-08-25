@@ -1478,8 +1478,8 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None, 
                         logging.warning(f'{idx_name} non definito')
             elif OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_PSLCAN:
                 custom_params = {
-                    "OUTPUT_INT_DIG1IND": "ADV ENABLE",
-                    "OUTPUT_INT_DIG2IND": "ADV BRAKE",
+                    "OUTPUT_INT_DIG1IND": "DIG1",
+                    "OUTPUT_INT_DIG2IND": "DIG2",
                     "OUTPUT_INT_CCIND": "CC",
                 }
                 for idx_name, display in custom_params.items():

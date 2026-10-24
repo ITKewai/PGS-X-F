@@ -1651,3 +1651,12 @@ try:
     Type_OutputType[OUTPUT_SEL4PV] = "SEL4PV"
 except NameError:
     pass
+
+Type_InputType = {
+    -1: "??",
+    0: "??",
+    INPUT_ONOFF: "ONOFF",
+    INPUT_JS: "JS",
+    INPUT_SP: "SP",
+    INPUT_JS4: "JS4"
+}

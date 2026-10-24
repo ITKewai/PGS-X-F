@@ -366,15 +366,32 @@ def process_excel(filepath: str, out):
             print(f"⚠️ File {filename} non ha colonne Name/Value valide, skip.")
             return
 
-        out.write(f"# ===== Costanti da: {filename} =====\n")
-        for _, row in df.iterrows():
-            name = row.get("Name")
-            value = row.get("Value")
-            comment = row.get("Comment")
-            if pd.notna(name) and pd.notna(value):
+        # Raggruppamento puramente visivo tramite colonna Path.
+        # Nessuna modifica ai nomi, ai valori o all'accessibilita delle costanti.
+        if "Path" in df.columns:
+            groups = df.groupby("Path", sort=False, dropna=False)
+        else:
+            groups = [("Constants", df)]
+
+        for path, group in groups:
+            valid_rows = group[group["Name"].notna() & group["Value"].notna()]
+            if valid_rows.empty:
+                continue
+            # Ordina numericamente dal valore piu piccolo al piu grande
+            # all'interno di ogni Path; a parita di valore mantiene l'ordine originale.
+            valid_rows = valid_rows.sort_values(by="Value", ascending=True, kind="stable")
+            category = str(path) if pd.notna(path) else "Constants"
+            category = sanitize_class_name(category)
+            out.write(f"ID_{category} = {len(valid_rows)}\n")
+
+            for _, row in valid_rows.iterrows():
+                name = row.get("Name")
+                value = row.get("Value")
+                comment = row.get("Comment")
                 cmt = f"  # {comment}" if isinstance(comment, str) else ""
                 out.write(f"{name} = {int(value)}{cmt}\n")
-        out.write("\n\n")
+            out.write("\n")
+        out.write("\n")
     except Exception as e:
         print(f"❌ Errore leggendo {filename}: {e}")
 
@@ -412,9 +429,9 @@ def main():
 
         # Se il file è gia presente ignora la cartella
         output_file_path = os.path.join(exports_dir, f"tia_constants_{folder}.py")
-        if os.path.exists(output_file_path):
-            print(f"⚠️  Ignorata: {folder} (file {output_file_path} già esistente)")
-            continue
+        # if os.path.exists(output_file_path):
+        #     print(f"⚠️  Ignorata: {folder} (file {output_file_path} già esistente)")
+        #     continue
         # Nome file output con versione
         output_file = os.path.join(
             exports_dir,

@@ -20,6 +20,7 @@ import warnings as _warnings
 from urllib3.exceptions import InsecureRequestWarning
 
 from utils.exe.config import get_param, update_param, get_save_folder
+from utils.exports.tia_constants_map import ConstantsCheckIntegrity
 from utils.paths import get_config_path
 from utils.network import AutoIpAddresses, get_auto_ip_addresses
 
@@ -753,6 +754,7 @@ def choose_and_prepare_config(sn: str = None, firstRun: bool = False) -> Path:
             logging.warning(f"⚠️ autoIP non riuscito: {e}")
             logging.info("Proseguo con la selezione sorgente standard.")
 
+    ConstantsCheckIntegrity()
     while True:
         logging.info('')
         logging.info("Selezione sorgente file 'config.yaml'")

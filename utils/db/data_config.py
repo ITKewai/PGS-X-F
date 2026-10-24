@@ -1398,223 +1398,120 @@ def run_input_scan(iotype: int, ind_target: int = None, inputInd: int = None, ve
     return _return
 
 
+def _output_scan_fields(outputInd: int, iotype: int) -> list[tuple[str, str]]:
+    """Campi Output_Param che riferiscono il tipo IO richiesto.
+
+    Il tipo di IO di alcuni campi dipende da OUTPUT_INT_TIPO e non
+    soltanto dai metadati statici di Type_OutputParam_Map.
+    """
+    values = data_config.Output_Param[outputInd].intval
+    output_type = values[OUTPUT_INT_TIPO]
+
+    # Regole specifiche: nome del campo -> (tipo IO, etichetta visualizzata).
+    special = {}
+    if iotype == IO_DI:
+        special = {
+            "OUTPUT_INT_ACTIND": (IO_DI, "ACT"),
+            "OUTPUT_INT_ENAB": (IO_DI, "ENAB"),
+            "OUTPUT_INT_ENAB2": (IO_DI, "ENAB2"),
+            "OUTPUT_INT_ENAB3": (IO_DI, "ENAB3"),
+        }
+        if output_type == OUTPUT_ATV340:
+            special.update({
+                "OUTPUT_INT_DIG1IND": (IO_DI, "DIG1 ATV340 TORQUE"),
+                "OUTPUT_INT_DIG2IND": (IO_DI, "DIG2 ATV340 ALARM"),
+                "OUTPUT_INT_CCIND": (IO_DI, "CC ATV340 THERMALFAN"),
+            })
+    elif output_type == OUTPUT_ADV and iotype == IO_DO:
+        special = {
+            "OUTPUT_INT_ANA2IND": (IO_DO, "ADV START"),
+            "OUTPUT_INT_DIG1IND": (IO_DO, "ADV ENABLE"),
+            "OUTPUT_INT_DIG2IND": (IO_DO, "ADV BRAKE"),
+            "OUTPUT_INT_CCIND": (IO_DO, "CC"),
+        }
+    elif output_type == OUTPUT_PSLCAN:
+        if iotype == IO_DO:
+            special = {
+                "OUTPUT_INT_DIG1IND": (IO_DO, "DIG1"),
+                "OUTPUT_INT_DIG2IND": (IO_DO, "DIG2"),
+                "OUTPUT_INT_CCIND": (IO_DO, "CC"),
+            }
+        elif iotype == IO_AI:
+            special = {
+                "OUTPUT_INT_ADDPARAM2": (IO_AI, "STATUS1 PSLCAN"),
+                "OUTPUT_INT_ADDPARAM4": (IO_AI, "STATUS2 PSLCAN"),
+            }
+        elif iotype == IO_AO:
+            special = {
+                "OUTPUT_INT_ANA1IND": (IO_AO, "ANA1"),
+                "OUTPUT_INT_ANA2IND": (IO_AO, "ANA2"),
+                "OUTPUT_INT_ADDPARAM1": (IO_AO, "CTRL1 PSLCAN"),
+                "OUTPUT_INT_ADDPARAM3": (IO_AO, "CTRL2 PSLCAN"),
+            }
+    elif output_type == OUTPUT_ATV340 and iotype == IO_DO:
+        special = {"OUTPUT_INT_ANA2IND": (IO_DO, "ANA2 ATV340 START FAN")}
+
+    if iotype == IO_DO and output_type == OUTPUT_SELSLOW:
+        special.update({
+            "OUTPUT_INT_ANA1IND": (IO_DO, "DIG1ADD"),
+            "OUTPUT_INT_ANA2IND": (IO_DO, "DIG2ADD"),
+        })
+    if iotype == IO_AO and output_type == globals().get("OUTPUT_SEL4PV"):
+        # La costante non esiste in alcune versioni.
+        if "OUTPUT_SEL4PV" in globals():
+            special.update({
+                "OUTPUT_INT_DIG1IND": (IO_AO, "ANA3"),
+                "OUTPUT_INT_DIG2IND": (IO_AO, "ANA4"),
+            })
+
+    # Per determinati dispositivi la mappatura standard non e' valida.
+    use_standard = (
+        iotype in (IO_DO, IO_AI, IO_AO)
+        and not (iotype == IO_DO and output_type in (OUTPUT_ADV, OUTPUT_PSLCAN, OUTPUT_ATV340))
+        and not (iotype in (IO_AI, IO_AO) and output_type in (OUTPUT_ADV, OUTPUT_PSLCAN))
+    )
+
+    fields = {}
+    if use_standard:
+        for idx, idx_name in Type_OutputParam_Map["_intval"].items():
+            info = Type_OutputParam_Map["intval"].get(idx_name, {})
+            if iotype in info.get("type", []):
+                fields[idx_name] = info.get("display", idx_name)
+
+    # Le regole specifiche hanno precedenza sulle etichette standard.
+    for idx_name, (actual_type, label) in special.items():
+        if actual_type == iotype:
+            if idx_name in Type_OutputParam_Map["intval"]:
+                fields[idx_name] = label
+            else:
+                logging.warning(f"{idx_name} non definito")
+
+    return list(fields.items())
+
+
 def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None, verbose: bool = False) -> List[str]:
     if outputInd is None:
         logging.debug('IN: run_output_scan')
-    """
-    iotype: tipo di io
-    Ind: indice da cercare
-    outputInd: output dove cercarlo
-    """
-    if outputInd is not None:
-        _return = []
-        if iotype == IO_DI:
-            OutputParamIntVals = data_config.Output_Param[outputInd].intval
-            custom_params = {
-                "OUTPUT_INT_ACTIND": "ACT",
-                "OUTPUT_INT_ENAB": "ENAB",
-                "OUTPUT_INT_ENAB2": "ENAB2",
-                "OUTPUT_INT_ENAB3": "ENAB3",
-            }
-            for idx_name, display in custom_params.items():
-                idx = next((k for k, v in Type_OutputParam_Map["_intval"].items() if v == idx_name), None)
-                if idx is not None:
-                    if OutputParamIntVals[idx] == ind_target:
-                        origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
-                        txt = f"{origin.format(outputInd)}\t→\t{display}"
-                        _return.append(txt)
-                        if verbose:
-                            logging.info(txt)
-                else:
-                    logging.warning(f'{idx_name} non definito')
-            if OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_ATV340:
-                custom_params = {
-                    "OUTPUT_INT_DIG1IND": "DIG1 ATV340 TORQUE",
-                    "OUTPUT_INT_DIG2IND": "DIG2 ATV340 ALARM",
-                    "OUTPUT_INT_CCIND": "CC ATV340 THERMALFAN",
-                }
-                for idx_name, display in custom_params.items():
-                    idx = next((k for k, v in Type_OutputParam_Map["_intval"].items() if v == idx_name), None)
-                    if idx is not None:
-                        if OutputParamIntVals[idx] == ind_target:
-                            origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
-                            txt = f"{origin.format(outputInd)}\t→\t{display}"
-                            _return.append(txt)
-                            if verbose:
-                                logging.info(txt)
-                    else:
-                        logging.warning(f'{idx_name} non definito')
-        elif iotype == IO_DO:
-            OutputParamIntVals = data_config.Output_Param[outputInd].intval
-            if OutputParamIntVals[OUTPUT_INT_TIPO] not in [OUTPUT_ADV, OUTPUT_PSLCAN, OUTPUT_ATV340]:
-                for idx, val in enumerate(OutputParamIntVals):
-                    idx_name = Type_OutputParam_Map["_intval"][idx]
-                    output_Type = Type_OutputParam_Map["intval"][idx_name].get("type", [])
-                    if iotype in output_Type:
-                        if val == ind_target:
-                            display = Type_OutputParam_Map["intval"][idx_name]["display"]
-                            origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
-                            txt = f"{origin.format(outputInd)}\t→\t{display}"
-                            _return.append(txt)
-                            if verbose:
-                                logging.info(txt)
-            elif OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_ADV:
-                custom_params = {
-                    "OUTPUT_INT_ANA2IND": "ADV START",
-                    "OUTPUT_INT_DIG1IND": "ADV ENABLE",
-                    "OUTPUT_INT_DIG2IND": "ADV BRAKE",
-                    "OUTPUT_INT_CCIND": "CC",
-                }
-                for idx_name, display in custom_params.items():
-                    idx = next((k for k, v in Type_OutputParam_Map["_intval"].items() if v == idx_name),
-                               None)
-                    if idx is not None:
-                        if OutputParamIntVals[idx] == ind_target:
-                            origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
-                            txt = f"{origin.format(outputInd)}\t→\t{display}"
-                            _return.append(txt)
-                            if verbose:
-                                logging.info(txt)
-                    else:
-                        logging.warning(f'{idx_name} non definito')
-            elif OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_PSLCAN:
-                custom_params = {
-                    "OUTPUT_INT_DIG1IND": "DIG1",
-                    "OUTPUT_INT_DIG2IND": "DIG2",
-                    "OUTPUT_INT_CCIND": "CC",
-                }
-                for idx_name, display in custom_params.items():
-                    idx = next((k for k, v in Type_OutputParam_Map["_intval"].items() if v == idx_name),
-                               None)
-                    if idx is not None:
-                        if OutputParamIntVals[idx] == ind_target:
-                            origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
-                            txt = f"{origin.format(outputInd)}\t→\t{display}"
-                            _return.append(txt)
-                            if verbose:
-                                logging.info(txt)
-                    else:
-                        logging.warning(f'{idx_name} non definito')
-            elif OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_ATV340:
-                custom_params = {
-                    "OUTPUT_INT_ANA2IND": "ANA2 ATV340 START FAN",
-                }
-                for idx_name, display in custom_params.items():
-                    idx = next((k for k, v in Type_OutputParam_Map["_intval"].items() if v == idx_name), None)
-                    if idx is not None:
-                        if OutputParamIntVals[idx] == ind_target:
-                            origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
-                            txt = f"{origin.format(outputInd)}\t→\t{display}"
-                            _return.append(txt)
-                            if verbose:
-                                logging.info(txt)
-                    else:
-                        logging.warning(f'{idx_name} non definito')
-            if OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_SELSLOW:
-                custom_params = {
-                    "OUTPUT_INT_ANA1IND": "DIG1ADD",
-                    "OUTPUT_INT_ANA2IND": "DIG2ADD",
-                }
-                for idx_name, display in custom_params.items():
-                    idx = next((k for k, v in Type_OutputParam_Map["_intval"].items() if v == idx_name), None)
-                    if idx is not None:
-                        if OutputParamIntVals[idx] == ind_target:
-                            origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
-                            txt = f"{origin.format(outputInd)}\t→\t{display}"
-                            _return.append(txt)
-                            if verbose:
-                                logging.info(txt)
-                    else:
-                        logging.warning(f'{idx_name} non definito')
-        elif iotype == IO_AI:
-            OutputParamIntVals = data_config.Output_Param[outputInd].intval
-            if OutputParamIntVals[OUTPUT_INT_TIPO] not in [OUTPUT_ADV, OUTPUT_PSLCAN]:
-                for idx, val in enumerate(OutputParamIntVals):
-                    idx_name = Type_OutputParam_Map["_intval"][idx]
-                    output_Type = Type_OutputParam_Map["intval"][idx_name].get("type", [])
-                    if iotype in output_Type:
-                        if val == ind_target:
-                            display = Type_OutputParam_Map["intval"][idx_name]["display"]
-                            origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
-                            txt = f"{origin.format(outputInd)}\t→\t{display}"
-                            _return.append(txt)
-                            if verbose:
-                                logging.info(txt)
-            if OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_PSLCAN:
-                custom_params = {
-                    "OUTPUT_INT_ADDPARAM2": "STATUS1 PSLCAN",
-                    "OUTPUT_INT_ADDPARAM4": "STATUS2 PSLCAN",
-                }
-                for idx_name, display in custom_params.items():
-                    idx = next((k for k, v in Type_OutputParam_Map["_intval"].items() if v == idx_name), None)
-                    if idx is not None:
-                        if OutputParamIntVals[idx] == ind_target:
-                            origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
-                            txt = f"{origin.format(outputInd)}\t→\t{display}"
-                            _return.append(txt)
-                            if verbose:
-                                logging.info(txt)
-                    else:
-                        logging.warning(f'{idx_name} non definito')
-        elif iotype == IO_AO:
-            OutputParamIntVals = data_config.Output_Param[outputInd].intval
-            if OutputParamIntVals[OUTPUT_INT_TIPO] not in [OUTPUT_ADV, OUTPUT_PSLCAN]:
-                for idx, val in enumerate(OutputParamIntVals):
-                    idx_name = Type_OutputParam_Map["_intval"][idx]
-                    output_Type = Type_OutputParam_Map["intval"][idx_name].get("type", [])
-                    if iotype in output_Type:
-                        if val == ind_target:
-                            display = Type_OutputParam_Map["intval"][idx_name]["display"]
-                            origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
-                            if verbose:
-                                logging.info(f"{origin.format(outputInd)}\t→\t{display}")
-            if OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_PSLCAN:
-                custom_params = {
-                    "OUTPUT_INT_ANA1IND": "ANA1",
-                    "OUTPUT_INT_ANA2IND": "ANA2",
-                    "OUTPUT_INT_ADDPARAM1": "CTRL1 PSLCAN",
-                    "OUTPUT_INT_ADDPARAM3": "CTRL2 PSLCAN",
-                }
-                for idx_name, display in custom_params.items():
-                    idx = next((k for k, v in Type_OutputParam_Map["_intval"].items() if v == idx_name), None)
-                    if idx is not None:
-                        if OutputParamIntVals[idx] == ind_target:
-                            origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
-                            txt = f"{origin.format(outputInd)}\t→\t{display}"
-                            _return.append(txt)
-                            if verbose:
-                                logging.info(txt)
-                    else:
-                        logging.warning(f'{idx_name} non definito')
-            try:
-                if OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_SEL4PV:
-                    custom_params = {
-                        "OUTPUT_INT_DIG1IND": "ANA3",
-                        "OUTPUT_INT_DIG2IND": "ANA4",
-                    }
-                    for idx_name, display in custom_params.items():
-                        idx = next((k for k, v in Type_OutputParam_Map["_intval"].items() if v == idx_name), None)
-                        if idx is not None:
-                            if OutputParamIntVals[idx] == ind_target:
-                                origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
-                                txt = f"{origin.format(outputInd)}\t→\t{display}"
-                                _return.append(txt)
-                                if verbose:
-                                    logging.info(txt)
-                        else:
-                            logging.warning(f'{idx_name} non definito')
-            except NameError:
-                pass  # OUTPUT_SEL4PV non definito in questa versione
-
-    else:
-        _return = []
+        result = []
         for i in range(0, MAX_OUTPUT):
-            found = run_output_scan(iotype=iotype, ind_target=ind_target, outputInd=i, verbose=verbose)
-            if found:
-                _return.extend(found)
-    if outputInd is None:
+            result.extend(run_output_scan(iotype=iotype, ind_target=ind_target, outputInd=i, verbose=verbose))
         logging.debug('OUT: run_output_scan')
-    return _return
+        return result
+
+    result = []
+    values = data_config.Output_Param[outputInd].intval
+    index_by_name = {name: idx for idx, name in Type_OutputParam_Map["_intval"].items()}
+    for idx_name, display in _output_scan_fields(outputInd, iotype):
+        idx = index_by_name.get(idx_name)
+        if idx is None or idx >= len(values):
+            continue
+        if values[idx] == ind_target:
+            origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
+            txt = f"{origin.format(outputInd)}\t→\t{display}"
+            result.append(txt)
+            if verbose:
+                logging.info(txt)
+    return result
 
 
 def run_feedback_scan(iotype: int, ind_target: int = None, feedbackInd: int = None, verbose: bool = False) -> List[str]:
@@ -3869,7 +3766,7 @@ def custom_function():
                 logging.warning(f"⚠️ DI [{i}] {get_io_name(iotype=IO_DI, Ind=i)} ha il timeout impostato a {io.intval[IO_INT_TIMEOUT]}")
         logging.info("🔍 Fine controllo ritardi IO...")
 
-        def cstmnf() -> None:
+    def cstmnf() -> None:
         major, minor, patch, build, revision = get_pgsx_version()
         if minor != 29:
             return
@@ -3927,29 +3824,124 @@ def custom_function():
                     logging.info(f"\tOutput [{outputInd}]:")
                     output = data_config.Output_Param[outputInd]
                     output_type = output.intval[OUTPUT_INT_TIPO]
-                    output_ana1 = f"{Type_OutputParam_Map['intval']['OUTPUT_INT_ANA1IND']['display']} {get_io_fullname(iotype=IO_AI, Ind=output.intval[OUTPUT_INT_ANA1IND])}" if output.intval[OUTPUT_INT_ANA1IND] != -1 else ''
-                    output_ana2 = f"{Type_OutputParam_Map['intval']['OUTPUT_INT_ANA2IND']['display']} {get_io_fullname(iotype=IO_AI, Ind=output.intval[OUTPUT_INT_ANA2IND])}" if output.intval[OUTPUT_INT_ANA2IND] != -1 else ''
-                    output_dig1 = output.intval[OUTPUT_INT_DIG1IND]
-                    output_dig2 = output.intval[OUTPUT_INT_DIG2IND]
-                    output_cc = output.intval[OUTPUT_INT_CCIND]
-                    output_enab1 = output.intval[OUTPUT_INT_ENABIND]
-                    output_enab2 = output.intval[OUTPUT_INT_ENAB2IND]
-                    output_enab3 = output.intval[OUTPUT_INT_ENAB3IND]
-                    logging.info(f"\t\tTipo: {Type_OutputType[output_type]}, {output_ana1}, {output_ana2}, DIG1_IND: {output_dig1}, DIG2_IND: {output_dig2}, CC_IND: {output_cc}, "
-                                 f"ENAB1_IND: {output_enab1}, ENAB2_IND: {output_enab2}, ENAB3_IND: {output_enab3}, "
-                                 f"SCALAMIN1: {output.realval[OUTPUT_REAL_VALMIN1]}, SCALAMAX1: {output.realval[OUTPUT_REAL_VALMAX1]}, "
-                                 f"SCALAMIN2: {output.realval[OUTPUT_REAL_VALMIN2]}, SCALAMAX2: {output.realval[OUTPUT_REAL_VALMAX2]}")
+                    # I campi di Output_Param non hanno un tipo IO fisso:
+                    # dipende dal tipo di output, come in run_output_scan.
+                    def output_io_type(param_idx, default_type):
+                        if output_type == OUTPUT_ADV and param_idx == OUTPUT_INT_ANA2IND:
+                            return IO_DO
+                        if output_type == OUTPUT_ATV340:
+                            if param_idx in (OUTPUT_INT_DIG1IND, OUTPUT_INT_DIG2IND, OUTPUT_INT_CCIND):
+                                return IO_DI
+                            if param_idx == OUTPUT_INT_ANA2IND:
+                                return IO_DO
+                        if output_type == OUTPUT_SELSLOW and param_idx in (OUTPUT_INT_ANA1IND, OUTPUT_INT_ANA2IND):
+                            return IO_DO
+                        if 'OUTPUT_SEL4PV' in globals() and output_type == globals()['OUTPUT_SEL4PV']:
+                            if param_idx in (OUTPUT_INT_DIG1IND, OUTPUT_INT_DIG2IND):
+                                return IO_AO
+                        return default_type
+
+                    def format_output_io(param_idx, default_type):
+                        ind = output.intval[param_idx]
+                        if ind == -1:
+                            return ''
+                        io_type = output_io_type(param_idx, default_type)
+                        io_label = {IO_DI: 'DI', IO_DO: 'DO', IO_AI: 'AI', IO_AO: 'AO', IO_RI: 'RI'}[io_type]
+                        param_name = Type_OutputParam_Map['_intval'][param_idx]
+                        display = Type_OutputParam_Map['intval'][param_name]['display']
+                        return f"{display}: {io_label} {get_io_fullname(iotype=io_type, Ind=ind)}"
+
+                    fields = [
+                        format_output_io(OUTPUT_INT_ANA1IND, IO_AO),
+                        format_output_io(OUTPUT_INT_ANA2IND, IO_AO),
+                        format_output_io(OUTPUT_INT_DIG1IND, IO_DO),
+                        format_output_io(OUTPUT_INT_DIG2IND, IO_DO),
+                        format_output_io(OUTPUT_INT_CCIND, IO_DO),
+                        format_output_io(OUTPUT_INT_ENABIND, IO_DI),
+                        format_output_io(OUTPUT_INT_ENAB2IND, IO_DI),
+                        format_output_io(OUTPUT_INT_ENAB3IND, IO_DI),
+                    ]
+                    if output_type == OUTPUT_PSLCAN:
+                        fields.extend([
+                            format_output_io(OUTPUT_INT_ADDPARAM1, IO_AO),
+                            format_output_io(OUTPUT_INT_ADDPARAM2, IO_AI),
+                            format_output_io(OUTPUT_INT_ADDPARAM3, IO_AO),
+                            format_output_io(OUTPUT_INT_ADDPARAM4, IO_AI),
+                        ])
+                    # Stampa leggibile: un segnale per riga, scale separate.
+                    logging.info(f"\t\tTipo: {Type_OutputType[output_type]}")
+                    configured_fields = [field for field in fields if field]
+                    if configured_fields:
+                        logging.info("\t\tSegnali:")
+                        for field in configured_fields:
+                            logging.info(f"\t\t  {field}")
+                    logging.info("\t\tProporzionali:")
+                    logging.info(f"\t\t  SCALAMIN1: {output.dintval[OUTPUT_DINT_SCALEMIN1]}")
+                    logging.info(f"\t\t  SCALAMAX1: {output.dintval[OUTPUT_DINT_SCALEMAX1]}")
+                    logging.info(f"\t\t  SCALAMIN2: {output.dintval[OUTPUT_DINT_SCALEMIN2]}")
+                    logging.info(f"\t\t  SCALAMAX2: {output.dintval[OUTPUT_DINT_SCALEMAX2]}")
+                    logging.info("\t\tScale:")
+                    logging.info(f"\t\t  VALMIN1: {output.realval[OUTPUT_REAL_VALMIN1]}")
+                    logging.info(f"\t\t  VALMAX1: {output.realval[OUTPUT_REAL_VALMAX1]}")
+                    logging.info(f"\t\t  VALMIN2: {output.realval[OUTPUT_REAL_VALMIN2]}")
+                    logging.info(f"\t\t  VALMAX2: {output.realval[OUTPUT_REAL_VALMAX2]}")
                 else:
                     logging.warning(f"⚠️ {get_axis_fullname(i)} non ha output configurato per OUTPUT{y - ASSE_INT_OUTPUT1 + 1}")
+            ids = [ASSE_INT_INPUT, ASSE_INT_INPUT2, ASSE_INT_INPUT3, ASSE_INT_INPUT4]
+            for y in ids:
+                inputInd = axis.intval[y]
+                if inputInd != -1:
+                    logging.info(f"\tInput [{inputInd}]:")
+                    _input = data_config.Input_Param[inputInd]
+                    _input_type = _input.intval[INPUT_INT_TIPO]
 
-    foo = [check_axis_flag, check_duplicate_do_ao_usage, check_duplicate_obj_usage, clean_di_axis_check, duplicate_io_address,
-           check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release, check_safety, check_rotation,
-           geometry_check, check_axis_speed_master_slave, check_forbidden_ao_do_usage, check_de_tilt, check_stop_alarms, check_axis_speed,
-           check_archimeter_params, check_bypass_unused, check_remote_control, check_feedback_ratios, check_axis_sp, check_tilt_max_lateral,
-           check_interlock_alarm_sys_addr, seq_check, check_automatic_params, deadband_feedback_check,
-           check_all_sys_alarms, check_params_um, motor_checks, check_ri_bug, check_io_calc, check_axis_bypass, check_axis_slaves, check_default_axis_speed,
-           check_shock_absorber, check_hdmc, check_bend_prebend_roll, check_axis_feedback_coerence, check_output_scale_values, check_slow2_speed, check_lights, check_ao_dint_default_value,
-           check_do_default_value, check_io_delay, cstmnf
+                    def format_input_io(param_idx, default_type):
+                        ind = _input.intval[param_idx]
+                        if ind == -1:
+                            return ''
+                        io_type = default_type
+                        io_label = {IO_DI: 'DI', IO_DO: 'DO', IO_AI: 'AI', IO_AO: 'AO', IO_RI: 'RI'}[io_type]
+                        param_name = Type_InputParam_Map['_intval'][param_idx]
+                        display = Type_InputParam_Map['intval'][param_name]['display']
+                        return f"{display}: {io_label} {get_io_fullname(iotype=io_type, Ind=ind)}"
+
+                    fields = [
+                        format_input_io(INPUT_INT_ANAIND, IO_AI),
+                        format_input_io(INPUT_INT_UPIND, IO_DI),
+                        format_input_io(INPUT_INT_DOWNIND, IO_DI),
+                        # todo: K
+                        format_input_io(INPUT_INT_UP2IND, IO_DI),
+                        format_input_io(INPUT_INT_DOWN2IND, IO_DI),
+                        format_input_io(INPUT_INT_ENABIND, IO_DI),
+                        format_input_io(INPUT_INT_ENAB2IND, IO_DI),
+                        format_input_io(INPUT_INT_ENAB3IND, IO_DI),
+                        format_input_io(INPUT_INT_SUPIND, IO_AI),
+                    ]
+                    # Stampa leggibile: un segnale per riga, scale separate.
+                    logging.info(f"\t\tTipo: {Type_InputType[_input_type]}")
+                    configured_fields = [field for field in fields if field]
+                    if configured_fields:
+                        logging.info("\t\tSegnali:")
+                        for field in configured_fields:
+                            logging.info(f"\t\t  {field}")
+                    logging.info("\t\tScale:")
+                    logging.info(f"\t\t  VMIN: {_input.dintval[INPUT_DINT_VMIN]}")
+                    logging.info(f"\t\t  VMAX: {_input.dintval[INPUT_DINT_VMAX]}")
+                    logging.info(f"\t\t  VMIN2: {_input.dintval[INPUT_DINT_VMIN2]}")
+                    logging.info(f"\t\t  VMAX2: {_input.dintval[INPUT_DINT_VMAX2]}")
+                else:
+                    logging.warning(
+                        f"⚠️ {get_axis_fullname(i)} non ha input configurato per INPUT{y - ASSE_INT_INPUT + 1}")
+    foo = [
+       #  check_axis_flag, check_duplicate_do_ao_usage, check_duplicate_obj_usage, clean_di_axis_check, duplicate_io_address,
+       # check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release, check_safety, check_rotation,
+       # geometry_check, check_axis_speed_master_slave, check_forbidden_ao_do_usage, check_de_tilt, check_stop_alarms, check_axis_speed,
+       # check_archimeter_params, check_bypass_unused, check_remote_control, check_feedback_ratios, check_axis_sp, check_tilt_max_lateral,
+       # check_interlock_alarm_sys_addr, seq_check, check_automatic_params, deadband_feedback_check,
+       # check_all_sys_alarms, check_params_um, motor_checks, check_ri_bug, check_io_calc, check_axis_bypass, check_axis_slaves, check_default_axis_speed,
+       # check_shock_absorber, check_hdmc, check_bend_prebend_roll, check_axis_feedback_coerence, check_output_scale_values, check_slow2_speed, check_lights, check_ao_dint_default_value,
+       # check_do_default_value, check_io_delay,
+           cstmnf
            ]
 
     for func in foo:

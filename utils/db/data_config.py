@@ -3800,7 +3800,7 @@ def custom_function():
                     else:
                         logging.critical(f"⚠️ [{feedbackInd}] Feedback di tipo AI non ha IN_IND configurato")
                     if fb_reset_ind != -1:
-                        fb_reset_ind_name = get_io_fullname(iotype=IO_DI, Ind=feedback.int)
+                        fb_reset_ind_name = get_io_fullname(iotype=IO_DI, Ind=fb_reset_ind)
 
                     fb_in_ind_result = (f"IN_IND: {fb_in_ind_name}" if fb_in_ind_name else "") + (f", RESET_IND: {fb_reset_ind_name}" if fb_reset_ind_name else "")
                 elif fb_type == FB_DI:
@@ -3812,12 +3812,12 @@ def custom_function():
                     else:
                         logging.critical(f"⚠️ [{feedbackInd}] Feedback di tipo DI non ha IN_IND configurato")
                     if fb_reset_ind != -1:
-                        fb_reset_ind_name = get_io_fullname(iotype=IO_DI, Ind=feedback.int)
+                        fb_reset_ind_name = get_io_fullname(iotype=IO_DI, Ind=fb_reset_ind)
 
                     fb_in_ind_result = (f"IN_IND: {fb_in_ind_name}" if fb_in_ind_name else "") + (f", RESET_IND: {fb_reset_ind_name}" if fb_reset_ind_name else "")
                 else:
                     fb_in_ind_result = feedback.intval[FB_INT_ININD]
-                logging.info(f"\tFeedback [{feedbackInd}]]: {Type_FeedbackType[feedback.intval[FB_INT_TIPO]]}-{Unita_Misura[feedback.intval[FB_INT_TIPOMISURA]]}, "
+                logging.info(f"\tFeedback [{feedbackInd}]: {Type_FeedbackType[feedback.intval[FB_INT_TIPO]]}-{Unita_Misura[feedback.intval[FB_INT_TIPOMISURA]]}, "
                              f"{fb_in_ind_result}, UNDERFLOW: {feedback.dintval[FB_DINT_INF]}, OVERFLOW: {feedback.dintval[FB_DINT_SUP]}")
             else:
                 logging.warning(f"⚠️ {get_axis_fullname(i)} non ha feedback configurato")
@@ -3828,6 +3828,7 @@ def custom_function():
                     logging.info(f"\tOutput [{outputInd}]:")
                     output = data_config.Output_Param[outputInd]
                     output_type = output.intval[OUTPUT_INT_TIPO]
+
                     # I campi di Output_Param non hanno un tipo IO fisso:
                     # dipende dal tipo di output, come in run_output_scan.
                     def output_io_type(param_idx, default_type):

@@ -648,7 +648,7 @@ def _deserialize_obj_axis(data: Dict[str, Any]) -> None:
         real_list = _as_list(block.get("real"))
         for j in range(min(len(real_list), MAX_ASSEREAL + 1)):  # TODO: leggere dal file
             fv = _to_float(real_list[j], 0.0)
-            try: # TODO: v0.27
+            try:# TODO: v0.27
                 data_config.Axis_Param[ind].realvalcfg[j] = fv
             except Exception:
                 logging.critical(f"data_config.Axis_Param[{ind}].realvalcfg[{j}] = {fv}")
@@ -1232,6 +1232,7 @@ def run_params_scan(iotype: int, ind_target: int, verbose: bool = False) -> List
             if val == ind_target:
                 if pid < len(Config_Map["InInd"]):
                     entry = Config_Map["_InInd"][pid]
+                    # if iotype in Config_Map["InInd"][entry].get("type", []):
                     txt = f'{Config_Map["InInd"][entry]["origin"]}\t→\t{Config_Map["InInd"][entry]["display"]}'
                     _return.append(txt)
                     if verbose:
@@ -1535,8 +1536,10 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None, 
                         if val == ind_target:
                             display = Type_OutputParam_Map["intval"][idx_name]["display"]
                             origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
+                            txt = f"{origin.format(outputInd)}\t→\t{display}"
+                            _return.append(txt)
                             if verbose:
-                                logging.info(f"{origin.format(outputInd)}\t→\t{display}")
+                                logging.info(txt)
             if OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_PSLCAN:
                 custom_params = {
                     "OUTPUT_INT_ADDPARAM2": "STATUS1 PSLCAN",
@@ -1583,6 +1586,25 @@ def run_output_scan(iotype: int, ind_target: int = None, outputInd: int = None, 
                                 logging.info(txt)
                     else:
                         logging.warning(f'{idx_name} non definito')
+            try:
+                if OutputParamIntVals[OUTPUT_INT_TIPO] == OUTPUT_SEL4PV:
+                    custom_params = {
+                        "OUTPUT_INT_DIG1IND": "ANA3",
+                        "OUTPUT_INT_DIG2IND": "ANA4",
+                    }
+                    for idx_name, display in custom_params.items():
+                        idx = next((k for k, v in Type_OutputParam_Map["_intval"].items() if v == idx_name), None)
+                        if idx is not None:
+                            if OutputParamIntVals[idx] == ind_target:
+                                origin = Type_OutputParam_Map["intval"][idx_name]["origin"]
+                                txt = f"{origin.format(outputInd)}\t→\t{display}"
+                                _return.append(txt)
+                                if verbose:
+                                    logging.info(txt)
+                        else:
+                            logging.warning(f'{idx_name} non definito')
+            except NameError:
+                pass  # OUTPUT_SEL4PV non definito in questa versione
 
     else:
         _return = []
@@ -2567,7 +2589,7 @@ def custom_function():
     def clean_di_axis_check() -> None:
         logging.info("🔍 Avvio controllo axis_flag_checks...")
         # TODO: se versione >= 53 diventano INTERI e non DI quindi printare se valore diverso da -1
-        major, minor, patch, build = get_pgsx_version()
+        major, minor, patch, build, revision = get_pgsx_version()
         for axisInd in range(0, MAX_ASSE):
             AxisParamIntVals = data_config.Axis_Param[axisInd].intval
             to_check = [ASSE_INT_INDSHH, ASSE_INT_INDSH, ASSE_INT_INDSL, ASSE_INT_INDSLL, ASSE_INT_INDSH0, ASSE_INT_INDSL0]
@@ -2993,7 +3015,7 @@ def custom_function():
         if top_roll_diameter > data_config.ParamReal[REAL_TROUTERDIAM]:
             logging.warning(f"⚠️ Modello macchina {model}, diametro rullo superiore maggiore di quello in geo: {data_config.ParamReal[REAL_TROUTERDIAM]}")
         elif top_roll_diameter < data_config.ParamReal[REAL_TROUTERDIAM]:
-            logging.warning(f"⚠️ Modello macchina {model}, diametro rullo superiore minore 1di quello in geo: {data_config.ParamReal[REAL_TROUTERDIAM]}")
+            logging.warning(f"⚠️ Modello macchina {model}, diametro rullo superiore minore di quello in geo: {data_config.ParamReal[REAL_TROUTERDIAM]}")
 
         k = data_config.ParamReal[REAL_K]
         alfa = data_config.ParamReal[REAL_TOPANG] * math.pi / 180.0
@@ -3041,7 +3063,7 @@ def custom_function():
         if axisDe.intval[ASSE_INT_TIMEOUT2] == 0:
             logging.warning(f"⚠️ [{axisDeInd}]{axisDe_name} TIMEOUT MAN non impostato (tempo di inclinazione automatico DE DOWN)")
         if axisTilt.intval[ASSE_INT_TIMEOUT1] != 0:
-            logging.warning(f"⚠️ [{axisTiltInd}]{axisTilt_name} ritardo inclinazione in manuale impostato, interferenza con DE DOWN, impostare a 0")
+            logging.warning(f"⚠️ [{axisTiltInd}]{axisTilt_name} ritardo inclinazione in manuale impostato, interferenza con DE DOWN, impostare a 0 {Type_AxisParam_Map['intval'][Type_AxisParam_Map['_intval'][ASSE_INT_TIMEOUT1]]['display']}")
         logging.info("🔍 Fine controllo auto tilt...")
 
     def check_stop_alarms() -> None:
@@ -3052,6 +3074,9 @@ def custom_function():
         if get_pgsx_version()[1] >= 25:
             safetyStop = [126, 127, 131, 133, 134, 136, 137, 140, 141, 142, 144, 145, 146, 147, 148, 149, 150, 151,
                           152, 165, 166, 167, 168, 169, 170, 171, 172, 174, 175]
+            # TODO: riconoscere i nomi degli allarmi in base alla versione PGSX
+            # if get_pgsx_version()[3] == 5 # TODO: vedere norme progetto ma se sono offline che foi? meglio falg nel config
+
         for i in normalstop:
             alarm = data_config.Alarm_Param[i]
             alarmName = data_config.Alarm_Name[i] or f"ALARM_{i}"
@@ -3091,6 +3116,8 @@ def custom_function():
 
     def check_archimeter_params() -> None:
         logging.info("🔍 Inizio controllo parametri archimetro...")
+        # TODO: vedere anche i numeri dentro che coincidino
+
         _ = [
             "REAL_ARCHIMETER_L1",
             "REAL_ARCHIMETER_A1",
@@ -3261,13 +3288,19 @@ def custom_function():
                          get_sys_addr("ALARM.VAL", 100), get_sys_addr("ALARM.VAL", 101),
                          get_sys_addr("ALARM.VAL", 167), get_sys_addr("ALARM.VAL", 168),
                          get_sys_addr("ALARM.VAL", 98), get_sys_addr("ALARM.VAL", 166)]
-        major, minor, patch, build = get_pgsx_version()
+        major, minor, patch, build, revision = get_pgsx_version()
         if patch >= 50:  # passando alla versione 50 si aggiungono 16 allarmi in piu in mezzo e quindi cambiano gli indirizzi di sistema, bisogna tenerne conto per il controllo
             pinchingPS = 113
             pinchingPS_IO = [get_sys_addr("ALARM.VAL", 97+16), get_sys_addr("ALARM.VAL", 165+16),
                              get_sys_addr("ALARM.VAL", 100+16), get_sys_addr("ALARM.VAL", 101+16),
                              get_sys_addr("ALARM.VAL", 167+16), get_sys_addr("ALARM.VAL", 168+16),
                              get_sys_addr("ALARM.VAL", 98+16), get_sys_addr("ALARM.VAL", 166+16)]
+            if patch == 50 and build >= 5: # aggiunta allarmi alla versione 25.50.6.5
+                pinchingPS = 113
+                pinchingPS_IO = [get_sys_addr("ALARM.VAL", 97+16+16), get_sys_addr("ALARM.VAL", 165+16+16),
+                                 get_sys_addr("ALARM.VAL", 100+16+16), get_sys_addr("ALARM.VAL", 101+16+16),
+                                 get_sys_addr("ALARM.VAL", 167+16+16), get_sys_addr("ALARM.VAL", 168+16+16),
+                                 get_sys_addr("ALARM.VAL", 98+16+16), get_sys_addr("ALARM.VAL", 166+16+16)]
         alarmPinching_IN = data_config.Alarm_Param[pinchingPS].intval[ALARM_INT_INDIN]
         # if alarmPinching_IN != -1:
         #     exprGroup = get_expr_from_di(alarmPinching_IN)
@@ -3363,6 +3396,8 @@ def custom_function():
                     logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SHH]]['display']} ({axis.realval[ASSE_REAL_SHH]}) maggiore di {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SMAX]]['display']} ({axis.realval[ASSE_REAL_SMAX]})")
                 elif axis.realval[ASSE_REAL_SMAX] - 10.0 > axis.realval[ASSE_REAL_SHH]:
                     logging.warning(f"⚠️ [{axisInd}]{axis_name} ha il parametro {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SHH]]['display']} ({axis.realval[ASSE_REAL_SHH]})troppo lontano da {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SMAX]]['display']} ({ axis.realval[ASSE_REAL_SMAX]}), considerare di aumentare {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SHH]]['display']} o aumentare {Type_AxisParam_Map['realval'][Type_AxisParam_Map['_realval'][ASSE_REAL_SMAX]]['display']}")
+        if not data_config.ParamBool[BOOL_STEP]:
+            logging.critical(f"⚠️ Parametro {Config_Map['ParamBool']['BOOL_STEP']['display']} non attivo, attivarlo in {Config_Map['ParamBool']['BOOL_STEP']['origin']}")
         logging.info("🔍 Fine controllo parametri automatici...")
 
     def check_params_um() -> None:
@@ -3818,13 +3853,94 @@ def custom_function():
                 logging.warning(f"⚠️ AO [{i}] ha il valore di default impostato a {ao.dintval[IO_DINT_DDEFVAL]} invece di 0")
         logging.info("🔍 Fine controllo valori di default AO e DINT...")
 
-    # def check_fb_type() -> None:
-    #     logging.info("🔍 Inizio controllo feedback...")
-    #     for i in range(0, MAX_FEEDBACK):
-    #         feedback = data_config.Feedback_Param[i]
-    #         if feedback.intval[FB_INT_TIPO] != -1:
-    #             logging.warning(f"⚠️ Feedback [{i}] ha il parametro {Type_FeedbackParam_Map['intval'][Type_FeedbackParam_Map['_intval'][FB_INT_TIPO]]['display']} impostato a {feedback.intval[FB_INT_TIPO]}")
-    #     logging.info("🔍 Fine controllo feedback...")
+    def check_do_default_value() -> None:
+        logging.info("🔍 Inizio controllo valori di default DO...")
+        for i in range(0, MAX_DO):
+            do = data_config.IO_DO_List[i]
+            if do.boolval[IO_BOOL_BDEFVAL]:
+                logging.warning(f"⚠️ [{i}] {get_io_name(iotype=IO_DO, Ind=i)} ha il valore di default impostato a {do.dintval[IO_DINT_DDEFVAL]}")
+        logging.info("🔍 Fine controllo valori di default DO...")
+
+    def check_io_delay() -> None:
+        logging.info("🔍 Inizio controllo ritardi IO...")
+        for i in range(0, MAX_DI):
+            io = data_config.IO_DI_List[i]
+            if io.intval[IO_INT_ADDRTYPE] == IO_TYPE_CALC and io.intval[IO_INT_TIMEOUT] not in [0, -1]:
+                logging.warning(f"⚠️ DI [{i}] {get_io_name(iotype=IO_DI, Ind=i)} ha il timeout impostato a {io.intval[IO_INT_TIMEOUT]}")
+        logging.info("🔍 Fine controllo ritardi IO...")
+
+        def cstmnf() -> None:
+        major, minor, patch, build, revision = get_pgsx_version()
+        if minor != 29:
+            return
+        logging.info("🔍 Inizio controllo custom...")
+        for i in range(0, MAX_ASSE):
+            axis = data_config.Axis_Param[i]
+            '''
+            [i] axis_name: tipo misura
+            fbX: indice, tipo feedback, tipo misura, indice, in_ind, reset_ind, underflow,overflow
+            alt_fb: trigger
+            altfbX: indice, tipo feedback, tipo misura, indice, in_ind, reset_ind, underflow,overflow
+            inputX: tipo, tipo misura, ana, digup digdown, htrbool, enab1, enab2, enab3, sup, vmin vmax vmin2 vmax2
+            outputX: tipo, ana1 ana2 dig1 dig2 cc enab1, enab2, enab3, scalemin1, scalemax1, scalemin2, scalemax2
+            '''
+            # TODO: gestire eccezioni per indici non configurati
+            logging.info(f"{get_axis_fullname(i)}: ({Unita_Misura[axis.intval[ASSE_INT_TIPOMISURA]]})")
+            feedbackInd = axis.intval[ASSE_INT_FEEDBACK]
+            if feedbackInd != -1:
+                feedback = data_config.Feedback_Param[feedbackInd]
+                fb_type = feedback.intval[FB_INT_TIPO]
+                if fb_type == FB_AI:
+                    fb_in_ind_name, fb_reset_ind_name = '', ''
+                    fb_in_ind = feedback.intval[FB_INT_ININD]
+                    fb_reset_ind = feedback.intval[FB_INT_RESETIND]
+                    if fb_in_ind != -1:
+                        fb_in_ind_name = get_io_fullname(iotype=IO_AI, Ind=feedback.intval[FB_INT_ININD])
+                    else:
+                        logging.critical(f"⚠️ [{feedbackInd}] Feedback di tipo AI non ha IN_IND configurato")
+                    if fb_reset_ind != -1:
+                        fb_reset_ind_name = get_io_fullname(iotype=IO_DI, Ind=feedback.int)
+
+                    fb_in_ind_result = (f"IN_IND: {fb_in_ind_name}" if fb_in_ind_name else "") + (f", RESET_IND: {fb_reset_ind_name}" if fb_reset_ind_name else "")
+                elif fb_type == FB_DI:
+                    fb_in_ind_name, fb_reset_ind_name = '', ''
+                    fb_in_ind = feedback.intval[FB_INT_ININD]
+                    fb_reset_ind = feedback.intval[FB_INT_RESETIND]
+                    if fb_in_ind != -1:
+                        fb_in_ind_name = get_io_fullname(iotype=IO_DI, Ind=feedback.intval[FB_INT_ININD])
+                    else:
+                        logging.critical(f"⚠️ [{feedbackInd}] Feedback di tipo DI non ha IN_IND configurato")
+                    if fb_reset_ind != -1:
+                        fb_reset_ind_name = get_io_fullname(iotype=IO_DI, Ind=feedback.int)
+
+                    fb_in_ind_result = (f"IN_IND: {fb_in_ind_name}" if fb_in_ind_name else "") + (f", RESET_IND: {fb_reset_ind_name}" if fb_reset_ind_name else "")
+                else:
+                    fb_in_ind_result = feedback.intval[FB_INT_ININD]
+                logging.info(f"\tFeedback [{feedbackInd}]]: {Type_FeedbackType[feedback.intval[FB_INT_TIPO]]}-{Unita_Misura[feedback.intval[FB_INT_TIPOMISURA]]}, "
+                             f"{fb_in_ind_result}, UNDERFLOW: {feedback.dintval[FB_DINT_INF]}, OVERFLOW: {feedback.dintval[FB_DINT_SUP]}")
+            else:
+                logging.warning(f"⚠️ {get_axis_fullname(i)} non ha feedback configurato")
+            ids = [ASSE_INT_OUTPUT1, ASSE_INT_OUTPUT2, ASSE_INT_OUTPUT3, ASSE_INT_OUTPUT4]
+            for y in ids:
+                outputInd = axis.intval[y]
+                if outputInd != -1:
+                    logging.info(f"\tOutput [{outputInd}]:")
+                    output = data_config.Output_Param[outputInd]
+                    output_type = output.intval[OUTPUT_INT_TIPO]
+                    output_ana1 = f"{Type_OutputParam_Map['intval']['OUTPUT_INT_ANA1IND']['display']} {get_io_fullname(iotype=IO_AI, Ind=output.intval[OUTPUT_INT_ANA1IND])}" if output.intval[OUTPUT_INT_ANA1IND] != -1 else ''
+                    output_ana2 = f"{Type_OutputParam_Map['intval']['OUTPUT_INT_ANA2IND']['display']} {get_io_fullname(iotype=IO_AI, Ind=output.intval[OUTPUT_INT_ANA2IND])}" if output.intval[OUTPUT_INT_ANA2IND] != -1 else ''
+                    output_dig1 = output.intval[OUTPUT_INT_DIG1IND]
+                    output_dig2 = output.intval[OUTPUT_INT_DIG2IND]
+                    output_cc = output.intval[OUTPUT_INT_CCIND]
+                    output_enab1 = output.intval[OUTPUT_INT_ENABIND]
+                    output_enab2 = output.intval[OUTPUT_INT_ENAB2IND]
+                    output_enab3 = output.intval[OUTPUT_INT_ENAB3IND]
+                    logging.info(f"\t\tTipo: {Type_OutputType[output_type]}, {output_ana1}, {output_ana2}, DIG1_IND: {output_dig1}, DIG2_IND: {output_dig2}, CC_IND: {output_cc}, "
+                                 f"ENAB1_IND: {output_enab1}, ENAB2_IND: {output_enab2}, ENAB3_IND: {output_enab3}, "
+                                 f"SCALAMIN1: {output.realval[OUTPUT_REAL_VALMIN1]}, SCALAMAX1: {output.realval[OUTPUT_REAL_VALMAX1]}, "
+                                 f"SCALAMIN2: {output.realval[OUTPUT_REAL_VALMIN2]}, SCALAMAX2: {output.realval[OUTPUT_REAL_VALMAX2]}")
+                else:
+                    logging.warning(f"⚠️ {get_axis_fullname(i)} non ha output configurato per OUTPUT{y - ASSE_INT_OUTPUT1 + 1}")
 
     foo = [check_axis_flag, check_duplicate_do_ao_usage, check_duplicate_obj_usage, clean_di_axis_check, duplicate_io_address,
            check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release, check_safety, check_rotation,
@@ -3833,7 +3949,7 @@ def custom_function():
            check_interlock_alarm_sys_addr, seq_check, check_automatic_params, deadband_feedback_check,
            check_all_sys_alarms, check_params_um, motor_checks, check_ri_bug, check_io_calc, check_axis_bypass, check_axis_slaves, check_default_axis_speed,
            check_shock_absorber, check_hdmc, check_bend_prebend_roll, check_axis_feedback_coerence, check_output_scale_values, check_slow2_speed, check_lights, check_ao_dint_default_value,
-           # check_fb_type
+           check_do_default_value, check_io_delay, cstmnf
            ]
 
     for func in foo:

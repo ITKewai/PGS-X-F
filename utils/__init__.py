@@ -16,8 +16,6 @@ DIFFICILE:
 # TODO: controllare versione plc via http (/Portal/Portal.mwsl?PriNav=Online&SecNav=Ident)
 # todo: paraletri supporto a croce di tipo lung
 # TODO: se asse 42 attivo allora reset tipo const
-# TODO: printare tutti i DI delayed con nome e quanto tempo sono impostati per sapere se i PS laterali hanno un ritardo attivo o no
-# TODO: vedere se il bit "STEP" è attivo in params
 # TODO: VEDERE TIPO DI RESET se diverso da calc
 # todo: IN CONTROLLO INPUT SE VALORE NEGATIVO allora è un JS il vmin non deve essere 0 ma qualcos altro sotto i 500/1000
 
@@ -26,5 +24,4 @@ DIFFICILE:
 # TODO: salvare invece di config old config_cXXXX_vPLC_SAVEMAP
 
 # TODO: v27,28 ECCEZZZIONI
-
 """

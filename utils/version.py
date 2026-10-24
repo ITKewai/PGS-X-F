@@ -28,5 +28,8 @@ def short() -> str:
 
 
 def get_pgsx_version() -> list[int]:
-    """Ritorna la versione come (major, minor, patch, build)."""
-    return [int(part) for part in pgs_version.split('.')]
+    """Ritorna la versione come (major, minor, patch, build, revision)."""
+    _ = [int(part) for part in pgs_version.split('.')]
+    while len(_) < 5:
+        _.append(0)
+    return _

@@ -2421,6 +2421,28 @@ def custom_function():
         logging.info(f'🔍Fine controllo duplicati DO AO...')
         return duplicates
 
+    def check_duplicate_di_ai_usage():
+        """
+            Controlla se una DI/AI è referenziata in più punti nel progetto.
+        Usa run_io_scan per verificare dove viene utilizzata ogni uscita.
+        """
+        logging.info(f'🔍Avvio controllo duplicati DI AI...')
+        duplicates = {}
+
+        for iotype, label in [(IO_DI, "DI"), (IO_AI, "AI")]:
+            io_list = data_config.IO_DI_List if iotype == IO_DI else data_config.IO_AI_List
+
+            for idx in range(len(io_list)):
+                used_in = run_io_search(iotype=iotype, Ind=idx, verbose=False)
+                if len(used_in) > 1:
+                    io_name = get_io_name(iotype=iotype, Ind=idx)
+                    duplicates[io_name or f"{label}[{idx}]"] = used_in
+                    logging.warning(f"⚠️ {label}[{idx}] {io_name or ''} usato in più punti:")
+                    for u in used_in:
+                        logging.warning(f"   ↳ {u}")
+        logging.info(f'🔍Fine controllo duplicati DI AI...')
+        return duplicates
+
     def check_duplicate_obj_usage(verbose: bool = True) -> dict:
         """
         Controlla se input, output o feedback sono usati in più assi diversi.
@@ -3398,7 +3420,7 @@ def custom_function():
         logging.info("🔍 Fine controllo bug IO Calc...")
 
     def check_axis_bypass(axisIndFilter: int = -1) -> None:
-        if axisIndFilter != -1:
+        if axisIndFilter == -1:
             logging.info("🔍 Inizio controllo bypass assi...")
 
         # Costruzione dinamica BP1..BP12 usando le costanti esistenti
@@ -3479,11 +3501,16 @@ def custom_function():
             if bp_names:
                 header += f" ({' + '.join(bp_names)})"
 
-            logging.warning(f"\n{header}:")
-            for axis_name in groups[key]:
-                logging.warning(axis_name)
-
-        logging.info("🔍 Fine controllo bypass assi.")
+            if axisIndFilter != -1:
+                # Singolo asse: stampa solo i bypass, senza nome asse
+                logging.info(f"\t{header}")
+            else:
+                # Tutti gli assi: mantiene la stampa raggruppata originale
+                logging.warning(f"\n{header}:")
+                for axis_name in groups[key]:
+                    logging.warning(axis_name)
+        if axisIndFilter == -1:
+            logging.info("🔍 Fine controllo bypass assi.")
 
     def check_axis_slaves() -> None:
         logging.info("🔍 Inizio controllo assi master/slave...")
@@ -3773,7 +3800,7 @@ def custom_function():
         major, minor, patch, build, revision = get_pgsx_version()
         if minor != 29:
             return
-        logging.info("🔍 Inizio controllo custom...")
+        logging.info("🔍 Inizio controllo cstmnf...")
         for i in range(0, MAX_ASSE):
             axis = data_config.Axis_Param[i]
             '''
@@ -3791,6 +3818,9 @@ def custom_function():
             if feedbackInd != -1:
                 feedback = data_config.Feedback_Param[feedbackInd]
                 fb_type = feedback.intval[FB_INT_TIPO]
+                fb_inf = feedback.realval[FB_REAL_SCALEINF]
+                fb_sup = feedback.realval[FB_REAL_SCALESUP]
+                fb_ratio = feedback.realval[FB_REAL_RATIO]
                 if fb_type == FB_AI:
                     fb_in_ind_name, fb_reset_ind_name = '', ''
                     fb_in_ind = feedback.intval[FB_INT_ININD]
@@ -3818,7 +3848,7 @@ def custom_function():
                 else:
                     fb_in_ind_result = feedback.intval[FB_INT_ININD]
                 logging.info(f"\tFeedback [{feedbackInd}]: {Type_FeedbackType[feedback.intval[FB_INT_TIPO]]}-{Unita_Misura[feedback.intval[FB_INT_TIPOMISURA]]}, "
-                             f"{fb_in_ind_result}, UNDERFLOW: {feedback.dintval[FB_DINT_INF]}, OVERFLOW: {feedback.dintval[FB_DINT_SUP]}")
+                             f"{fb_in_ind_result}, UNDERFLOW: {feedback.dintval[FB_DINT_INF]}, OVERFLOW: {feedback.dintval[FB_DINT_SUP]}, SCALEINF: {fb_inf}, SCALESUP: {fb_sup}, RATIO: {fb_ratio}")
             else:
                 logging.warning(f"⚠️ {get_axis_fullname(i)} non ha feedback configurato")
             ids = [ASSE_INT_OUTPUT1, ASSE_INT_OUTPUT2, ASSE_INT_OUTPUT3, ASSE_INT_OUTPUT4]
@@ -3937,16 +3967,17 @@ def custom_function():
                 else:
                     logging.warning(
                         f"⚠️ {get_axis_fullname(i)} non ha input configurato per INPUT{y - ASSE_INT_INPUT + 1}")
+            check_axis_bypass(axisIndFilter=i)
 
     foo = [
-       #  check_axis_flag, check_duplicate_do_ao_usage, check_duplicate_obj_usage, clean_di_axis_check, duplicate_io_address,
-       # check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release, check_safety, check_rotation,
-       # geometry_check, check_axis_speed_master_slave, check_forbidden_ao_do_usage, check_de_tilt, check_stop_alarms, check_axis_speed,
-       # check_archimeter_params, check_bypass_unused, check_remote_control, check_feedback_ratios, check_axis_sp, check_tilt_max_lateral,
-       # check_interlock_alarm_sys_addr, seq_check, check_automatic_params, deadband_feedback_check,
-       # check_all_sys_alarms, check_params_um, motor_checks, check_ri_bug, check_io_calc, check_axis_bypass, check_axis_slaves, check_default_axis_speed,
-       # check_shock_absorber, check_hdmc, check_bend_prebend_roll, check_axis_feedback_coerence, check_output_scale_values, check_slow2_speed, check_lights, check_ao_dint_default_value,
-       # check_do_default_value, check_io_delay,
+        check_axis_flag, check_duplicate_do_ao_usage, check_duplicate_di_ai_usage, check_duplicate_obj_usage, clean_di_axis_check, duplicate_io_address,
+       check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release, check_safety, check_rotation,
+       geometry_check, check_axis_speed_master_slave, check_forbidden_ao_do_usage, check_de_tilt, check_stop_alarms, check_axis_speed,
+       check_archimeter_params, check_bypass_unused, check_remote_control, check_feedback_ratios, check_axis_sp, check_tilt_max_lateral,
+       check_interlock_alarm_sys_addr, seq_check, check_automatic_params, deadband_feedback_check,
+       check_all_sys_alarms, check_params_um, motor_checks, check_ri_bug, check_io_calc, check_axis_bypass, check_axis_slaves, check_default_axis_speed,
+       check_shock_absorber, check_hdmc, check_bend_prebend_roll, check_axis_feedback_coerence, check_output_scale_values, check_slow2_speed, check_lights, check_ao_dint_default_value,
+       check_do_default_value, check_io_delay,
            cstmnf
            ]
 

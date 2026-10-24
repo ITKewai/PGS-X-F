@@ -162,7 +162,7 @@ def main():
             try:
                 idx_raw = input(f"\nInserisci INDEX per {sys_type} (0..{idx_prompt_max}): ").strip()
                 index = int(idx_raw)
-            except TypeError as e:
+            except (ValueError, TypeError) as e:
                 logging.critical(f"INDEX non valido: {e}")
                 continue
 

@@ -3397,8 +3397,9 @@ def custom_function():
                             logging.warning(f"⚠️ DI {idx} ha espressioni calcolate ma non è un tipo CALC")
         logging.info("🔍 Fine controllo bug IO Calc...")
 
-    def check_axis_bypass() -> None:
-        logging.info("🔍 Inizio controllo bypass assi...")
+    def check_axis_bypass(axisIndFilter: int = -1) -> None:
+        if axisIndFilter != -1:
+            logging.info("🔍 Inizio controllo bypass assi...")
 
         # Costruzione dinamica BP1..BP12 usando le costanti esistenti
         bypass_map: list[tuple[int, int, int]] = []
@@ -3419,6 +3420,8 @@ def custom_function():
         groups: dict[tuple[int, ...], list[str]] = {}
 
         for axisInd in range(0, MAX_ASSE):
+            if axisIndFilter != -1 and axisInd != axisIndFilter:
+                continue
             axis = data_config.Axis_Param[axisInd]
 
             axis_name = get_axis_name(Ind=axisInd)
@@ -3782,6 +3785,7 @@ def custom_function():
             outputX: tipo, ana1 ana2 dig1 dig2 cc enab1, enab2, enab3, scalemin1, scalemax1, scalemin2, scalemax2
             '''
             # TODO: gestire eccezioni per indici non configurati
+            logging.info('-----------------------------------------')
             logging.info(f"{get_axis_fullname(i)}: ({Unita_Misura[axis.intval[ASSE_INT_TIPOMISURA]]})")
             feedbackInd = axis.intval[ASSE_INT_FEEDBACK]
             if feedbackInd != -1:
@@ -3932,6 +3936,7 @@ def custom_function():
                 else:
                     logging.warning(
                         f"⚠️ {get_axis_fullname(i)} non ha input configurato per INPUT{y - ASSE_INT_INPUT + 1}")
+
     foo = [
        #  check_axis_flag, check_duplicate_do_ao_usage, check_duplicate_obj_usage, clean_di_axis_check, duplicate_io_address,
        # check_axis_um, check_duplicate_funaxis, check_lat_sup, check_oil_temp, check_release, check_safety, check_rotation,

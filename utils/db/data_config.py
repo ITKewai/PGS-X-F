@@ -246,11 +246,13 @@ def _deserialize_UM(data: Dict[str, Any]) -> None:
         try:
             data_config.UM_FC[i] = data_config.UM_FC_Met[i]
         except Exception:
-            logging.critical(f"UM_FC_Met[{i}] non disponibile, controllare il file YAML.")
+            # logging.critical(f"UM_FC_Met[{i}] non disponibile, controllare il file YAML.")
+            ...
         try:
             data_config.UM_Offset[i] = data_config.UM_Offset_Met[i]
         except Exception:
-            logging.critical(f"UM_FC_Met[{i}] non disponibile, controllare il file YAML.")
+            # logging.critical(f"UM_FC_Met[{i}] non disponibile, controllare il file YAML.")
+            ...
         data_config.UM_NDec[i] = data_config.UM_NDec_Met[i]
         data_config.UM_Name[i] = data_config.UM_Name_Met[i]
 
@@ -531,7 +533,8 @@ def _deserialize_io_row(field: str, ind: int, row: Sequence[Any]) -> None:
         try:
             data_config.IO_Param[k].realvalcfg[j] = fv
         except Exception:
-            logging.critical("data_config.IO_Param[k].realvalcfg[j] = fv")
+            # logging.critical("data_config.IO_Param[k].realvalcfg[j] = fv")
+            ...
         data_config.IO_Param[k].realval[j] = fv
 
     # EXPRINT / EXPRREAL opzionali (TYPEVERSION >= 25)
@@ -651,7 +654,8 @@ def _deserialize_obj_axis(data: Dict[str, Any]) -> None:
             try:# TODO: v0.27
                 data_config.Axis_Param[ind].realvalcfg[j] = fv
             except Exception:
-                logging.critical(f"data_config.Axis_Param[{ind}].realvalcfg[{j}] = {fv}")
+                # logging.critical(f"data_config.Axis_Param[{ind}].realvalcfg[{j}] = {fv}")
+                ...
             data_config.Axis_Param[ind].realval[j] = fv
 
         type_list = _as_list(block.get("type"))
@@ -692,7 +696,8 @@ def _deserialize_obj_input(data: Dict[str, Any]) -> None:
             try: # TODO: v0.27
                 data_config.Input_Param[ind].dintvalcfg[j] = iv
             except Exception:
-                logging.critical(f"data_config.Input_Param[{ind}].dintvalcfg[{j}] = {iv}")
+                # logging.critical(f"data_config.Input_Param[{ind}].dintvalcfg[{j}] = {iv}")
+                ...
             data_config.Input_Param[ind].dintval[j] = iv
     logging.debug('OUT: _deserialize_obj_input')
 
@@ -757,7 +762,8 @@ def _deserialize_obj_fb(data: Dict[str, Any]) -> None:
             try: # TODO: v0.27
                 data_config.Feedback_Param[ind].realvalcfg[j] = fv
             except Exception:
-                logging.critical(f"data_config.Feedback_Param[{ind}].realvalcfg[{j}] = {fv}")
+                # logging.critical(f"data_config.Feedback_Param[{ind}].realvalcfg[{j}] = {fv}")
+                ...
             data_config.Feedback_Param[ind].realval[j] = fv
     logging.debug('OUT: _deserialize_obj_fb')
 
@@ -3848,7 +3854,7 @@ def custom_function():
                 else:
                     fb_in_ind_result = feedback.intval[FB_INT_ININD]
                 logging.info(f"\tFeedback [{feedbackInd}]: {Type_FeedbackType[feedback.intval[FB_INT_TIPO]]}-{Unita_Misura[feedback.intval[FB_INT_TIPOMISURA]]}, "
-                             f"{fb_in_ind_result}, UNDERFLOW: {feedback.dintval[FB_DINT_INF]}, OVERFLOW: {feedback.dintval[FB_DINT_SUP]}, SCALEINF: {fb_inf}, SCALESUP: {fb_sup}, RATIO: {fb_ratio}")
+                             f"IND:{fb_in_ind_result}, UNDERFLOW: {feedback.dintval[FB_DINT_INF]}, OVERFLOW: {feedback.dintval[FB_DINT_SUP]}, SCALEINF: {fb_inf}, SCALESUP: {fb_sup}, RATIO: {fb_ratio}")
             else:
                 logging.warning(f"⚠️ {get_axis_fullname(i)} non ha feedback configurato")
             ids = [ASSE_INT_OUTPUT1, ASSE_INT_OUTPUT2, ASSE_INT_OUTPUT3, ASSE_INT_OUTPUT4]

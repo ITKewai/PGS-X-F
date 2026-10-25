@@ -14,7 +14,8 @@ import random
 import re
 from pathlib import Path
 from urllib.parse import urlparse
-
+import json
+import os
 import requests
 import warnings as _warnings
 from urllib3.exceptions import InsecureRequestWarning
@@ -24,7 +25,10 @@ from utils.exports.tia_constants_map import ConstantsCheckIntegrity
 from utils.paths import get_config_path
 from utils.network import AutoIpAddresses, get_auto_ip_addresses
 
+
 _warnings.simplefilter("ignore", InsecureRequestWarning)
+
+COOKIE_FILE = Path.home() / ".pgsxf_siemens_sessions.json"
 
 
 def _build_download_url(addr: str) -> str:
@@ -303,65 +307,81 @@ def _get_cookie_from_response(response: requests.Response, cookie_name: str) -> 
     return None
 
 
-def _save_siemens_session_cookie(response: requests.Response, base_url: str) -> bool:
-    """
-    Salva siemens_ad_session dentro config.json/sessionCookies,
-    indicizzandolo per base_url del PLC.
-    """
-    cookie_value = _get_cookie_from_response(response, "siemens_ad_session")
-    if not cookie_value:
-        return False
-
-    base_url = _build_base_url(base_url)
-
-    session_cookies = get_param("sessionCookies") or {}
-    if not isinstance(session_cookies, dict):
-        session_cookies = {}
-
-    session_cookies[base_url] = {
-        "siemens_ad_session": cookie_value,
-        "savedAt": datetime.datetime.now().isoformat(timespec="seconds"),
-    }
-
-    update_param("sessionCookies", session_cookies)
-    logging.info("💾 Cookie Siemens salvato in sessionCookies")
-
-    return True
-
-
-def _restore_siemens_session_cookie(
-    plc_session: requests.Session,
-    base_url: str,
-) -> bool:
-    """
-    Ripristina siemens_ad_session da config.json/sessionCookies
-    nella requests.Session corrente.
-    """
-    base_url = _build_base_url(base_url)
-    session_cookies = get_param("sessionCookies") or {}
-
-    if not isinstance(session_cookies, dict):
-        return False
-
-    data = session_cookies.get(base_url)
-    if not isinstance(data, dict):
-        return False
-
-    cookie_value = data.get("siemens_ad_session")
-    if not cookie_value:
-        return False
-
-    host = urlparse(base_url).hostname
-
-    plc_session.cookies.set(
-        "siemens_ad_session",
-        cookie_value,
-        domain=host,
-        path="/",
+def _save_siemens_session_cookie(response, base_url):
+    cookie_value = _get_cookie_from_response(
+        response, "siemens_ad_session"
     )
+    if not cookie_value:
+        return False
 
-    logging.info("♻️ Cookie Siemens ripristinato da sessionCookies")
-    return True
+    base_url = _build_base_url(base_url)
+
+    try:
+        sessions = {}
+
+        if COOKIE_FILE.exists():
+            sessions = json.loads(
+                COOKIE_FILE.read_text(encoding="utf-8")
+            )
+
+        if not isinstance(sessions, dict):
+            sessions = {}
+
+        sessions[base_url] = {
+            "siemens_ad_session": cookie_value
+        }
+
+        temp_file = COOKIE_FILE.with_suffix(".tmp")
+        temp_file.write_text(
+            json.dumps(sessions, indent=2),
+            encoding="utf-8"
+        )
+        os.replace(temp_file, COOKIE_FILE)
+
+        logging.info("Cookie Siemens salvato su disco")
+        return True
+
+    except Exception:
+        logging.exception("Errore salvataggio cookie")
+        return False
+
+
+
+def _restore_siemens_session_cookie(plc_session, base_url):
+    base_url = _build_base_url(base_url)
+
+    try:
+        if not COOKIE_FILE.exists():
+            logging.info("Nessun cookie Siemens salvato")
+            return False
+
+        sessions = json.loads(
+            COOKIE_FILE.read_text(encoding="utf-8")
+        )
+
+        cookie_value = (
+            sessions.get(base_url, {})
+            .get("siemens_ad_session")
+        )
+
+        if not cookie_value:
+            return False
+
+        host = urlparse(base_url).hostname
+
+        plc_session.cookies.set(
+            "siemens_ad_session",
+            cookie_value,
+            domain=host,
+            path="/"
+        )
+
+        logging.info("Cookie Siemens ripristinato da disco")
+        return True
+
+    except Exception:
+        logging.exception("Errore ripristino cookie")
+        return False
 
 def _is_login_ok(response: requests.Response, base_url: str | None = None) -> bool:
     """
@@ -503,7 +523,7 @@ def login_plc(
     base_url = _build_base_url(base_url)
     login_url = f"{base_url}/FormLogin"
 
-    logging.info(f"🔐 Login PLC 1: {login_url} , username: {login}, password: {password}")
+    logging.info(f"🔐 Login PLC 1: {login_url} , username: {login}")
 
     r = _login_plc_with_credentials(
         session=plc_session,
@@ -523,7 +543,7 @@ def login_plc(
     )
     dynamic_password = _build_password_from_commessa(commessa)
 
-    logging.info(f"🔐 Login PLC 2: {login_url} , username: {login}, password: {dynamic_password}")
+    logging.info(f"🔐 Login PLC 2: {login_url} , username: {login}")
 
     r = _login_plc_with_credentials(
         session=plc_session,
@@ -541,58 +561,50 @@ def login_plc(
     )
 
 
+def _response_is_login_page(response: requests.Response) -> bool:
+    """Individua una pagina di autenticazione senza confonderla con YAML."""
+    content_type = response.headers.get("Content-Type", "").lower()
+    prefix = response.content[:4096].decode("utf-8", errors="ignore").lstrip("\ufeff \t\r\n").lower()
+    if "text/html" in content_type or prefix.startswith(("<!doctype html", "<html")):
+        return True
+    if "<form" in prefix and ("formlogin" in prefix or "type=\"password\"" in prefix):
+        return True
+    return False
+
+
 def download_file(plc_session: requests.Session, url: str, dest_path: Path) -> None:
-    """
-    Scarica il file da un URL e lo salva in dest_path.
-    Se HTTPS fallisce, prova HTTP in fallback.
-    """
+    """Scarica config.yaml usando la sessione corrente; registra diagnostica sicura."""
     logging.info("🌐 Download in corso...")
     dest_path.parent.mkdir(parents=True, exist_ok=True)
-
-    try:
-        r = plc_session.get(url, timeout=60, verify=False)
-        r.raise_for_status()
-        dest_path.write_bytes(r.content)
-        logging.info(f"✅ File salvato in: {dest_path}")
-
-    except Exception as e_https:
-        # Fallback HTTP
-        try:
-            if url.startswith("https://"):
-                url_http = "http://" + url[len("https://"):]
-                r = plc_session.get(url_http, timeout=60)
-                r.raise_for_status()
-                dest_path.write_bytes(r.content)
-                logging.info(f"✅ File salvato in: {dest_path}")
-
-            else:
-                raise
-        except Exception as e_http:
-            raise RuntimeError(f"Errore nel download:\nHTTPS: {e_https}\nHTTP: {e_http}") from e_http
-
+    # Non accettare downgrade automatico HTTPS -> HTTP: perde il cookie Secure
+    # ed espone eventuali credenziali e contenuti sulla rete.
+    r = plc_session.get(url, timeout=60, verify=False, allow_redirects=True)
+    logging.info("🔎 Download HTTP: %s, Content-Type: %s, dimensione: %s byte",
+                 r.status_code, r.headers.get("Content-Type", "non specificato"), len(r.content))
+    logging.info("🔎 URL finale: %s", r.url)
+    if r.history:
+        logging.info("🔎 Redirect HTTP: %s", [item.status_code for item in r.history])
+    r.raise_for_status()
+    if _response_is_login_page(r):
+        raise RuntimeError("Il PLC ha restituito una pagina HTML/login anziche' config.yaml")
+    if not r.content.strip():
+        raise RuntimeError("Il PLC ha restituito un file vuoto")
+    dest_path.write_bytes(r.content)
+    logging.info("✅ File salvato in: %s", dest_path)
 
 
 def is_valid_download(path: Path) -> bool:
+    """Controlla che il file non sia vuoto e non sia una pagina HTML/login."""
     if not path.exists() or path.stat().st_size == 0:
         return False
-
-    text = path.read_text(encoding="utf-8", errors="ignore").strip()
-
-    if not text:
+    prefix = path.read_bytes()[:4096].decode("utf-8", errors="ignore").lstrip("\ufeff \t\r\n").lower()
+    if not prefix:
         return False
-
-    bad_markers = (
-        "<html",
-        "<!doctype html",
-        "formlogin",
-        "login",
-        "password",
-    )
-
-    text_lower = text.lower()
-    if any(marker in text_lower for marker in bad_markers):
+    if prefix.startswith(("<!doctype html", "<html", "<?xml")):
         return False
-
+    if "<form" in prefix and ("formlogin" in prefix or "type=\"password\"" in prefix):
+        return False
+    # Parole come login/password sono lecite nei normali YAML.
     return True
 
 
@@ -654,8 +666,12 @@ def _download_to_config(plc_session: requests.Session, url: str) -> Path:
     # STEP 1 - Se login abilitato, prova a riusare cookie salvato
     # -------------------------------------------------
     if get_param("loginEnabled"):
-        if not _session_has_cookie(plc_session, "siemens_ad_session"):
-            _restore_siemens_session_cookie(plc_session, base_url)
+        if _session_has_cookie(plc_session, "siemens_ad_session"):
+            logging.info("♻️ Cookie Siemens presente nella sessione corrente")
+        else:
+            restored = _restore_siemens_session_cookie(plc_session, base_url)
+            logging.info("🔎 Cookie ripristinato: %s", restored)
+        logging.info("🔎 Nomi cookie presenti: %s", sorted({c.name for c in plc_session.cookies}))
 
     # -------------------------------------------------
     # STEP 2 - Primo tentativo: download diretto
@@ -671,7 +687,11 @@ def _download_to_config(plc_session: requests.Session, url: str) -> Path:
         if not get_param("loginEnabled"):
             raise RuntimeError("Il file scaricato non è valido")
 
-        logging.info("🔐 Sessione non valida o scaduta: rifaccio login PLC...")
+        logging.info("🔐 Download non valido oppure sessione non accettata: rifaccio login PLC...")
+        # Elimina eventuali cookie di autenticazione obsoleti prima del login.
+        for cookie in list(plc_session.cookies):
+            if cookie.name == "siemens_ad_session":
+                plc_session.cookies.clear(domain=cookie.domain, path=cookie.path, name=cookie.name)
         login_plc(plc_session=plc_session, base_url=base_url)
 
         logging.info("🌐 Ritento download dopo login...")
@@ -914,6 +934,7 @@ def login_to_plc(plc_session: requests.Session, host: str = None, lastUrl: str =
         base_url = _build_base_url(host)
 
         if _restore_siemens_session_cookie(plc_session, base_url):
+            logging.info("Cookie ripristinato; verra' verificato al primo accesso protetto")
             return
 
         login_plc(plc_session, base_url)
@@ -936,7 +957,7 @@ def fetch_again(plc_session: requests.Session) -> Path | None:
         logging.info(f"🔁 Refresh da: {lastUrl}")
         return _download_to_config(plc_session=plc_session, url=lastUrl)
     except Exception as e:
-        logging.info(f"❌ Errore durante il refresh")
+        logging.warning("❌ Errore durante il refresh: %s", e)
         return None
 
 
